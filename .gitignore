@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 
 /ui_design
 /docs
+
+# Superpowers plugin files
+.superpowers/
+**/.superpowers/
