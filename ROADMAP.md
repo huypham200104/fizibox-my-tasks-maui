@@ -19,30 +19,30 @@ Tài liệu theo dõi tiến độ thực hiện các tính năng của ứng d�
 ## 🚀 Các Giai Đoạn Thực Hiện Tiếp Theo
 
 ### Giai đoạn 1: Xây dựng Nền tảng Kiến trúc (Architecture & Foundation)
-- [ ] **1.1. Core Layer (Domain)**
-  - [ ] Khai báo Entity: `TaskItem`, `Project`, Enum `TaskStatus` (`Pending`, `InProgress`, `Completed`), `TaskGroupType`, `HistoryFilterType`.
-  - [ ] Khai báo Interface dịch vụ: `ITaskService`, `ISettingsService`, `ILocalizationService`, `ISnackbarService`.
-- [ ] **1.2. MVVM Base thuần C# (Không cài NuGet ngoài)**
-  - [ ] Xây dựng `ObservableObject` kế thừa `INotifyPropertyChanged`.
-  - [ ] Xây dựng `RelayCommand` và `AsyncRelayCommand` kế thừa `ICommand`.
-  - [ ] Xây dựng `BaseViewModel` quản lý `IsBusy`, `Title`, `Strings`, và cơ chế lắng nghe sự kiện chung.
+- [x] **1.1. Core Layer (Domain)**
+  - [x] Khai báo Entity: `TaskItem`, `Project`, Enum `TaskStatus` (`Pending`, `InProgress`, `Completed`), `TaskGroupType`, `HistoryFilterType`.
+  - [x] Khai báo Interface dịch vụ: `ITaskService`, `ISettingsService`, `ILocalizationService`, `ISnackbarService`.
+- [x] **1.2. MVVM Base thuần C# (Không cài NuGet ngoài)**
+  - [x] Xây dựng `ObservableObject` kế thừa `INotifyPropertyChanged`.
+  - [x] Xây dựng `RelayCommand` và `AsyncRelayCommand` kế thừa `ICommand`.
+  - [x] Xây dựng `BaseViewModel` quản lý `IsBusy`, `Title`, `Strings`, và cơ chế lắng nghe sự kiện chung.
 - [ ] **1.3. Infrastructure Layer (Services & Mock Data)**
-  - [ ] Xây dựng `MockTaskService` (In-memory, nạp sẵn bộ dữ liệu mẫu thực tế 16–22/11/2026, hỗ trợ kích hoạt giả lập Loading/Empty/Not Found, ngăn xếp Undo xóa việc).
+  - [x] Xây dựng `MockTaskService` (In-memory, nạp sẵn bộ dữ liệu mẫu thực tế 16–22/11/2026, hỗ trợ kích hoạt giả lập Loading/Empty/Not Found, ngăn xếp Undo xóa việc).
   - [ ] Xây dựng `PreferencesSettingsService` (Lưu Theme, Cỡ chữ, Ngôn ngữ qua `Preferences`).
   - [ ] Xây dựng `LocalizationService` (Quản lý từ điển song ngữ VI/EN, cập nhật nhãn tức thì không cần restart).
   - [ ] Xây dựng `SnackbarService` (Quản lý hiển thị thông báo nổi 4 trạng thái: Thành công, Lỗi, Cảnh báo, Hoàn tác).
-- [ ] **1.4. Design System & Dynamic Resources**
-  - [ ] Thiết lập bảng màu tập trung (Primary Indigo, Background, Surface, Text, Danger, Warning, Success) cho cả Light/Dark Mode.
-  - [ ] Thiết lập Dynamic Resource cho cỡ chữ (Nhỏ: 13/14px, Thường: 15/16px, Lớn: 18/20px).
-  - [ ] Thiết lập Tokens khoảng cách (`SpacingXs` đến `SpacingXxl`), bo góc (`RadiusSm` đến `RadiusFull`).
+- [x] **1.4. Design System & Dynamic Resources**
+  - [x] Thiết lập bảng màu tập trung (Primary Indigo, Background, Surface, Text, Danger, Warning, Success) cho cả Light/Dark Mode.
+  - [x] Thiết lập Dynamic Resource cho cỡ chữ (Nhỏ: 13/14px, Thường: 15/16px, Lớn: 18/20px).
+  - [x] Thiết lập Tokens khoảng cách (`SpacingXs` đến `SpacingXxl`), bo góc (`RadiusSm` đến `RadiusFull`).
 
 ---
 
 ### Giai đoạn 2: Shell Navigation 4 Tab & Màn hình Cài đặt (SettingsPage)
 - [ ] **2.1. Cấu hình AppShell & DI Container**
-  - [ ] Cấu hình TabBar 4 tab: Hôm nay (`TodayPage`), Tuần này (`WeekPage`), Đã xong (`HistoryPage`), Cài đặt (`SettingsPage`).
-  - [ ] Đăng ký Services và ViewModels vào DI container (`MauiProgram.cs`).
-  - [ ] Đăng ký Route cho trang Chi tiết (`TaskDetailPage`).
+  - [x] Cấu hình TabBar 4 tab: Hôm nay (`TodayPage`), Tuần này (`WeekPage`), Đã xong (`HistoryPage`), Cài đặt (`SettingsPage`).
+  - [x] Đăng ký Services và ViewModels vào DI container (`MauiProgram.cs`).
+  - [x] Đăng ký Route cho trang Chi tiết (`TaskDetailPage`).
 - [ ] **2.2. Xây dựng Màn hình Cài đặt (SettingsPage & SettingsViewModel)**
   - [ ] Bộ chọn Theme dạng 2 Card trực quan Sáng / Tối (Áp dụng ngay trên toàn app).
   - [ ] Bộ điều khiển Cỡ chữ Segmented: Nhỏ / Thường / Lớn (Áp dụng ngay không restart).

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyTasksApp.Views.HistoryPage"
+             Title="Đã xong"
+             BackgroundColor="{DynamicResource Background}">
+
+    <VerticalStackLayout Spacing="16" Padding="20">
+        <Label Text="Đã xong" 
+               FontFamily="InterBold"
+               FontSize="{DynamicResource FontSizeDisplay}" 
+               TextColor="{DynamicResource TextPrimary}" />
+        <Label Text="Lịch sử các công việc đã hoàn thành" 
+               FontFamily="InterRegular"
+               FontSize="{DynamicResource FontSizeBody}" 
+               TextColor="{DynamicResource TextSecondary}" />
+    </VerticalStackLayout>
+</ContentPage>

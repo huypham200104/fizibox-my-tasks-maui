@@ -3,12 +3,39 @@
     x:Class="MyTasksApp.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MyTasksApp"
-    Title="MyTasksApp">
+    xmlns:views="clr-namespace:MyTasksApp.Views"
+    xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
+    Title="Việc của tôi"
+    FlyoutBehavior="Disabled">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <Tab Title="Hôm nay" Route="TodayPage">
+            <Tab.Icon>
+                <fluent:SymbolImageSource Symbol="CalendarDay" />
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate views:TodayPage}" />
+        </Tab>
+
+        <Tab Title="Tuần này" Route="WeekPage">
+            <Tab.Icon>
+                <fluent:SymbolImageSource Symbol="CalendarWeekNumbers" />
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate views:WeekPage}" />
+        </Tab>
+
+        <Tab Title="Đã xong" Route="HistoryPage">
+            <Tab.Icon>
+                <fluent:SymbolImageSource Symbol="History" />
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate views:HistoryPage}" />
+        </Tab>
+
+        <Tab Title="Cài đặt" Route="SettingsPage">
+            <Tab.Icon>
+                <fluent:SymbolImageSource Symbol="Settings" />
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
+        </Tab>
+    </TabBar>
 
 </Shell>

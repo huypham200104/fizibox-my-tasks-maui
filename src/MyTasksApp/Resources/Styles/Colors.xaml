@@ -3,42 +3,88 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
+    <!-- ================================================================= -->
+    <!-- DESIGN TOKENS (DESIGN.MD SPECIFICATION) - MODERN INDIGO & SLATE   -->
+    <!-- ================================================================= -->
 
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
+    <!-- Primary Brand (Indigo) -->
+    <Color x:Key="Primary">#4F46E5</Color>             <!-- Indigo-600 -->
+    <Color x:Key="PrimaryDark">#6366F1</Color>         <!-- Indigo-500 -->
+    <Color x:Key="PrimaryVariant">#4338CA</Color>      <!-- Indigo-700 -->
+    <Color x:Key="PrimaryVariantDark">#818CF8</Color>  <!-- Indigo-400 -->
+    <Color x:Key="PrimaryLight">#EEF2FF</Color>        <!-- Indigo-50 -->
+    <Color x:Key="PrimaryLightDark">#1E1B4B</Color>    <!-- Indigo-950 -->
+
+    <!-- Neutrals & Surfaces (Slate) -->
+    <Color x:Key="Background">#F8FAFC</Color>          <!-- Slate-50 -->
+    <Color x:Key="BackgroundDark">#0F172A</Color>      <!-- Slate-900 -->
+    <Color x:Key="Surface">#FFFFFF</Color>             <!-- White -->
+    <Color x:Key="SurfaceDark">#1E293B</Color>         <!-- Slate-800 -->
+    <Color x:Key="SurfaceVariant">#F1F5F9</Color>      <!-- Slate-100 -->
+    <Color x:Key="SurfaceVariantDark">#334155</Color>  <!-- Slate-700 -->
+    <Color x:Key="BorderColor">#E2E8F0</Color>         <!-- Slate-200 -->
+    <Color x:Key="BorderColorDark">#334155</Color>     <!-- Slate-700 -->
+
+    <!-- Typography Text Tokens -->
+    <Color x:Key="TextPrimary">#0F172A</Color>         <!-- Slate-900 (WCAG >= 7:1) -->
+    <Color x:Key="TextPrimaryDark">#F8FAFC</Color>     <!-- Slate-50 -->
+    <Color x:Key="TextSecondary">#475569</Color>       <!-- Slate-600 (WCAG >= 4.5:1) -->
+    <Color x:Key="TextSecondaryDark">#94A3B8</Color>   <!-- Slate-400 -->
+    <Color x:Key="TextMuted">#94A3B8</Color>           <!-- Slate-400 -->
+    <Color x:Key="TextMutedDark">#64748B</Color>       <!-- Slate-500 -->
+    <Color x:Key="TextOnPrimary">#FFFFFF</Color>
+    <Color x:Key="TextOnPrimaryDark">#FFFFFF</Color>
+
+    <!-- Semantic Status: Danger (Overdue / Error) -->
+    <Color x:Key="Danger">#DC2626</Color>              <!-- Red-600 -->
+    <Color x:Key="DangerDark">#EF4444</Color>          <!-- Red-500 -->
+    <Color x:Key="DangerSurface">#FEF2F2</Color>       <!-- Red-50 -->
+    <Color x:Key="DangerSurfaceDark">#450A0A</Color>   <!-- Red-950 -->
+
+    <!-- Semantic Status: Warning (Today / InProgress) -->
+    <Color x:Key="Warning">#D97706</Color>             <!-- Amber-600 -->
+    <Color x:Key="WarningDark">#F59E0B</Color>         <!-- Amber-500 -->
+    <Color x:Key="WarningSurface">#FFFBEB</Color>      <!-- Amber-50 -->
+    <Color x:Key="WarningSurfaceDark">#451A03</Color>  <!-- Amber-950 -->
+
+    <!-- Semantic Status: Success (Completed) -->
+    <Color x:Key="Success">#16A34A</Color>             <!-- Green-600 -->
+    <Color x:Key="SuccessDark">#22C55E</Color>         <!-- Green-500 -->
+    <Color x:Key="SuccessSurface">#F0FDF4</Color>      <!-- Green-50 -->
+    <Color x:Key="SuccessSurfaceDark">#052E16</Color>  <!-- Green-950 -->
+
+    <!-- Component Tokens -->
+    <Color x:Key="SnackbarBg">#1E293B</Color>          <!-- Slate-800 -->
+    <Color x:Key="SnackbarBgDark">#020617</Color>      <!-- Slate-950 -->
+    <Color x:Key="ProgressTrack">#E0E7FF</Color>       <!-- Indigo-100 -->
+    <Color x:Key="ProgressTrackDark">#312E81</Color>   <!-- Indigo-900 -->
+    <Color x:Key="ProgressFill">#4F46E5</Color>        <!-- Indigo-600 -->
+    <Color x:Key="ProgressFillDark">#6366F1</Color>    <!-- Indigo-500 -->
+
+    <!-- ================================================================= -->
+    <!-- LEGACY / TEMPLATE FALLBACK COMPATIBILITY                          -->
+    <!-- ================================================================= -->
     <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
+    <Color x:Key="Secondary">#EEF2FF</Color>
     <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <Color x:Key="Tertiary">#4338CA</Color>
+    <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Black">#000000</Color>
+    <Color x:Key="OffBlack">#1E293B</Color>
 
-    <Color x:Key="White">White</Color>
-    <Color x:Key="Black">Black</Color>
-    <Color x:Key="Magenta">#D600AA</Color>
-    <Color x:Key="MidnightBlue">#190649</Color>
-    <Color x:Key="OffBlack">#1f1f1f</Color>
+    <Color x:Key="Gray100">#F1F5F9</Color>
+    <Color x:Key="Gray200">#E2E8F0</Color>
+    <Color x:Key="Gray300">#CBD5E1</Color>
+    <Color x:Key="Gray400">#94A3B8</Color>
+    <Color x:Key="Gray500">#64748B</Color>
+    <Color x:Key="Gray600">#475569</Color>
+    <Color x:Key="Gray900">#0F172A</Color>
+    <Color x:Key="Gray950">#020617</Color>
 
-    <Color x:Key="Gray100">#E1E1E1</Color>
-    <Color x:Key="Gray200">#C8C8C8</Color>
-    <Color x:Key="Gray300">#ACACAC</Color>
-    <Color x:Key="Gray400">#919191</Color>
-    <Color x:Key="Gray500">#6E6E6E</Color>
-    <Color x:Key="Gray600">#404040</Color>
-    <Color x:Key="Gray900">#212121</Color>
-    <Color x:Key="Gray950">#141414</Color>
-
+    <!-- SolidColorBrushes -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
-    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
-    <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource Background}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource Surface}"/>
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
     <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
-
-    <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
-    <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>
-    <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}"/>
-    <SolidColorBrush x:Key="Gray400Brush" Color="{StaticResource Gray400}"/>
-    <SolidColorBrush x:Key="Gray500Brush" Color="{StaticResource Gray500}"/>
-    <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
-    <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
-    <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
 </ResourceDictionary>
