@@ -58,20 +58,20 @@ Tài liệu theo dõi tiến độ thực hiện các tính năng của ứng d�
 ---
 
 ### Giai đoạn 3: Màn hình 1 — Hôm nay (TodayPage)
-- [ ] **3.1. TodayViewModel**
-  - [ ] Lấy danh sách việc từ `ITaskService`, tự động phân loại thành 3 nhóm: Quá hạn, Hôm nay, Xong.
-  - [ ] Tự động tính toán tỷ lệ % hoàn thành và tỷ số việc cho Thẻ tiến độ hôm nay.
-  - [ ] Lắng nghe sự kiện `TaskChanged` để cập nhật đồng bộ.
-  - [ ] Xử lý Command toggle hoàn thành / mở lại công việc.
-  - [ ] Xử lý Command tạo nhanh công việc mới từ nút FAB (+).
-- [ ] **3.2. TodayPage UI (XAML)**
-  - [ ] Header ngày tháng và câu chào truyền cảm hứng.
-  - [ ] Thẻ Tiến độ hôm nay dạng thanh ngang (Linear Progress Bar).
-  - [ ] Danh sách phân nhóm 3 section: QUÁ HẠN (đỏ), HÔM NAY (cam), XONG (xanh).
-  - [ ] Thẻ công việc chuẩn thiết kế (Checkbox tròn, Tag dự án, Badge hạn chót/giờ, Chevron).
-  - [ ] Vuốt SwipeView để hoàn thành hoặc xóa nhanh.
-  - [ ] Nút tròn nổi FAB (+) góc dưới phải.
-  - [ ] Giao diện trạng thái Shimmer Loading và Empty State.
+- [x] **3.1. TodayViewModel**
+  - [x] Lấy danh sách việc từ `ITaskService`, tự động phân loại thành 3 nhóm: Quá hạn, Hôm nay, Xong.
+  - [x] Tự động tính toán tỷ lệ % hoàn thành và tỷ số việc cho Thẻ tiến độ hôm nay.
+  - [x] Lắng nghe sự kiện `TaskChanged` để cập nhật đồng bộ.
+  - [x] Xử lý Command toggle hoàn thành / mở lại công việc.
+  - [x] Xử lý Command tạo nhanh công việc mới từ nút FAB (+).
+- [x] **3.2. TodayPage UI (XAML)**
+  - [x] Header ngày tháng và câu chào truyền cảm hứng.
+  - [x] Thẻ Tiến độ hôm nay dạng thanh ngang (Linear Progress Bar).
+  - [x] Danh sách phân nhóm 3 section: QUÁ HẠN (đỏ), HÔM NAY (cam), XONG (xanh).
+  - [x] Thẻ công việc chuẩn thiết kế (Checkbox tròn, Tag dự án, Badge hạn chót/giờ, Chevron).
+  - [x] Vuốt SwipeView để hoàn thành hoặc xóa nhanh.
+  - [x] Nút tròn nổi FAB (+) góc dưới phải.
+  - [x] Giao diện trạng thái Shimmer Loading và Empty State.
 
 ---
 

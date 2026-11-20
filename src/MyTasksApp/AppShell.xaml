@@ -9,33 +9,37 @@
     FlyoutBehavior="Disabled">
 
     <TabBar>
-        <Tab Title="Hôm nay" Route="TodayPage">
-            <Tab.Icon>
-                <fluent:SymbolImageSource Symbol="CalendarDay" />
-            </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate views:TodayPage}" />
-        </Tab>
+        <ShellContent Title="Hôm nay"
+                      Route="TodayPage"
+                      ContentTemplate="{DataTemplate views:TodayPage}">
+            <ShellContent.Icon>
+                <fluent:SymbolImageSource Symbol="Home" />
+            </ShellContent.Icon>
+        </ShellContent>
 
-        <Tab Title="Tuần này" Route="WeekPage">
-            <Tab.Icon>
-                <fluent:SymbolImageSource Symbol="CalendarWeekNumbers" />
-            </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate views:WeekPage}" />
-        </Tab>
+        <ShellContent Title="Tuần này"
+                      Route="WeekPage"
+                      ContentTemplate="{DataTemplate views:WeekPage}">
+            <ShellContent.Icon>
+                <fluent:SymbolImageSource Symbol="Calendar" />
+            </ShellContent.Icon>
+        </ShellContent>
 
-        <Tab Title="Đã xong" Route="HistoryPage">
-            <Tab.Icon>
+        <ShellContent Title="Lịch sử"
+                      Route="HistoryPage"
+                      ContentTemplate="{DataTemplate views:HistoryPage}">
+            <ShellContent.Icon>
                 <fluent:SymbolImageSource Symbol="History" />
-            </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate views:HistoryPage}" />
-        </Tab>
+            </ShellContent.Icon>
+        </ShellContent>
 
-        <Tab Title="Cài đặt" Route="SettingsPage">
-            <Tab.Icon>
+        <ShellContent Title="Cài đặt"
+                      Route="SettingsPage"
+                      ContentTemplate="{DataTemplate views:SettingsPage}">
+            <ShellContent.Icon>
                 <fluent:SymbolImageSource Symbol="Settings" />
-            </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
-        </Tab>
+            </ShellContent.Icon>
+        </ShellContent>
     </TabBar>
 
 </Shell>

@@ -242,7 +242,7 @@ public class MockTaskService : ITaskService
         }
         else
         {
-            await Task.Delay(50); // Nhẹ nhàng mô phỏng luồng bất đồng bộ
+            await Task.CompletedTask;
         }
     }
 

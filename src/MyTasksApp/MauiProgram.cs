@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using MyTasksApp.Services;
 using MyTasksApp.Services.Interfaces;
+using MyTasksApp.ViewModels;
 using MyTasksApp.Views;
 
 namespace MyTasksApp;
@@ -27,11 +28,14 @@ public static class MauiProgram
 		// Đăng ký Services
 		builder.Services.AddSingleton<ITaskService, MockTaskService>();
 
-		// Đăng ký Views
-		builder.Services.AddTransient<TodayPage>();
-		builder.Services.AddTransient<WeekPage>();
-		builder.Services.AddTransient<HistoryPage>();
-		builder.Services.AddTransient<SettingsPage>();
+		// Đăng ký ViewModels
+		builder.Services.AddSingleton<TodayViewModel>();
+
+		// Đăng ký Views (Singleton cho các tab chính giúp chuyển tab tức thì 0ms, không lag/khựng)
+		builder.Services.AddSingleton<TodayPage>();
+		builder.Services.AddSingleton<WeekPage>();
+		builder.Services.AddSingleton<HistoryPage>();
+		builder.Services.AddSingleton<SettingsPage>();
 		builder.Services.AddTransient<TaskDetailPage>();
 
 #if DEBUG

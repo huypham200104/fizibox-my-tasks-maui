@@ -24,12 +24,17 @@ public class AsyncRelayCommand : ICommand
         _canExecute = canExecute;
     }
 
-    public bool CanExecute(object? parameter)
+    public bool CanExecute(object? parameter = null)
     {
         return !_isExecuting && (_canExecute?.Invoke(parameter) ?? true);
     }
 
-    public async void Execute(object? parameter)
+    public void Execute(object? parameter = null)
+    {
+        _ = ExecuteAsync(parameter);
+    }
+
+    public async Task ExecuteAsync(object? parameter = null)
     {
         if (!CanExecute(parameter))
             return;
@@ -69,16 +74,24 @@ public class AsyncRelayCommand<T> : ICommand
 
     public bool CanExecute(object? parameter)
     {
-        if (_isExecuting)
-            return false;
+        if (_isExecuting) return false;
+        if (_canExecute == null) return true;
 
-        if (parameter is null && typeof(T).IsValueType)
-            return _canExecute?.Invoke(default) ?? true;
+        if (parameter is T value)
+            return _canExecute(value);
 
-        return _canExecute?.Invoke((T?)parameter) ?? true;
+        if (parameter == null && default(T) == null)
+            return _canExecute(default);
+
+        return false;
     }
 
-    public async void Execute(object? parameter)
+    public void Execute(object? parameter)
+    {
+        _ = ExecuteAsync(parameter is T value ? value : default);
+    }
+
+    public async Task ExecuteAsync(T? parameter = default)
     {
         if (!CanExecute(parameter))
             return;
@@ -87,7 +100,7 @@ public class AsyncRelayCommand<T> : ICommand
         {
             _isExecuting = true;
             RaiseCanExecuteChanged();
-            await _execute((T?)parameter);
+            await _execute(parameter);
         }
         finally
         {

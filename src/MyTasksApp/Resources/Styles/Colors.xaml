@@ -64,6 +64,9 @@
     <!-- ================================================================= -->
     <!-- LEGACY / TEMPLATE FALLBACK COMPATIBILITY                          -->
     <!-- ================================================================= -->
+    <!-- Legacy Template Fallbacks -->
+    <Color x:Key="MidnightBlue">#0F172A</Color>
+    <Color x:Key="Magenta">#4F46E5</Color>
     <Color x:Key="PrimaryDarkText">#242424</Color>
     <Color x:Key="Secondary">#EEF2FF</Color>
     <Color x:Key="SecondaryDarkText">#9880e5</Color>
