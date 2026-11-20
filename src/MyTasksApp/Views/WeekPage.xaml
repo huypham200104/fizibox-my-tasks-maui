@@ -1,18 +1,82 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
              x:Class="MyTasksApp.Views.WeekPage"
              Title="Tuần này"
+             Shell.NavBarIsVisible="False"
              BackgroundColor="{DynamicResource Background}">
 
-    <VerticalStackLayout Spacing="16" Padding="20">
-        <Label Text="Tuần này" 
-               FontFamily="InterBold"
-               FontSize="{DynamicResource FontSizeDisplay}" 
-               TextColor="{DynamicResource TextPrimary}" />
-        <Label Text="Theo dõi kế hoạch và tiến độ của bạn" 
-               FontFamily="InterRegular"
-               FontSize="{DynamicResource FontSizeBody}" 
-               TextColor="{DynamicResource TextSecondary}" />
-    </VerticalStackLayout>
+    <ScrollView VerticalScrollBarVisibility="Never">
+        <VerticalStackLayout Spacing="20" Padding="20,16,20,40">
+            <!-- 1. TOP BRAND BAR (Logo chuẩn bo viền + Tên app + Chip tuần) -->
+            <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
+                <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                    <Border WidthRequest="38"
+                            HeightRequest="38"
+                            StrokeShape="RoundRectangle 10"
+                            Stroke="{DynamicResource BorderColor}"
+                            StrokeThickness="1"
+                            BackgroundColor="{DynamicResource Surface}"
+                            Padding="3"
+                            VerticalOptions="Center">
+                        <Border.Shadow>
+                            <Shadow Brush="Black"
+                                    Offset="0,1"
+                                    Radius="3"
+                                    Opacity="0.08" />
+                        </Border.Shadow>
+                        <Image Source="logo.png"
+                               Aspect="AspectFill"
+                               WidthRequest="32"
+                               HeightRequest="32"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center">
+                            <Image.Clip>
+                                <RoundRectangleGeometry Rect="0,0,32,32" CornerRadius="8" />
+                            </Image.Clip>
+                        </Image>
+                    </Border>
+
+                    <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                        <Label Text="MyTasks"
+                               FontFamily="InterBold"
+                               FontSize="18"
+                               TextColor="{DynamicResource Primary}" />
+                        <Label Text="Việc của tôi"
+                               FontFamily="InterRegular"
+                               FontSize="10"
+                               TextColor="{DynamicResource TextMuted}"
+                               Margin="0,-2,0,0" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <Border Grid.Column="2"
+                        BackgroundColor="{DynamicResource SurfaceVariant}"
+                        StrokeShape="RoundRectangle 20"
+                        StrokeThickness="0"
+                        Padding="12,6"
+                        VerticalOptions="Center">
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                        <fluent:SymbolIcon Symbol="Calendar"
+                                           ForegroundColor="{DynamicResource TextSecondary}"
+                                           FontSize="13"
+                                           VerticalOptions="Center" />
+                        <Label Text="16 – 22 Thg 11"
+                               FontFamily="InterMedium"
+                               FontSize="{DynamicResource FontSizeCaption}"
+                               TextColor="{DynamicResource TextSecondary}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- 2. PAGE TITLE (Không có thông điệp phụ theo yêu cầu) -->
+            <Label Text="Tuần này" 
+                   FontFamily="InterBold"
+                   FontSize="{DynamicResource FontSizeDisplay}" 
+                   TextColor="{DynamicResource TextPrimary}" />
+        </VerticalStackLayout>
+    </ScrollView>
+
 </ContentPage>
