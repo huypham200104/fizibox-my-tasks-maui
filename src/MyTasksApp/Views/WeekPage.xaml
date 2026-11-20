@@ -2,81 +2,1227 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
+             xmlns:models="clr-namespace:MyTasksApp.Core.Models"
+             xmlns:vm="clr-namespace:MyTasksApp.ViewModels"
              x:Class="MyTasksApp.Views.WeekPage"
+             x:DataType="vm:WeekViewModel"
              Title="Tuần này"
              Shell.NavBarIsVisible="False"
              BackgroundColor="{DynamicResource Background}">
 
-    <ScrollView VerticalScrollBarVisibility="Never">
-        <VerticalStackLayout Spacing="20" Padding="20,16,20,40">
-            <!-- 1. TOP BRAND BAR (Logo chuẩn bo viền + Tên app + Chip tuần) -->
-            <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
-                <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                    <Border WidthRequest="38"
-                            HeightRequest="38"
-                            StrokeShape="RoundRectangle 10"
-                            Stroke="{DynamicResource BorderColor}"
-                            StrokeThickness="1"
-                            BackgroundColor="{DynamicResource Surface}"
-                            Padding="3"
-                            VerticalOptions="Center">
-                        <Border.Shadow>
-                            <Shadow Brush="Black"
-                                    Offset="0,1"
-                                    Radius="3"
-                                    Opacity="0.08" />
-                        </Border.Shadow>
-                        <Image Source="logo.png"
-                               Aspect="AspectFill"
-                               WidthRequest="32"
-                               HeightRequest="32"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center">
-                            <Image.Clip>
-                                <RoundRectangleGeometry Rect="0,0,32,32" CornerRadius="8" />
-                            </Image.Clip>
-                        </Image>
-                    </Border>
+    <Grid>
+        <!-- ============================================================= -->
+        <!-- MAIN SCROLLABLE CONTENT (WITH PULL-TO-REFRESH)                -->
+        <!-- ============================================================= -->
+        <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}"
+                     RefreshColor="{DynamicResource Primary}">
+            <ScrollView VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Spacing="20" Padding="20,16,20,110">
 
-                    <VerticalStackLayout Spacing="0" VerticalOptions="Center">
-                        <Label Text="MyTasks"
-                               FontFamily="InterBold"
-                               FontSize="18"
-                               TextColor="{DynamicResource Primary}" />
-                        <Label Text="Việc của tôi"
-                               FontFamily="InterRegular"
-                               FontSize="10"
-                               TextColor="{DynamicResource TextMuted}"
-                               Margin="0,-2,0,0" />
+                    <!-- 1. TOP BRAND BAR (Logo bo góc tròn + Tên app - Đã xóa chip ngày tháng theo yêu cầu) -->
+                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                        <Border WidthRequest="38"
+                                HeightRequest="38"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Padding="3"
+                                VerticalOptions="Center">
+                            <Border.Shadow>
+                                <Shadow Brush="Black"
+                                        Offset="0,1"
+                                        Radius="3"
+                                        Opacity="0.08" />
+                            </Border.Shadow>
+                            <Image Source="logo.png"
+                                   Aspect="AspectFill"
+                                   WidthRequest="32"
+                                   HeightRequest="32"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center">
+                                <Image.Clip>
+                                    <RoundRectangleGeometry Rect="0,0,32,32" CornerRadius="8" />
+                                </Image.Clip>
+                            </Image>
+                        </Border>
+
+                        <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                            <Label Text="MyTasks"
+                                   FontFamily="InterBold"
+                                   FontSize="18"
+                                   TextColor="{DynamicResource Primary}" />
+                            <Label Text="Việc của tôi"
+                                   FontFamily="InterRegular"
+                                   FontSize="10"
+                                   TextColor="{DynamicResource TextMuted}"
+                                   Margin="0,-2,0,0" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+
+                    <!-- 3. WEEK NAVIGATOR (< dải ngày >) -->
+                    <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
+                        <!-- Nút Tuần trước -->
+                        <Border WidthRequest="40"
+                                HeightRequest="40"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                BackgroundColor="{DynamicResource Surface}"
+                                VerticalOptions="Center">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding PreviousWeekCommand}" />
+                            </Border.GestureRecognizers>
+                            <fluent:SymbolIcon Symbol="ChevronLeft"
+                                               FontSize="18"
+                                               ForegroundColor="{DynamicResource TextPrimary}"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                        </Border>
+
+                        <!-- Dải ngày tuần đang xem -->
+                        <HorizontalStackLayout Grid.Column="1"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"
+                                               Spacing="8">
+                            <fluent:SymbolIcon Symbol="Calendar"
+                                               FontSize="18"
+                                               ForegroundColor="{DynamicResource Primary}"
+                                               VerticalOptions="Center" />
+                            <Label Text="{Binding WeekRangeText}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="{DynamicResource FontSizeSubtitle}"
+                                   TextColor="{DynamicResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <!-- Nút Tuần sau -->
+                        <Border Grid.Column="2"
+                                WidthRequest="40"
+                                HeightRequest="40"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                BackgroundColor="{DynamicResource Surface}"
+                                VerticalOptions="Center">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding NextWeekCommand}" />
+                            </Border.GestureRecognizers>
+                            <fluent:SymbolIcon Symbol="ChevronRight"
+                                               FontSize="18"
+                                               ForegroundColor="{DynamicResource TextPrimary}"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                        </Border>
+                    </Grid>
+
+                    <!-- 4. WEEK STRIP (7 NGÀY T2 -> CN - PHÂN BỔ 7 CỘT CHUẨN XÁC KHÔNG BỊ XẾP CHỒNG) -->
+                    <Grid ColumnDefinitions="*, *, *, *, *, *, *" ColumnSpacing="5">
+
+                        <!-- CỘT 0: THỨ HAI (T2) -->
+                        <Border Grid.Column="0"
+                                BindingContext="{Binding WeekDays[0]}"
+                                x:DataType="models:WeekDayItem"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="2,10"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SelectDayCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="1" />
+                                </DataTrigger>
+                                <MultiTrigger TargetType="Border">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                        <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </MultiTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="{Binding DayOfWeekShort}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       TextColor="{DynamicResource TextSecondary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding DayNumber}"
+                                       FontFamily="InterBold"
+                                       FontSize="{DynamicResource FontSizeTitle}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding TaskCountText}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeBadge}"
+                                       TextColor="{DynamicResource TextMuted}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- CỘT 1: THỨ BA (T3) -->
+                        <Border Grid.Column="1"
+                                BindingContext="{Binding WeekDays[1]}"
+                                x:DataType="models:WeekDayItem"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="2,10"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SelectDayCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="1" />
+                                </DataTrigger>
+                                <MultiTrigger TargetType="Border">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                        <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </MultiTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="{Binding DayOfWeekShort}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       TextColor="{DynamicResource TextSecondary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding DayNumber}"
+                                       FontFamily="InterBold"
+                                       FontSize="{DynamicResource FontSizeTitle}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding TaskCountText}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeBadge}"
+                                       TextColor="{DynamicResource TextMuted}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- CỘT 2: THỨ TƯ (T4) -->
+                        <Border Grid.Column="2"
+                                BindingContext="{Binding WeekDays[2]}"
+                                x:DataType="models:WeekDayItem"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="2,10"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SelectDayCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="1" />
+                                </DataTrigger>
+                                <MultiTrigger TargetType="Border">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                        <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </MultiTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="{Binding DayOfWeekShort}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       TextColor="{DynamicResource TextSecondary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding DayNumber}"
+                                       FontFamily="InterBold"
+                                       FontSize="{DynamicResource FontSizeTitle}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding TaskCountText}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeBadge}"
+                                       TextColor="{DynamicResource TextMuted}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- CỘT 3: THỨ NĂM (T5) -->
+                        <Border Grid.Column="3"
+                                BindingContext="{Binding WeekDays[3]}"
+                                x:DataType="models:WeekDayItem"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="2,10"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SelectDayCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="1" />
+                                </DataTrigger>
+                                <MultiTrigger TargetType="Border">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                        <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </MultiTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="{Binding DayOfWeekShort}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       TextColor="{DynamicResource TextSecondary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding DayNumber}"
+                                       FontFamily="InterBold"
+                                       FontSize="{DynamicResource FontSizeTitle}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding TaskCountText}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeBadge}"
+                                       TextColor="{DynamicResource TextMuted}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- CỘT 4: THỨ SÁU (T6) -->
+                        <Border Grid.Column="4"
+                                BindingContext="{Binding WeekDays[4]}"
+                                x:DataType="models:WeekDayItem"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="2,10"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SelectDayCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="1" />
+                                </DataTrigger>
+                                <MultiTrigger TargetType="Border">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                        <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </MultiTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="{Binding DayOfWeekShort}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       TextColor="{DynamicResource TextSecondary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding DayNumber}"
+                                       FontFamily="InterBold"
+                                       FontSize="{DynamicResource FontSizeTitle}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding TaskCountText}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeBadge}"
+                                       TextColor="{DynamicResource TextMuted}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- CỘT 5: THỨ BẢY (T7) -->
+                        <Border Grid.Column="5"
+                                BindingContext="{Binding WeekDays[5]}"
+                                x:DataType="models:WeekDayItem"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="2,10"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SelectDayCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="1" />
+                                </DataTrigger>
+                                <MultiTrigger TargetType="Border">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                        <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </MultiTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="{Binding DayOfWeekShort}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       TextColor="{DynamicResource TextSecondary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding DayNumber}"
+                                       FontFamily="InterBold"
+                                       FontSize="{DynamicResource FontSizeTitle}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding TaskCountText}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeBadge}"
+                                       TextColor="{DynamicResource TextMuted}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- CỘT 6: CHỦ NHẬT (CN) -->
+                        <Border Grid.Column="6"
+                                BindingContext="{Binding WeekDays[6]}"
+                                x:DataType="models:WeekDayItem"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="2,10"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SelectDayCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="1" />
+                                </DataTrigger>
+                                <MultiTrigger TargetType="Border">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                        <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                    <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </MultiTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="{Binding DayOfWeekShort}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       TextColor="{DynamicResource TextSecondary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding DayNumber}"
+                                       FontFamily="InterBold"
+                                       FontSize="{DynamicResource FontSizeTitle}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding TaskCountText}"
+                                       FontFamily="InterMedium"
+                                       FontSize="{DynamicResource FontSizeBadge}"
+                                       TextColor="{DynamicResource TextMuted}"
+                                       HorizontalTextAlignment="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <MultiTrigger TargetType="Label">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding IsSelected}" Value="False" />
+                                                <BindingCondition Binding="{Binding IsToday}" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </MultiTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+
+                    </Grid>
+
+                    <!-- 5. SKELETON SHIMMER LOADING -->
+                    <VerticalStackLayout IsVisible="{Binding IsBusy}" Spacing="12">
+                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                StrokeShape="RoundRectangle 12"
+                                StrokeThickness="0"
+                                HeightRequest="72"
+                                Opacity="0.6" />
+                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                StrokeShape="RoundRectangle 12"
+                                StrokeThickness="0"
+                                HeightRequest="72"
+                                Opacity="0.6" />
+                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                StrokeShape="RoundRectangle 12"
+                                StrokeThickness="0"
+                                HeightRequest="72"
+                                Opacity="0.6" />
                     </VerticalStackLayout>
-                </HorizontalStackLayout>
 
-                <Border Grid.Column="2"
-                        BackgroundColor="{DynamicResource SurfaceVariant}"
-                        StrokeShape="RoundRectangle 20"
-                        StrokeThickness="0"
-                        Padding="12,6"
-                        VerticalOptions="Center">
-                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                        <fluent:SymbolIcon Symbol="Calendar"
-                                           ForegroundColor="{DynamicResource TextSecondary}"
-                                           FontSize="13"
-                                           VerticalOptions="Center" />
-                        <Label Text="16 – 22 Thg 11"
-                               FontFamily="InterMedium"
+                    <!-- 6. EMPTY STATE (CHỈ ICON + THÔNG ĐIỆP, ĐÃ XÓA BUTTON THEO YÊU CẦU) -->
+                    <VerticalStackLayout IsVisible="{Binding IsEmpty}"
+                                         Spacing="12"
+                                         Padding="0,48,0,32"
+                                         HorizontalOptions="Center">
+                        <fluent:SymbolIcon Symbol="CalendarEmpty"
+                                           ForegroundColor="{DynamicResource TextMuted}"
+                                           FontSize="64"
+                                           HorizontalOptions="Center" />
+
+                        <Label Text="Không có công việc"
+                               FontFamily="InterSemiBold"
+                               FontSize="{DynamicResource FontSizeTitle}"
+                               TextColor="{DynamicResource TextPrimary}"
+                               HorizontalTextAlignment="Center" />
+
+                        <Label Text="Ngày này chưa có công việc nào được lên lịch."
+                               FontFamily="InterRegular"
                                FontSize="{DynamicResource FontSizeCaption}"
                                TextColor="{DynamicResource TextSecondary}"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <!-- 7. DANH SÁCH CÔNG VIỆC CỦA NGÀY (HIỂN THỊ TRỰC TIẾP DƯỚI DẢI 7 NGÀY) -->
+                    <VerticalStackLayout IsVisible="{Binding IsNotBusy}" Spacing="12">
+                        <BindableLayout.ItemsSource>
+                            <Binding Path="DayTasks" />
+                        </BindableLayout.ItemsSource>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:TaskItem">
+                                <SwipeView>
+                                    <SwipeView.RightItems>
+                                        <SwipeItems Mode="Reveal">
+                                            <SwipeItem Text="Hoàn thành"
+                                                       BackgroundColor="{DynamicResource Success}"
+                                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=ToggleTaskStatusCommand}"
+                                                       CommandParameter="{Binding .}" />
+                                            <SwipeItem Text="Xóa"
+                                                       BackgroundColor="{DynamicResource Danger}"
+                                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=DeleteTaskCommand}"
+                                                       CommandParameter="{Binding .}" />
+                                        </SwipeItems>
+                                    </SwipeView.RightItems>
+
+                                    <Border BackgroundColor="{DynamicResource Surface}"
+                                            Stroke="{DynamicResource BorderColor}"
+                                            StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 12"
+                                            Padding="14,12">
+                                        <Border.Shadow>
+                                            <Shadow Brush="Black"
+                                                    Offset="0,1"
+                                                    Radius="3"
+                                                    Opacity="0.05" />
+                                        </Border.Shadow>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=OpenTaskDetailCommand}"
+                                                                  CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+
+                                        <!-- Layout 2 tầng chuẩn Responsive chống tràn chữ (AGENTS.md Quy chuẩn 6) -->
+                                        <Grid ColumnDefinitions="Auto, *, Auto"
+                                              RowDefinitions="Auto, Auto"
+                                              ColumnSpacing="12"
+                                              RowSpacing="8">
+
+                                            <!-- Checkbox tròn touch target 36x36dp -->
+                                            <Grid Grid.Row="0" Grid.Column="0"
+                                                  WidthRequest="36"
+                                                  HeightRequest="36"
+                                                  VerticalOptions="Center"
+                                                  HorizontalOptions="Center">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=ToggleTaskStatusCommand}"
+                                                                          CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
+
+                                                <!-- Chưa hoàn thành -->
+                                                <Border WidthRequest="24"
+                                                        HeightRequest="24"
+                                                        StrokeShape="RoundRectangle 12"
+                                                        Stroke="{DynamicResource BorderColor}"
+                                                        StrokeThickness="2"
+                                                        BackgroundColor="Transparent"
+                                                        HorizontalOptions="Center"
+                                                        VerticalOptions="Center">
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Completed">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                </Border>
+
+                                                <!-- Đã hoàn thành (Tích xanh) -->
+                                                <Border WidthRequest="24"
+                                                        HeightRequest="24"
+                                                        StrokeShape="RoundRectangle 12"
+                                                        StrokeThickness="0"
+                                                        BackgroundColor="{DynamicResource Success}"
+                                                        IsVisible="False"
+                                                        HorizontalOptions="Center"
+                                                        VerticalOptions="Center">
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Completed">
+                                                            <Setter Property="IsVisible" Value="True" />
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <fluent:SymbolIcon Symbol="Checkmark"
+                                                                       ForegroundColor="White"
+                                                                       FontSize="14"
+                                                                       HorizontalOptions="Center"
+                                                                       VerticalOptions="Center" />
+                                                </Border>
+                                            </Grid>
+
+                                            <!-- Tiêu đề công việc -->
+                                            <Label Grid.Row="0" Grid.Column="1"
+                                                   Text="{Binding Title}"
+                                                   FontFamily="InterSemiBold"
+                                                   FontSize="{DynamicResource FontSizeBody}"
+                                                   TextColor="{DynamicResource TextPrimary}"
+                                                   LineBreakMode="WordWrap"
+                                                   VerticalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding Status}" Value="Completed">
+                                                        <Setter Property="TextDecorations" Value="Strikethrough" />
+                                                        <Setter Property="TextColor" Value="{DynamicResource TextMuted}" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+
+                                            <!-- Mũi tên điều hướng > -->
+                                            <fluent:SymbolIcon Grid.Row="0" Grid.Column="2"
+                                                               Symbol="ChevronRight"
+                                                               ForegroundColor="{DynamicResource TextMuted}"
+                                                               FontSize="18"
+                                                               VerticalOptions="Center"
+                                                               HorizontalOptions="End" />
+
+                                            <!-- Dòng 2: Tag dự án và Badge giờ -->
+                                            <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                                                   Spacing="8"
+                                                                   VerticalOptions="Center">
+                                                <!-- Chip Dự án -->
+                                                <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                        StrokeShape="RoundRectangle 6"
+                                                        StrokeThickness="0"
+                                                        Padding="8,4">
+                                                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                                        <fluent:SymbolIcon Symbol="Folder"
+                                                                           ForegroundColor="{DynamicResource Primary}"
+                                                                           FontSize="12"
+                                                                           VerticalOptions="Center" />
+                                                        <Label Text="{Binding ProjectName}"
+                                                               FontFamily="InterMedium"
+                                                               FontSize="{DynamicResource FontSizeBadge}"
+                                                               TextColor="{DynamicResource TextSecondary}"
+                                                               VerticalOptions="Center" />
+                                                    </HorizontalStackLayout>
+                                                </Border>
+
+                                                <!-- Badge Giờ hẹn -->
+                                                <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                        StrokeShape="RoundRectangle 6"
+                                                        StrokeThickness="0"
+                                                        Padding="8,4">
+                                                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                                        <fluent:SymbolIcon Symbol="Clock"
+                                                                           ForegroundColor="{DynamicResource Warning}"
+                                                                           FontSize="12"
+                                                                           VerticalOptions="Center" />
+                                                        <Label Text="{Binding DueTime, StringFormat='{0:hh\\:mm}'}"
+                                                               FontFamily="InterMedium"
+                                                               FontSize="{DynamicResource FontSizeBadge}"
+                                                               TextColor="{DynamicResource TextSecondary}"
+                                                               VerticalOptions="Center" />
+                                                    </HorizontalStackLayout>
+                                                </Border>
+                                            </HorizontalStackLayout>
+                                        </Grid>
+                                    </Border>
+                                </SwipeView>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+        <!-- ============================================================= -->
+        <!-- FLOATING ACTION BUTTON (FAB +)                                -->
+        <!-- ============================================================= -->
+        <Border WidthRequest="56"
+                HeightRequest="56"
+                StrokeShape="RoundRectangle 28"
+                StrokeThickness="0"
+                BackgroundColor="{DynamicResource Primary}"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,20,24">
+            <Border.Shadow>
+                <Shadow Brush="Black"
+                        Offset="0,4"
+                        Radius="8"
+                        Opacity="0.25" />
+            </Border.Shadow>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding OpenCreateModalCommand}" />
+            </Border.GestureRecognizers>
+            <fluent:SymbolIcon Symbol="Add"
+                               ForegroundColor="White"
+                               FontSize="24"
+                               HorizontalOptions="Center"
                                VerticalOptions="Center" />
-                    </HorizontalStackLayout>
+        </Border>
+
+        <!-- ============================================================= -->
+        <!-- FLOATING SNACKBAR (THÔNG BÁO HOÀN THÀNH / XÓA HOÀN TÁC)       -->
+        <!-- ============================================================= -->
+        <Border x:Name="SnackbarBorder"
+                IsVisible="{Binding IsSnackbarVisible}"
+                BackgroundColor="{DynamicResource SnackbarBg}"
+                StrokeShape="RoundRectangle 12"
+                StrokeThickness="0"
+                Padding="16,12"
+                Margin="16,0,16,24"
+                VerticalOptions="End"
+                HorizontalOptions="Fill">
+            <Grid ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="12" VerticalOptions="Center">
+                <fluent:SymbolIcon Symbol="CheckmarkCircle"
+                                   ForegroundColor="{DynamicResource Success}"
+                                   FontSize="20"
+                                   VerticalOptions="Center" />
+
+                <Label Grid.Column="1"
+                       Text="{Binding SnackbarMessage}"
+                       TextColor="White"
+                       FontSize="{DynamicResource FontSizeBody}"
+                       FontFamily="InterMedium"
+                       LineBreakMode="TailTruncation"
+                       VerticalOptions="Center" />
+
+                <Button Grid.Column="2"
+                        Text="Hoàn tác"
+                        Command="{Binding UndoDeleteCommand}"
+                        IsVisible="{Binding CanUndo}"
+                        BackgroundColor="{DynamicResource PrimaryVariantDark}"
+                        TextColor="White"
+                        FontSize="{DynamicResource FontSizeCaption}"
+                        FontFamily="InterSemiBold"
+                        CornerRadius="8"
+                        Padding="12,4"
+                        HeightRequest="32"
+                        VerticalOptions="Center" />
+
+                <Border Grid.Column="3"
+                        WidthRequest="28"
+                        HeightRequest="28"
+                        StrokeShape="RoundRectangle 14"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="0"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding DismissSnackbarCommand}" />
+                    </Border.GestureRecognizers>
+                    <fluent:SymbolIcon Symbol="Dismiss"
+                                       ForegroundColor="{DynamicResource TextMuted}"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
                 </Border>
             </Grid>
+        </Border>
 
-            <!-- 2. PAGE TITLE (Không có thông điệp phụ theo yêu cầu) -->
-            <Label Text="Tuần này" 
-                   FontFamily="InterBold"
-                   FontSize="{DynamicResource FontSizeDisplay}" 
-                   TextColor="{DynamicResource TextPrimary}" />
-        </VerticalStackLayout>
-    </ScrollView>
+        <!-- ============================================================= -->
+        <!-- MODAL BOTTOM SHEET: TẠO VIỆC NHANH (MẪU POPUP_EDIT_TEXT.PNG)  -->
+        <!-- ============================================================= -->
+        <Grid x:Name="CreateModalBackdrop"
+              IsVisible="{Binding IsCreateModalVisible}"
+              BackgroundColor="#80000000"
+              InputTransparent="False">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseCreateModalCommand}" />
+            </Grid.GestureRecognizers>
+
+            <Border x:Name="CreateModalSheet"
+                    VerticalOptions="End"
+                    BackgroundColor="{DynamicResource Surface}"
+                    StrokeShape="RoundRectangle 24,24,0,0"
+                    StrokeThickness="0"
+                    Padding="20,16,20,32">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer /> <!-- Chặn sự kiện đóng modal khi chạm vào nội dung card -->
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="16">
+                    <!-- Thanh gạt vuốt ngang phía trên (Drag Handle) -->
+                    <BoxView WidthRequest="40"
+                             HeightRequest="4"
+                             CornerRadius="2"
+                             Color="{DynamicResource BorderColor}"
+                             HorizontalOptions="Center"
+                             Margin="0,0,0,4" />
+
+                    <!-- Header Modal -->
+                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Tạo công việc mới"
+                                   FontFamily="InterBold"
+                                   FontSize="{DynamicResource FontSizeTitle}"
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Label Text="Lên lịch công việc cho ngày được chọn"
+                                   FontFamily="InterRegular"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   TextColor="{DynamicResource TextSecondary}" />
+                        </VerticalStackLayout>
+
+                        <Border Grid.Column="1"
+                                WidthRequest="32"
+                                HeightRequest="32"
+                                StrokeShape="RoundRectangle 16"
+                                StrokeThickness="0"
+                                BackgroundColor="{DynamicResource SurfaceVariant}"
+                                VerticalOptions="Center">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CloseCreateModalCommand}" />
+                            </Border.GestureRecognizers>
+                            <fluent:SymbolIcon Symbol="Dismiss"
+                                               FontSize="16"
+                                               ForegroundColor="{DynamicResource TextSecondary}"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                        </Border>
+                    </Grid>
+
+                    <!-- Trường 1: Tên công việc -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Tên công việc"
+                               FontFamily="InterSemiBold"
+                               FontSize="{DynamicResource FontSizeCaption}"
+                               TextColor="{DynamicResource TextPrimary}" />
+                        <Border BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource Primary}"
+                                StrokeThickness="1.5"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,4">
+                            <Entry Text="{Binding NewTaskTitle}"
+                                   Placeholder="Ví dụ: Review Pull Request"
+                                   PlaceholderColor="{DynamicResource TextMuted}"
+                                   TextColor="{DynamicResource TextPrimary}"
+                                   FontSize="{DynamicResource FontSizeBody}"
+                                   FontFamily="InterRegular" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Trường 2: Dự án -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Dự án"
+                               FontFamily="InterSemiBold"
+                               FontSize="{DynamicResource FontSizeCaption}"
+                               TextColor="{DynamicResource TextPrimary}" />
+                        <Border BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,4">
+                            <Entry Text="{Binding NewTaskProject}"
+                                   Placeholder="Tên dự án (Ví dụ: MyTasks App)"
+                                   PlaceholderColor="{DynamicResource TextMuted}"
+                                   TextColor="{DynamicResource TextPrimary}"
+                                   FontSize="{DynamicResource FontSizeBody}"
+                                   FontFamily="InterRegular" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Trường 3: Ngày đến hạn & Giờ đến hạn -->
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Hạn ngày"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Border BackgroundColor="{DynamicResource Surface}"
+                                    Stroke="{DynamicResource BorderColor}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="10,4">
+                                <DatePicker Date="{Binding NewTaskDueDate}"
+                                            Format="dd/MM/yyyy"
+                                            TextColor="{DynamicResource TextPrimary}"
+                                            FontSize="{DynamicResource FontSizeBody}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <Label Text="Hạn giờ"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Border BackgroundColor="{DynamicResource Surface}"
+                                    Stroke="{DynamicResource BorderColor}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="10,4">
+                                <TimePicker Time="{Binding NewTaskDueTime}"
+                                            Format="HH:mm"
+                                            TextColor="{DynamicResource TextPrimary}"
+                                            FontSize="{DynamicResource FontSizeBody}" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Trường 4: Mô tả chi tiết -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Mô tả chi tiết"
+                               FontFamily="InterSemiBold"
+                               FontSize="{DynamicResource FontSizeCaption}"
+                               TextColor="{DynamicResource TextPrimary}" />
+                        <Border BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="12,8">
+                            <Editor Text="{Binding NewTaskDescription}"
+                                    Placeholder="Nhập ghi chú thêm cho công việc..."
+                                    PlaceholderColor="{DynamicResource TextMuted}"
+                                    TextColor="{DynamicResource TextPrimary}"
+                                    AutoSize="TextChanges"
+                                    MaximumHeightRequest="90"
+                                    FontSize="{DynamicResource FontSizeBody}"
+                                    FontFamily="InterRegular" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Nút thao tác Hủy / Lưu -->
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,8,0,0">
+                        <Button Text="Hủy"
+                                Command="{Binding CloseCreateModalCommand}"
+                                BackgroundColor="Transparent"
+                                TextColor="{DynamicResource Primary}"
+                                BorderColor="{DynamicResource Primary}"
+                                BorderWidth="1"
+                                CornerRadius="10"
+                                FontFamily="InterSemiBold"
+                                HeightRequest="46" />
+                        <Button Grid.Column="1"
+                                Text="Lưu công việc"
+                                Command="{Binding SaveNewTaskCommand}"
+                                BackgroundColor="{DynamicResource Primary}"
+                                TextColor="White"
+                                CornerRadius="10"
+                                FontFamily="InterSemiBold"
+                                HeightRequest="46" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+    </Grid>
 
 </ContentPage>

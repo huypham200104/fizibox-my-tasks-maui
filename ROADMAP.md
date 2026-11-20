@@ -76,18 +76,18 @@ Tài liệu theo dõi tiến độ thực hiện các tính năng của ứng d�
 ---
 
 ### Giai đoạn 4: Màn hình 2 — Tuần này (WeekPage)
-- [ ] **4.1. WeekViewModel**
-  - [ ] Tính toán dải 7 ngày trong tuần từ Thứ Hai đến Chủ Nhật (chuẩn ISO 8601).
-  - [ ] Tính số lượng công việc cho từng ngày (hiển thị badge chấm tròn `• n`).
-  - [ ] Quản lý ngày đang chọn và giữ nguyên khi chuyển tab quay lại.
-  - [ ] Lọc danh sách công việc theo ngày được chọn và tính tỷ lệ hoàn thành của ngày đó.
-- [ ] **4.2. WeekPage UI (XAML)**
-  - [ ] Thanh điều hướng tuần `< dải ngày >`.
-  - [ ] Dải chọn 7 ngày ngang (Week Strip) tương tác mượt mà, highlight ngày hôm nay và ngày đang chọn.
-  - [ ] Thẻ Tóm tắt tiến độ ngày (Day Summary Card) với thanh tiến độ ngang %.
-  - [ ] Danh sách công việc theo ngày được chọn.
-  - [ ] Nút FAB (+) tạo công việc với ngày mặc định là ngày đang chọn.
-  - [ ] Giao diện trạng thái Shimmer Loading và Empty State.
+- [x] **4.1. WeekViewModel**
+  - [x] Tính toán dải 7 ngày trong tuần từ Thứ Hai đến Chủ Nhật (chuẩn ISO 8601).
+  - [x] Tính số lượng công việc cho từng ngày (hiển thị badge chấm tròn `• n`).
+  - [x] Quản lý ngày đang chọn và giữ nguyên khi chuyển tab quay lại.
+  - [x] Lọc danh sách công việc theo ngày được chọn và tính tỷ lệ hoàn thành của ngày đó.
+- [x] **4.2. WeekPage UI (XAML)**
+  - [x] Thanh điều hướng tuần `< dải ngày >`.
+  - [x] Dải chọn 7 ngày ngang (Week Strip) tương tác mượt mà, highlight ngày hôm nay và ngày đang chọn.
+  - [x] Thẻ Tóm tắt tiến độ ngày (Day Summary Card) với thanh tiến độ ngang %.
+  - [x] Danh sách công việc theo ngày được chọn.
+  - [x] Nút FAB (+) tạo công việc với ngày mặc định là ngày đang chọn.
+  - [x] Giao diện trạng thái Shimmer Loading và Empty State.
 
 ---
 

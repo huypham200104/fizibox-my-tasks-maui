@@ -86,12 +86,6 @@
                         </Border>
                     </Grid>
 
-                    <!-- 2. PAGE TITLE (Đã bỏ thông điệp theo yêu cầu) -->
-                    <Label Text="Hôm nay"
-                           FontFamily="InterBold"
-                           FontSize="{DynamicResource FontSizeDisplay}"
-                           TextColor="{DynamicResource TextPrimary}" />
-
                     <!-- 3. THẺ TIẾN ĐỘ HÔM NAY (LINEAR PROGRESS CARD - RESPONSIVE TÁCH TẦNG CHỐNG TRÀN CHỮ) -->
                     <Border BackgroundColor="{DynamicResource PrimaryLight}"
                             Stroke="{DynamicResource BorderColor}"
