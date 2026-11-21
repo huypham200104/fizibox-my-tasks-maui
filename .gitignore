@@ -12,6 +12,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+/*.png
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -480,3 +481,16 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+
+# Superpowers plugin files
+.superpowers/
+**/.superpowers/
+
+# Database & local data files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+mytasks.db
+

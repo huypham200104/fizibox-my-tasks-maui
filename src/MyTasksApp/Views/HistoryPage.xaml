@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
+             xmlns:controls="clr-namespace:MyTasksApp.Controls"
+             xmlns:models="clr-namespace:MyTasksApp.Core.Models"
+             xmlns:vm="clr-namespace:MyTasksApp.ViewModels"
+             x:Class="MyTasksApp.Views.HistoryPage"
+             x:DataType="vm:HistoryViewModel"
+             Title="{Binding PageTitle}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{DynamicResource Background}">
+
+    <Grid>
+        <!-- ============================================================= -->
+        <!-- MAIN SCROLLABLE CONTENT (WITH PULL-TO-REFRESH)                -->
+        <!-- ============================================================= -->
+        <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                 Command="{Binding RefreshCommand}"
+                 RefreshColor="{DynamicResource Primary}">
+        <ScrollView VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Spacing="20" Padding="20,16,20,110">
+
+                <!-- 1. TOP BRAND BAR (Logo chuẩn bo góc tròn + Tên ứng dụng + Chip Đã hoàn thành) -->
+                <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
+                    <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                        <Border WidthRequest="38"
+                                HeightRequest="38"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
+                                BackgroundColor="{DynamicResource Surface}"
+                                Padding="3"
+                                VerticalOptions="Center">
+                            <Border.Shadow>
+                                <Shadow Brush="Black"
+                                        Offset="0,1"
+                                        Radius="3"
+                                        Opacity="0.08" />
+                            </Border.Shadow>
+                            <Image Source="logo.png"
+                                   Aspect="AspectFill"
+                                   WidthRequest="32"
+                                   HeightRequest="32"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center">
+                                <Image.Clip>
+                                    <RoundRectangleGeometry Rect="0,0,32,32" CornerRadius="8" />
+                                </Image.Clip>
+                            </Image>
+                        </Border>
+
+                        <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+                            <Label Text="MyTasks"
+                                   FontFamily="InterBold"
+                                   FontSize="18"
+                                   TextColor="{DynamicResource Primary}" />
+                            <Label Text="{Binding AppSubtitle}"
+                                   FontFamily="InterRegular"
+                                   FontSize="10"
+                                   TextColor="{DynamicResource TextMuted}"
+                                   Margin="0,-2,0,0" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+
+                    <!-- Chip Đã hoàn thành màu xanh lá góc phải -->
+                    <Border Grid.Column="2"
+                            BackgroundColor="{DynamicResource SuccessSurface}"
+                            StrokeShape="RoundRectangle 20"
+                            StrokeThickness="0"
+                            Padding="12,6"
+                            VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <fluent:SymbolIcon Symbol="Checkmark"
+                                               ForegroundColor="{DynamicResource Success}"
+                                               FontSize="13"
+                                               VerticalOptions="Center" />
+                            <Label Text="{Binding CompletedBadge}"
+                                   FontFamily="InterMedium"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   TextColor="{DynamicResource Success}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- 2. ACHIEVEMENT SUMMARY CARD (Thẻ Thống kê thành tích tinh gọn đồng bộ) -->
+                <Border BackgroundColor="{DynamicResource Surface}"
+                        Stroke="{DynamicResource BorderColor}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 14"
+                        Padding="0">
+                    <Grid ColumnDefinitions="4, Auto, 1, *" ColumnSpacing="12" Padding="0,12,14,12">
+                        <!-- Vệt màu xanh lá nhấn bên trái -->
+                        <Border Grid.Column="0"
+                                BackgroundColor="{DynamicResource Success}"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 2,0,2,0" />
+
+                        <!-- Icon tích tròn xanh lá tinh gọn 36x36dp -->
+                        <Border Grid.Column="1"
+                                WidthRequest="36"
+                                HeightRequest="36"
+                                StrokeShape="RoundRectangle 18"
+                                StrokeThickness="0"
+                                BackgroundColor="{DynamicResource Success}"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center">
+                            <fluent:SymbolIcon Symbol="Checkmark"
+                                               ForegroundColor="White"
+                                               FontSize="18"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                        </Border>
+
+                        <!-- Đường kẻ phân cách dọc tinh tế -->
+                        <BoxView Grid.Column="2"
+                                 WidthRequest="1"
+                                 Color="{DynamicResource BorderColor}"
+                                 VerticalOptions="Fill"
+                                 Margin="0,2" />
+
+                        <!-- Thông số thành tích & khoảng thời gian ngữ cảnh chuẩn tỉ lệ -->
+                        <VerticalStackLayout Grid.Column="3" Spacing="1" VerticalOptions="Center">
+                            <Label Text="{Binding CompletedTasksCount}"
+                                   FontFamily="InterBold"
+                                   FontSize="20"
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Label Text="{Binding AchievementTitle}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Label Text="{Binding FilterPeriodText}"
+                                   FontFamily="InterRegular"
+                                   FontSize="{DynamicResource FontSizeBadge}"
+                                   TextColor="{DynamicResource TextMuted}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- 4. REAL-TIME SEARCH BAR (Ô Tìm kiếm trực tiếp) -->
+                <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                        Stroke="{DynamicResource BorderColor}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 24"
+                        Padding="14,0"
+                        HeightRequest="46">
+                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
+                        <!-- Icon kính lúp -->
+                        <fluent:SymbolIcon Symbol="Search"
+                                           FontSize="18"
+                                           ForegroundColor="{DynamicResource TextMuted}"
+                                           VerticalOptions="Center" />
+
+                        <!-- Ô nhập liệu tìm kiếm -->
+                        <Entry Grid.Column="1"
+                               Text="{Binding SearchText, Mode=TwoWay}"
+                               Placeholder="{Binding SearchPlaceholder}"
+                               PlaceholderColor="{DynamicResource TextMuted}"
+                               TextColor="{DynamicResource TextPrimary}"
+                               FontFamily="InterRegular"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               VerticalOptions="Center"
+                               BackgroundColor="Transparent" />
+
+                        <!-- Nút xóa nhanh nội dung tìm kiếm -->
+                        <Grid Grid.Column="2"
+                              IsVisible="{Binding HasSearchText}"
+                              WidthRequest="32"
+                              HeightRequest="32"
+                              VerticalOptions="Center">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ClearSearchCommand}" />
+                            </Grid.GestureRecognizers>
+                            <fluent:SymbolIcon Symbol="Dismiss"
+                                               FontSize="16"
+                                               ForegroundColor="{DynamicResource TextMuted}"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- 5. FILTER CHIPS & SORT TOGGLE ROW (Dải Chip lọc thời gian & Nút đảo chiều sắp xếp) -->
+                <Grid ColumnDefinitions="*, Auto, Auto" VerticalOptions="Center">
+                    <!-- Dải 4 chip thời gian có thể cuộn ngang nếu màn hình hẹp -->
+                    <ScrollView Grid.Column="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+
+                            <!-- Chip: Tất cả -->
+                            <Border StrokeShape="RoundRectangle 20"
+                                    StrokeThickness="0"
+                                    Padding="16,8"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectFilterCommand}" CommandParameter="All" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsFilterAll}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsFilterAll}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource SurfaceVariant}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding FilterAllText}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="{DynamicResource FontSizeCaption}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsFilterAll}" Value="True">
+                                            <Setter Property="TextColor" Value="{DynamicResource TextOnPrimary}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsFilterAll}" Value="False">
+                                            <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+
+                            <!-- Chip: Hôm nay -->
+                            <Border StrokeShape="RoundRectangle 20"
+                                    StrokeThickness="0"
+                                    Padding="16,8"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectFilterCommand}" CommandParameter="Today" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsFilterToday}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsFilterToday}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource SurfaceVariant}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding FilterTodayText}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="{DynamicResource FontSizeCaption}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsFilterToday}" Value="True">
+                                            <Setter Property="TextColor" Value="{DynamicResource TextOnPrimary}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsFilterToday}" Value="False">
+                                            <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+
+                            <!-- Chip: Tuần này -->
+                            <Border StrokeShape="RoundRectangle 20"
+                                    StrokeThickness="0"
+                                    Padding="16,8"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectFilterCommand}" CommandParameter="ThisWeek" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsFilterWeek}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsFilterWeek}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource SurfaceVariant}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding FilterWeekText}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="{DynamicResource FontSizeCaption}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsFilterWeek}" Value="True">
+                                            <Setter Property="TextColor" Value="{DynamicResource TextOnPrimary}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsFilterWeek}" Value="False">
+                                            <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+
+                            <!-- Chip: Tháng này -->
+                            <Border StrokeShape="RoundRectangle 20"
+                                    StrokeThickness="0"
+                                    Padding="16,8"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectFilterCommand}" CommandParameter="ThisMonth" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsFilterMonth}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsFilterMonth}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource SurfaceVariant}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding FilterMonthText}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="{DynamicResource FontSizeCaption}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsFilterMonth}" Value="True">
+                                            <Setter Property="TextColor" Value="{DynamicResource TextOnPrimary}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsFilterMonth}" Value="False">
+                                            <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+
+                    <!-- Ngăn cách dọc '|' theo mockup 03.history_screen.png -->
+                    <BoxView Grid.Column="1"
+                             WidthRequest="1"
+                             HeightRequest="22"
+                             Color="{DynamicResource BorderColor}"
+                             Margin="8,0"
+                             VerticalOptions="Center" />
+
+                    <!-- Nút Đảo chiều sắp xếp (Mới nhất / Cũ nhất) -->
+                    <Border Grid.Column="2"
+                            WidthRequest="38"
+                            HeightRequest="38"
+                            StrokeShape="RoundRectangle 19"
+                            Stroke="{DynamicResource BorderColor}"
+                            StrokeThickness="1"
+                            BackgroundColor="{DynamicResource Surface}"
+                            VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleSortOrderCommand}" />
+                        </Border.GestureRecognizers>
+                        <Border.Shadow>
+                            <Shadow Brush="Black"
+                                    Offset="0,1"
+                                    Radius="3"
+                                    Opacity="0.06" />
+                        </Border.Shadow>
+                        <fluent:SymbolIcon Symbol="ArrowSort"
+                                           FontSize="18"
+                                           ForegroundColor="{DynamicResource TextPrimary}"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                    </Border>
+                </Grid>
+
+                <!-- 6. SHIMMER LOADING SKELETON (Khi đang tải dữ liệu IsBusy) -->
+                <VerticalStackLayout x:Name="SkeletonContainer" IsVisible="{Binding IsBusy}" Spacing="12">
+                    <!-- Thẻ Skeleton mẫu 1 -->
+                    <Border BackgroundColor="{DynamicResource Surface}"
+                            Stroke="{DynamicResource BorderColor}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="14,12">
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                            <!-- Placeholder Checkbox tròn -->
+                            <Border WidthRequest="24"
+                                    HeightRequest="24"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{DynamicResource SurfaceVariant}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Start"
+                                    Margin="6,4,6,0" />
+
+                            <!-- Nội dung task skeleton 2 tầng (AGENTS.md Quy chuẩn 6) -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 6"
+                                        HeightRequest="14"
+                                        WidthRequest="180"
+                                        HorizontalOptions="Start" />
+                                <HorizontalStackLayout Spacing="8">
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="80" />
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="60" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- Thẻ Skeleton mẫu 2 -->
+                    <Border BackgroundColor="{DynamicResource Surface}"
+                            Stroke="{DynamicResource BorderColor}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="14,12">
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                            <Border WidthRequest="24"
+                                    HeightRequest="24"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{DynamicResource SurfaceVariant}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Start"
+                                    Margin="6,4,6,0" />
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 6"
+                                        HeightRequest="14"
+                                        WidthRequest="220"
+                                        HorizontalOptions="Start" />
+                                <HorizontalStackLayout Spacing="8">
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="100" />
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="50" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- Thẻ Skeleton mẫu 3 -->
+                    <Border BackgroundColor="{DynamicResource Surface}"
+                            Stroke="{DynamicResource BorderColor}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="14,12">
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                            <Border WidthRequest="24"
+                                    HeightRequest="24"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{DynamicResource SurfaceVariant}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Start"
+                                    Margin="6,4,6,0" />
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 6"
+                                        HeightRequest="14"
+                                        WidthRequest="150"
+                                        HorizontalOptions="Start" />
+                                <HorizontalStackLayout Spacing="8">
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="70" />
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="65" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- 7. EMPTY STATE: CHƯA CÓ CÔNG VIỆC HOÀN THÀNH (IsEmpty) -->
+                <VerticalStackLayout IsVisible="{Binding IsEmpty}" Spacing="16" Margin="0,24,0,0">
+                    <controls:EmptyStateView Symbol="ClipboardCheckmark"
+                                             Title="{Binding EmptyMessage}"
+                                             Subtitle="{Binding EmptySubMessage}" />
+
+                    <!-- Nút CTA Quay lại hôm nay theo thiết kế 03.history_screen.png -->
+                    <Border BackgroundColor="{DynamicResource PrimaryLight}"
+                            Stroke="{DynamicResource Primary}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 24"
+                            Padding="24,10"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NavigateToTodayCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding BackToTodayText}"
+                               FontFamily="InterSemiBold"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               TextColor="{DynamicResource Primary}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- 8. EMPTY STATE: TÌM KIẾM KHÔNG THẤY KẾT QUẢ (IsSearchEmpty) -->
+                <VerticalStackLayout IsVisible="{Binding IsSearchEmpty}" Spacing="16" Margin="0,24,0,0">
+                    <controls:EmptyStateView Symbol="Search"
+                                             Title="{Binding SearchEmptyMessage}"
+                                             Subtitle="{Binding SearchEmptySubMessage}" />
+
+                    <!-- Nút CTA Xóa tìm kiếm -->
+                    <Border BackgroundColor="{DynamicResource PrimaryLight}"
+                            Stroke="{DynamicResource Primary}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 24"
+                            Padding="24,10"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ClearSearchCommand}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding ClearSearchText}"
+                               FontFamily="InterSemiBold"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               TextColor="{DynamicResource Primary}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- 9. SECTION HEADER & DANH SÁCH GOM NHÓM THEO NGÀY HOÀN THÀNH -->
+                <VerticalStackLayout IsVisible="{Binding HasCompletedTasks}" Spacing="20">
+
+                    <!-- Tiêu đề Section chính -->
+                    <Label Text="{Binding CompletedSectionTitle}"
+                           FontFamily="InterBold"
+                           FontSize="{DynamicResource FontSizeSubtitle}"
+                           TextColor="{DynamicResource TextPrimary}" />
+
+                    <!-- Danh sách các nhóm ngày -->
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding GroupedTasks}" Spacing="20">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:HistoryGroupItem">
+                                <VerticalStackLayout Spacing="10">
+
+                                    <!-- Tiêu đề ngày gom nhóm (Ví dụ: Hôm nay / 20 tháng 11, 2026) -->
+                                    <VerticalStackLayout Spacing="1">
+                                        <Label Text="{Binding Title}"
+                                               FontFamily="InterBold"
+                                               FontSize="{DynamicResource FontSizeSubtitle}"
+                                               TextColor="{DynamicResource TextPrimary}" />
+                                        <Label Text="{Binding Subtitle}"
+                                               FontFamily="InterRegular"
+                                               FontSize="{DynamicResource FontSizeBadge}"
+                                               TextColor="{DynamicResource TextMuted}" />
+                                    </VerticalStackLayout>
+
+                                    <!-- Các thẻ công việc trong nhóm ngày -->
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Tasks}" Spacing="10">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="models:TaskItem">
+                                                <SwipeView>
+                                                    <SwipeView.RightItems>
+                                                        <SwipeItems Mode="Reveal">
+                                                            <SwipeItem Text="Mở lại"
+                                                                       BackgroundColor="{DynamicResource Warning}"
+                                                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HistoryViewModel}}, Path=ReopenTaskCommand}"
+                                                                       CommandParameter="{Binding .}" />
+                                                            <SwipeItem Text="Xóa"
+                                                                       BackgroundColor="{DynamicResource Danger}"
+                                                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HistoryViewModel}}, Path=DeleteTaskCommand}"
+                                                                       CommandParameter="{Binding .}" />
+                                                        </SwipeItems>
+                                                    </SwipeView.RightItems>
+
+                                                    <Border BackgroundColor="{DynamicResource Surface}"
+                                                            Stroke="{DynamicResource BorderColor}"
+                                                            StrokeThickness="1"
+                                                            StrokeShape="RoundRectangle 12"
+                                                            Padding="14,12">
+                                                        <Border.GestureRecognizers>
+                                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HistoryViewModel}}, Path=OpenTaskDetailCommand}"
+                                                                                  CommandParameter="{Binding .}" />
+                                                        </Border.GestureRecognizers>
+
+                                                        <!-- Bố cục Task Card 2 tầng chuẩn Responsive chống tràn chữ theo AGENTS.md -->
+                                                        <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" RowDefinitions="Auto, Auto" RowSpacing="8">
+
+                                                            <!-- Cột 0, Row 0: Checkbox tròn xanh lá tối ưu vùng chạm 36x36dp -->
+                                                            <Grid Grid.Row="0" Grid.Column="0"
+                                                                  WidthRequest="36"
+                                                                  HeightRequest="36"
+                                                                  VerticalOptions="Start"
+                                                                  HorizontalOptions="Center">
+                                                                <Grid.GestureRecognizers>
+                                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HistoryViewModel}}, Path=ReopenTaskCommand}"
+                                                                                          CommandParameter="{Binding .}" />
+                                                                </Grid.GestureRecognizers>
+                                                                <Border WidthRequest="24"
+                                                                        HeightRequest="24"
+                                                                        StrokeShape="RoundRectangle 12"
+                                                                        Stroke="{DynamicResource Success}"
+                                                                        StrokeThickness="0"
+                                                                        BackgroundColor="{DynamicResource Success}"
+                                                                        InputTransparent="True"
+                                                                        HorizontalOptions="Center"
+                                                                        VerticalOptions="Center">
+                                                                    <fluent:SymbolIcon Symbol="Checkmark"
+                                                                                       ForegroundColor="White"
+                                                                                       FontSize="13"
+                                                                                       HorizontalOptions="Center"
+                                                                                       VerticalOptions="Center" />
+                                                                </Border>
+                                                            </Grid>
+
+                                                            <!-- Cột 1, Row 0: Tiêu đề công việc đã hoàn thành gạch ngang (Chuẩn FontSizeBody đồng bộ) -->
+                                                            <Label Grid.Row="0" Grid.Column="1"
+                                                                   Text="{Binding Title}"
+                                                                   FontFamily="InterSemiBold"
+                                                                   FontSize="{DynamicResource FontSizeBody}"
+                                                                   TextColor="{DynamicResource TextMuted}"
+                                                                   TextDecorations="Strikethrough"
+                                                                   LineBreakMode="WordWrap"
+                                                                   VerticalOptions="Center" />
+
+                                                            <!-- Cột 2, Row 0: Icon Chevron sang màn Chi tiết -->
+                                                            <fluent:SymbolIcon Grid.Row="0" Grid.Column="2"
+                                                                               Symbol="ChevronRight"
+                                                                               FontSize="16"
+                                                                               ForegroundColor="{DynamicResource TextMuted}"
+                                                                               VerticalOptions="Center" />
+
+                                                            <!-- Row 1: Cột 1 trải dài hiển thị Tag Dự án và Badge Giờ hoàn thành -->
+                                                            <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Spacing="8" VerticalOptions="Center">
+                                                                <!-- Tag Dự án -->
+                                                                <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                                        StrokeShape="RoundRectangle 6"
+                                                                        StrokeThickness="0"
+                                                                        Padding="6,2"
+                                                                        VerticalOptions="Center">
+                                                                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                                                        <fluent:SymbolIcon Symbol="Folder"
+                                                                                           ForegroundColor="{DynamicResource Primary}"
+                                                                                           FontSize="12"
+                                                                                           VerticalOptions="Center" />
+                                                                        <Label Text="{Binding ProjectName}"
+                                                                               FontFamily="InterRegular"
+                                                                               FontSize="{DynamicResource FontSizeBadge}"
+                                                                               TextColor="{DynamicResource TextSecondary}"
+                                                                               VerticalOptions="Center" />
+                                                                    </HorizontalStackLayout>
+                                                                </Border>
+
+                                                                <!-- Badge Giờ hoàn thành (Ví dụ: 10:30) -->
+                                                                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                                                    <fluent:SymbolIcon Symbol="Clock"
+                                                                                       ForegroundColor="{DynamicResource TextMuted}"
+                                                                                       FontSize="12"
+                                                                                       VerticalOptions="Center" />
+                                                                    <Label Text="{Binding DueBadgeText}"
+                                                                           FontFamily="InterRegular"
+                                                                           FontSize="{DynamicResource FontSizeBadge}"
+                                                                           TextColor="{DynamicResource TextMuted}"
+                                                                           VerticalOptions="Center" />
+                                                                </HorizontalStackLayout>
+                                                            </HorizontalStackLayout>
+                                                        </Grid>
+                                                    </Border>
+                                                </SwipeView>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+
+    <!-- FLOATING SNACKBAR (TOAST THÔNG BÁO TOÀN CỤC) -->
+    <controls:FloatingSnackbarView />
+
+</Grid>
+</ContentPage>
