@@ -1,33 +1,20 @@
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Controls;
-using MyTasksApp.Services.Interfaces;
+using MyTasksApp.ViewModels;
 
 namespace MyTasksApp.Views;
 
 public partial class HistoryPage : ContentPage
 {
-    private readonly ILocalizationService _localizationService;
+    private readonly HistoryViewModel _viewModel;
 
-    public HistoryPage(ILocalizationService localizationService)
+    public HistoryPage(HistoryViewModel viewModel)
     {
         InitializeComponent();
-        _localizationService = localizationService;
-        _localizationService.LanguageChanged += OnLanguageChanged;
-        UpdateLocalization();
+        BindingContext = _viewModel = viewModel;
     }
 
-    private void OnLanguageChanged(object? sender, EventArgs e)
+    protected override async void OnAppearing()
     {
-        MainThread.BeginInvokeOnMainThread(UpdateLocalization);
-    }
-
-    private void UpdateLocalization()
-    {
-        Title = _localizationService["HistoryTitle"];
-        PageTitleLabel.Text = _localizationService["HistoryTitle"];
-        AppSubtitleLabel.Text = _localizationService["AppSubtitle"];
-        CompletedBadgeLabel.Text = _localizationService["HistoryCompletedBadge"];
-        EmptyState.Title = _localizationService["HistoryEmptyMessage"];
-        EmptyState.Subtitle = _localizationService["HistoryEmptySubMessage"];
+        base.OnAppearing();
+        await _viewModel.EnsureDataLoadedAsync();
     }
 }

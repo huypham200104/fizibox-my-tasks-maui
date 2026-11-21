@@ -32,6 +32,16 @@ public class LiteDbTaskService : ITaskService, IDisposable
         // Đảm bảo chỉ mục (Indexes) để truy vấn nhanh
         _collection.EnsureIndex(x => x.DueDate);
         _collection.EnsureIndex(x => x.Status);
+
+        // Tự động seed dữ liệu mẫu 19/11 - 28/11 nếu database đang rỗng
+        lock (_lock)
+        {
+            if (_collection.Count() == 0)
+            {
+                var seedTasks = TaskDataSeeder.GenerateDefaultTasks();
+                _collection.InsertBulk(seedTasks);
+            }
+        }
     }
 
     private static string GetDefaultDatabasePath()
@@ -301,6 +311,9 @@ public class LiteDbTaskService : ITaskService, IDisposable
                 _undoStack.Clear();
                 SimulateLoading = false;
                 SimulateEmpty = false;
+
+                var seedTasks = TaskDataSeeder.GenerateDefaultTasks();
+                _collection.InsertBulk(seedTasks);
             }
         });
 

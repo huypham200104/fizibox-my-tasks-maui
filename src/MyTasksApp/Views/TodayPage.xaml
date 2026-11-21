@@ -20,6 +20,7 @@
                      RefreshColor="{DynamicResource Primary}">
             <ScrollView x:Name="MainScrollView"
                         Scrolled="OnMainScrollViewScrolled"
+                        SizeChanged="OnMainScrollViewSizeChanged"
                         VerticalScrollBarVisibility="Never">
                 <VerticalStackLayout Spacing="20" Padding="20,16,20,110">
 
@@ -213,12 +214,10 @@
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 12"
                                                     Padding="14,12">
-                                                <Border.Shadow>
-                                                    <Shadow Brush="Black"
-                                                            Offset="0,1"
-                                                            Radius="3"
-                                                            Opacity="0.05" />
-                                                </Border.Shadow>
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=OpenTaskDetailCommand}"
+                                                                          CommandParameter="{Binding .}" />
+                                                </Border.GestureRecognizers>
                                                 <!-- Layout 2 tầng chuẩn Responsive chống khuất Tiêu đề -->
                                                 <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" RowDefinitions="Auto, Auto" RowSpacing="8">
                                                     <!-- Cột 0, Row 0: Checkbox tròn tối ưu vùng chạm 36x36 -->
@@ -377,12 +376,10 @@
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 12"
                                                     Padding="14,12">
-                                                <Border.Shadow>
-                                                    <Shadow Brush="Black"
-                                                            Offset="0,1"
-                                                            Radius="3"
-                                                            Opacity="0.05" />
-                                                </Border.Shadow>
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=OpenTaskDetailCommand}"
+                                                                          CommandParameter="{Binding .}" />
+                                                </Border.GestureRecognizers>
                                                 <!-- Layout 2 tầng chuẩn Responsive chống khuất Tiêu đề -->
                                                 <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" RowDefinitions="Auto, Auto" RowSpacing="8">
                                                     <!-- Cột 0, Row 0: Checkbox tròn tối ưu vùng chạm 36x36 -->
@@ -541,12 +538,10 @@
                                                     StrokeThickness="1"
                                                     StrokeShape="RoundRectangle 12"
                                                     Padding="14,12">
-                                                <Border.Shadow>
-                                                    <Shadow Brush="Black"
-                                                            Offset="0,1"
-                                                            Radius="3"
-                                                            Opacity="0.05" />
-                                                </Border.Shadow>
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=OpenTaskDetailCommand}"
+                                                                          CommandParameter="{Binding .}" />
+                                                </Border.GestureRecognizers>
                                                 <!-- Layout 2 tầng chuẩn Responsive chống khuất Tiêu đề (Mục XONG) -->
                                                 <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" RowDefinitions="Auto, Auto" RowSpacing="8">
                                                     <!-- Cột 0, Row 0: Checkbox hoàn thành (chuyển động mượt mà khi mở lại) -->
@@ -670,34 +665,68 @@
         </RefreshView>
 
         <!-- ============================================================= -->
-        <!-- FLOATING QUICK SCROLL BUTTON (NẰM TRÊN NÚT FAB)              -->
+        <!-- FLOATING QUICK SCROLL BUTTONS (NẰM TRÊN NÚT FAB)              -->
         <!-- ============================================================= -->
-        <Border x:Name="ScrollFloatingButton"
-                WidthRequest="40"
-                HeightRequest="40"
-                StrokeShape="RoundRectangle 20"
-                Stroke="{DynamicResource BorderColor}"
-                StrokeThickness="1"
-                BackgroundColor="{DynamicResource Surface}"
-                HorizontalOptions="End"
-                VerticalOptions="End"
-                Margin="0,0,28,92">
-            <Border.Shadow>
-                <Shadow Brush="Black"
-                        Offset="0,2"
-                        Radius="6"
-                        Opacity="0.18" />
-            </Border.Shadow>
-            <Border.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnQuickScrollTapped" />
-            </Border.GestureRecognizers>
-            <fluent:SymbolIcon x:Name="ScrollIcon"
-                               Symbol="ArrowDown"
-                               ForegroundColor="{DynamicResource Primary}"
-                               FontSize="18"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center" />
-        </Border>
+        <VerticalStackLayout x:Name="ScrollButtonsContainer"
+                             Spacing="8"
+                             HorizontalOptions="End"
+                             VerticalOptions="End"
+                             Margin="0,0,28,92"
+                             InputTransparent="False">
+
+            <!-- Nút cuộn lên (Scroll To Top) -->
+            <Border x:Name="ScrollUpButton"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    StrokeShape="RoundRectangle 20"
+                    Stroke="{DynamicResource BorderColor}"
+                    StrokeThickness="1"
+                    BackgroundColor="{DynamicResource Surface}"
+                    IsVisible="False"
+                    Opacity="0">
+                <Border.Shadow>
+                    <Shadow Brush="Black"
+                            Offset="0,2"
+                            Radius="6"
+                            Opacity="0.18" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnScrollUpTapped" />
+                </Border.GestureRecognizers>
+                <fluent:SymbolIcon Symbol="ArrowUp"
+                                   ForegroundColor="{DynamicResource Primary}"
+                                   FontSize="18"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+            </Border>
+
+            <!-- Nút cuộn xuống (Scroll To Bottom) -->
+            <Border x:Name="ScrollDownButton"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    StrokeShape="RoundRectangle 20"
+                    Stroke="{DynamicResource BorderColor}"
+                    StrokeThickness="1"
+                    BackgroundColor="{DynamicResource Surface}"
+                    IsVisible="False"
+                    Opacity="0">
+                <Border.Shadow>
+                    <Shadow Brush="Black"
+                            Offset="0,2"
+                            Radius="6"
+                            Opacity="0.18" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnScrollDownTapped" />
+                </Border.GestureRecognizers>
+                <fluent:SymbolIcon Symbol="ArrowDown"
+                                   ForegroundColor="{DynamicResource Primary}"
+                                   FontSize="18"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+            </Border>
+
+        </VerticalStackLayout>
 
         <!-- ============================================================= -->
         <!-- FLOATING ACTION BUTTON (FAB `+`)                              -->
@@ -727,63 +756,6 @@
         </Border>
 
         <!-- ============================================================= -->
-        <!-- FLOATING SNACKBAR (TOAST THÔNG BÁO & HOÀN TÁC)                -->
-        <!-- ============================================================= -->
-        <Border IsVisible="{Binding IsSnackbarVisible}"
-                BackgroundColor="{DynamicResource SnackbarBg}"
-                StrokeShape="RoundRectangle 12"
-                StrokeThickness="0"
-                Padding="16,12"
-                Margin="16,0,16,24"
-                VerticalOptions="End"
-                HorizontalOptions="Fill">
-            <Grid ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="12" VerticalOptions="Center">
-                <fluent:SymbolIcon Symbol="CheckmarkCircle"
-                                   ForegroundColor="{DynamicResource Success}"
-                                   FontSize="20"
-                                   VerticalOptions="Center" />
-
-                <Label Grid.Column="1"
-                       Text="{Binding SnackbarMessage}"
-                       TextColor="White"
-                       FontSize="{DynamicResource FontSizeBody}"
-                       FontFamily="InterMedium"
-                       LineBreakMode="TailTruncation"
-                       VerticalOptions="Center" />
-
-                <Button Grid.Column="2"
-                        Text="Hoàn tác"
-                        Command="{Binding UndoDeleteCommand}"
-                        IsVisible="{Binding CanUndo}"
-                        BackgroundColor="{DynamicResource PrimaryVariantDark}"
-                        TextColor="White"
-                        FontSize="{DynamicResource FontSizeCaption}"
-                        FontFamily="InterSemiBold"
-                        CornerRadius="8"
-                        Padding="12,4"
-                        HeightRequest="32"
-                        VerticalOptions="Center" />
-
-                <Border Grid.Column="3"
-                        WidthRequest="28"
-                        HeightRequest="28"
-                        StrokeShape="RoundRectangle 14"
-                        BackgroundColor="Transparent"
-                        StrokeThickness="0"
-                        VerticalOptions="Center">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding DismissSnackbarCommand}" />
-                    </Border.GestureRecognizers>
-                    <fluent:SymbolIcon Symbol="Dismiss"
-                                       ForegroundColor="{DynamicResource TextMuted}"
-                                       FontSize="16"
-                                       HorizontalOptions="Center"
-                                       VerticalOptions="Center" />
-                </Border>
-            </Grid>
-        </Border>
-
-        <!-- ============================================================= -->
         <!-- MODAL BOTTOM SHEET: TẠO VIỆC NHANH (MẪU POPUP_EDIT_TEXT.PNG)  -->
         <!-- ============================================================= -->
         <Grid x:Name="CreateModalBackdrop"
@@ -796,139 +768,159 @@
 
             <Border x:Name="CreateModalSheet"
                     VerticalOptions="End"
+                    MaximumHeightRequest="560"
                     BackgroundColor="{DynamicResource Surface}"
                     StrokeShape="RoundRectangle 24,24,0,0"
                     StrokeThickness="0"
-                    Padding="20,16,20,32">
+                    Padding="20,16,20,24">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer /> <!-- Chặn sự kiện đóng modal khi chạm vào nội dung card -->
                 </Border.GestureRecognizers>
 
-                <VerticalStackLayout Spacing="16">
-                    <!-- Thanh gạt vuốt ngang phía trên (Drag Handle) -->
-                    <BoxView WidthRequest="40"
-                             HeightRequest="4"
-                             CornerRadius="2"
-                             Color="{DynamicResource BorderColor}"
-                             HorizontalOptions="Center"
-                             Margin="0,0,0,4" />
+                <ScrollView x:Name="CreateModalScrollView" VerticalScrollBarVisibility="Never">
+                    <VerticalStackLayout Spacing="16">
+                        <!-- Thanh gạt vuốt ngang phía trên (Drag Handle) -->
+                        <BoxView WidthRequest="40"
+                                 HeightRequest="4"
+                                 CornerRadius="2"
+                                 Color="{DynamicResource BorderColor}"
+                                 HorizontalOptions="Center"
+                                 Margin="0,0,0,4" />
 
-                    <!-- Header Modal -->
-                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
-                        <VerticalStackLayout Spacing="2">
-                            <Label Text="Tạo công việc mới"
-                                   FontFamily="InterBold"
-                                   FontSize="{DynamicResource FontSizeTitle}"
-                                   TextColor="{DynamicResource TextPrimary}" />
-                            <Label Text="Nhập thông tin công việc cần hoàn thành hôm nay"
-                                   FontFamily="InterRegular"
+                        <!-- Header Modal -->
+                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding ModalCreateTitle}"
+                                       FontFamily="InterBold"
+                                       FontSize="{DynamicResource FontSizeTitle}"
+                                       TextColor="{DynamicResource TextPrimary}" />
+                                <Label Text="{Binding ModalCreateSubtitle}"
+                                       FontFamily="InterRegular"
+                                       FontSize="{DynamicResource FontSizeCaption}"
+                                       TextColor="{DynamicResource TextSecondary}" />
+                            </VerticalStackLayout>
+
+                            <Border Grid.Column="1"
+                                    WidthRequest="32"
+                                    HeightRequest="32"
+                                    StrokeShape="RoundRectangle 16"
+                                    StrokeThickness="0"
+                                    BackgroundColor="{DynamicResource SurfaceVariant}"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding CloseCreateModalCommand}" />
+                                </Border.GestureRecognizers>
+                                <fluent:SymbolIcon Symbol="Dismiss"
+                                                   FontSize="16"
+                                                   ForegroundColor="{DynamicResource TextSecondary}"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center" />
+                            </Border>
+                        </Grid>
+
+                        <!-- Trường 1: Tên công việc -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding FieldTaskTitle}"
+                                   FontFamily="InterSemiBold"
                                    FontSize="{DynamicResource FontSizeCaption}"
-                                   TextColor="{DynamicResource TextSecondary}" />
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Border BackgroundColor="{DynamicResource Surface}"
+                                    Stroke="{DynamicResource Primary}"
+                                    StrokeThickness="1.5"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="12,4">
+                                <Entry x:Name="NewTaskTitleEntry"
+                                       Text="{Binding NewTaskTitle}"
+                                       Placeholder="{Binding FieldTaskTitlePlaceholder}"
+                                       PlaceholderColor="{DynamicResource TextMuted}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       FontSize="{DynamicResource FontSizeBody}"
+                                       FontFamily="InterRegular"
+                                       ReturnType="Next"
+                                       Completed="OnTitleEntryCompleted"
+                                       Focused="OnFieldFocused" />
+                            </Border>
                         </VerticalStackLayout>
 
-                        <Border Grid.Column="1"
-                                WidthRequest="32"
-                                HeightRequest="32"
-                                StrokeShape="RoundRectangle 16"
-                                StrokeThickness="0"
-                                BackgroundColor="{DynamicResource SurfaceVariant}"
-                                VerticalOptions="Center">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding CloseCreateModalCommand}" />
-                            </Border.GestureRecognizers>
-                            <fluent:SymbolIcon Symbol="Dismiss"
-                                               FontSize="16"
-                                               ForegroundColor="{DynamicResource TextSecondary}"
-                                               HorizontalOptions="Center"
-                                               VerticalOptions="Center" />
-                        </Border>
-                    </Grid>
+                        <!-- Trường 2: Dự án -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding FieldTaskProject}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Border BackgroundColor="{DynamicResource Surface}"
+                                    Stroke="{DynamicResource BorderColor}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="12,4">
+                                <Entry x:Name="NewTaskProjectEntry"
+                                       Text="{Binding NewTaskProject}"
+                                       Placeholder="{Binding FieldTaskProjectPlaceholder}"
+                                       PlaceholderColor="{DynamicResource TextMuted}"
+                                       TextColor="{DynamicResource TextPrimary}"
+                                       FontSize="{DynamicResource FontSizeBody}"
+                                       FontFamily="InterRegular"
+                                       ReturnType="Next"
+                                       Completed="OnProjectEntryCompleted"
+                                       Focused="OnFieldFocused" />
+                            </Border>
+                        </VerticalStackLayout>
 
-                    <!-- Trường 1: Tên công việc -->
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="Tên công việc"
-                               FontFamily="InterSemiBold"
-                               FontSize="{DynamicResource FontSizeCaption}"
-                               TextColor="{DynamicResource TextPrimary}" />
-                        <Border BackgroundColor="{DynamicResource Surface}"
-                                Stroke="{DynamicResource Primary}"
-                                StrokeThickness="1.5"
-                                StrokeShape="RoundRectangle 10"
-                                Padding="12,4">
-                            <Entry Text="{Binding NewTaskTitle}"
-                                   Placeholder="Ví dụ: Thiết kế giao diện Home"
-                                   PlaceholderColor="{DynamicResource TextMuted}"
-                                   TextColor="{DynamicResource TextPrimary}"
-                                   FontSize="{DynamicResource FontSizeBody}"
-                                   FontFamily="InterRegular" />
-                        </Border>
+                        <!-- Trường 3: Mô tả chi tiết -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding FieldTaskDesc}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Border BackgroundColor="{DynamicResource Surface}"
+                                    Stroke="{DynamicResource BorderColor}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="12,8">
+                                <Editor x:Name="NewTaskDescEditor"
+                                        Text="{Binding NewTaskDescription}"
+                                        Placeholder="{Binding FieldTaskDescPlaceholder}"
+                                        PlaceholderColor="{DynamicResource TextMuted}"
+                                        TextColor="{DynamicResource TextPrimary}"
+                                        AutoSize="TextChanges"
+                                        MaximumHeightRequest="90"
+                                        FontSize="{DynamicResource FontSizeBody}"
+                                        FontFamily="InterRegular"
+                                        Completed="OnDescEditorCompleted"
+                                        TextChanged="OnDescEditorTextChanged"
+                                        Focused="OnFieldFocused" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Nút thao tác Hủy / Lưu -->
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,8,0,0">
+                            <Button Text="{Binding BtnCancel}"
+                                    Command="{Binding CloseCreateModalCommand}"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{DynamicResource Primary}"
+                                    BorderColor="{DynamicResource Primary}"
+                                    BorderWidth="1"
+                                    CornerRadius="10"
+                                    FontFamily="InterSemiBold"
+                                    HeightRequest="46" />
+                            <Button Grid.Column="1"
+                                    Text="{Binding BtnSaveTask}"
+                                    Command="{Binding SaveNewTaskCommand}"
+                                    BackgroundColor="{DynamicResource Primary}"
+                                    TextColor="White"
+                                    CornerRadius="10"
+                                    FontFamily="InterSemiBold"
+                                    HeightRequest="46" />
+                        </Grid>
                     </VerticalStackLayout>
-
-                    <!-- Trường 2: Dự án -->
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="Dự án"
-                               FontFamily="InterSemiBold"
-                               FontSize="{DynamicResource FontSizeCaption}"
-                               TextColor="{DynamicResource TextPrimary}" />
-                        <Border BackgroundColor="{DynamicResource Surface}"
-                                Stroke="{DynamicResource BorderColor}"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 10"
-                                Padding="12,4">
-                            <Entry Text="{Binding NewTaskProject}"
-                                   Placeholder="Tên dự án (Ví dụ: MyTasks App)"
-                                   PlaceholderColor="{DynamicResource TextMuted}"
-                                   TextColor="{DynamicResource TextPrimary}"
-                                   FontSize="{DynamicResource FontSizeBody}"
-                                   FontFamily="InterRegular" />
-                        </Border>
-                    </VerticalStackLayout>
-
-                    <!-- Trường 3: Mô tả chi tiết -->
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="Mô tả chi tiết"
-                               FontFamily="InterSemiBold"
-                               FontSize="{DynamicResource FontSizeCaption}"
-                               TextColor="{DynamicResource TextPrimary}" />
-                        <Border BackgroundColor="{DynamicResource Surface}"
-                                Stroke="{DynamicResource BorderColor}"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 10"
-                                Padding="12,8">
-                            <Editor Text="{Binding NewTaskDescription}"
-                                    Placeholder="Nhập ghi chú thêm cho công việc..."
-                                    PlaceholderColor="{DynamicResource TextMuted}"
-                                    TextColor="{DynamicResource TextPrimary}"
-                                    AutoSize="TextChanges"
-                                    MaximumHeightRequest="90"
-                                    FontSize="{DynamicResource FontSizeBody}"
-                                    FontFamily="InterRegular" />
-                        </Border>
-                    </VerticalStackLayout>
-
-                    <!-- Nút thao tác Hủy / Lưu -->
-                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,8,0,0">
-                        <Button Text="Hủy"
-                                Command="{Binding CloseCreateModalCommand}"
-                                BackgroundColor="Transparent"
-                                TextColor="{DynamicResource Primary}"
-                                BorderColor="{DynamicResource Primary}"
-                                BorderWidth="1"
-                                CornerRadius="10"
-                                FontFamily="InterSemiBold"
-                                HeightRequest="46" />
-                        <Button Grid.Column="1"
-                                Text="Lưu công việc"
-                                Command="{Binding SaveNewTaskCommand}"
-                                BackgroundColor="{DynamicResource Primary}"
-                                TextColor="White"
-                                CornerRadius="10"
-                                FontFamily="InterSemiBold"
-                                HeightRequest="46" />
-                    </Grid>
-                </VerticalStackLayout>
+                </ScrollView>
             </Border>
         </Grid>
+
+        <!-- ============================================================= -->
+        <!-- FLOATING SNACKBAR (TOAST THÔNG BÁO & HOÀN TÁC)                -->
+        <!-- ============================================================= -->
+        <controls:FloatingSnackbarView />
 
     </Grid>
 

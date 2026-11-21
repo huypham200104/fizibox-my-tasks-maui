@@ -488,3 +488,11 @@ $RECYCLE.BIN/
 # Superpowers plugin files
 .superpowers/
 **/.superpowers/
+
+# Database & local data files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+mytasks.db
+

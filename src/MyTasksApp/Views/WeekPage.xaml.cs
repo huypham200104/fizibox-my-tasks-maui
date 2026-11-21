@@ -6,6 +6,7 @@ namespace MyTasksApp.Views;
 public partial class WeekPage : ContentPage
 {
     private readonly WeekViewModel _viewModel;
+    private CancellationTokenSource? _pulseAnimationCts;
 
     public WeekPage(WeekViewModel viewModel)
     {
@@ -42,12 +43,132 @@ public partial class WeekPage : ContentPage
                 Shell.SetTabBarIsVisible(this, true);
             }
         }
+        else if (e.PropertyName == nameof(WeekViewModel.IsBusy))
+        {
+            if (_viewModel.IsBusy)
+            {
+                StartSkeletonPulseAnimation();
+            }
+            else
+            {
+                StopSkeletonPulseAnimation();
+            }
+        }
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+
+        if (_viewModel.IsBusy)
+        {
+            StartSkeletonPulseAnimation();
+        }
+
         // Bảo toàn ngày chọn và chỉ tải dữ liệu nếu chưa load (Điểm tự quyết 3)
         await _viewModel.EnsureDataLoadedAsync();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        StopSkeletonPulseAnimation();
+    }
+
+    private void StartSkeletonPulseAnimation()
+    {
+        StopSkeletonPulseAnimation();
+        _pulseAnimationCts = new CancellationTokenSource();
+        var token = _pulseAnimationCts.Token;
+
+        _ = AnimateSkeletonPulseAsync(token);
+    }
+
+    private async Task AnimateSkeletonPulseAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested && _viewModel.IsBusy && SkeletonContainer != null)
+            {
+                await SkeletonContainer.FadeToAsync(0.5, 600, Easing.SinInOut);
+                if (token.IsCancellationRequested || !_viewModel.IsBusy) break;
+                await SkeletonContainer.FadeToAsync(1.0, 600, Easing.SinInOut);
+            }
+        }
+        catch
+        {
+            // Bỏ qua ngoại lệ hủy animation
+        }
+        finally
+        {
+            if (SkeletonContainer != null)
+            {
+                SkeletonContainer.Opacity = 1.0;
+            }
+        }
+    }
+
+    private void StopSkeletonPulseAnimation()
+    {
+        _pulseAnimationCts?.Cancel();
+        _pulseAnimationCts?.Dispose();
+        _pulseAnimationCts = null;
+
+        if (SkeletonContainer != null)
+        {
+            SkeletonContainer.CancelAnimations();
+            SkeletonContainer.Opacity = 1.0;
+        }
+    }
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (_viewModel.IsCreateModalVisible)
+        {
+            _viewModel.CloseCreateModalCommand.Execute(null);
+            return true;
+        }
+        return base.OnBackButtonPressed();
+    }
+
+    private async void OnTitleEntryCompleted(object? sender, EventArgs e)
+    {
+        NewTaskProjectEntry.Focus();
+        await Task.Delay(50);
+        await CreateModalScrollView.ScrollToAsync(NewTaskProjectEntry, ScrollToPosition.Center, animated: true);
+    }
+
+    private async void OnProjectEntryCompleted(object? sender, EventArgs e)
+    {
+        NewTaskDescEditor.Focus();
+        await Task.Delay(50);
+        await CreateModalScrollView.ScrollToAsync(NewTaskDescEditor, ScrollToPosition.Center, animated: true);
+    }
+
+    private async void OnDescEditorCompleted(object? sender, EventArgs e)
+    {
+        NewTaskDescEditor.Unfocus();
+        await Task.Delay(50);
+        await CreateModalScrollView.ScrollToAsync(0, CreateModalScrollView.ContentSize.Height, animated: true);
+    }
+
+    private async void OnDescEditorTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (e.NewTextValue != null && e.NewTextValue.EndsWith('\n'))
+        {
+            NewTaskDescEditor.Text = e.NewTextValue.TrimEnd('\r', '\n');
+            NewTaskDescEditor.Unfocus();
+            await Task.Delay(50);
+            await CreateModalScrollView.ScrollToAsync(0, CreateModalScrollView.ContentSize.Height, animated: true);
+        }
+    }
+
+    private async void OnFieldFocused(object? sender, FocusEventArgs e)
+    {
+        if (sender is VisualElement element)
+        {
+            await Task.Delay(150);
+            await CreateModalScrollView.ScrollToAsync(element, ScrollToPosition.Center, animated: true);
+        }
     }
 }

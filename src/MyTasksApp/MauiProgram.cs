@@ -29,11 +29,14 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ITaskService, LiteDbTaskService>();
 		builder.Services.AddSingleton<ISettingsService, PreferencesSettingsService>();
 		builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
+		builder.Services.AddSingleton<ISnackbarService, SnackbarService>();
 
 		// Đăng ký ViewModels
 		builder.Services.AddSingleton<TodayViewModel>();
 		builder.Services.AddSingleton<WeekViewModel>();
+		builder.Services.AddSingleton<HistoryViewModel>();
 		builder.Services.AddSingleton<SettingsViewModel>();
+		builder.Services.AddTransient<TaskDetailViewModel>();
 
 		// Đăng ký AppShell & Views (Singleton cho các tab chính giúp chuyển tab tức thì 0ms, không lag/khựng)
 		builder.Services.AddSingleton<AppShell>();
@@ -43,6 +46,41 @@ public static class MauiProgram
 		builder.Services.AddSingleton<SettingsPage>();
 		builder.Services.AddTransient<TaskDetailPage>();
 		builder.Services.AddTransient<MockStatePreviewPage>();
+
+		// Vô hiệu hóa phóng to kép (FontAutoScalingEnabled = false) trên toàn bộ hệ thống
+		// Toàn quyền điều khiển cỡ chữ thông qua 3 mức trong Cài đặt (Nhỏ / Thường / Lớn)
+		Microsoft.Maui.Handlers.LabelHandler.Mapper.AppendToMapping("DisableFontAutoScaling", (h, v) =>
+		{
+			if (v is Label label) label.FontAutoScalingEnabled = false;
+		});
+		Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("DisableFontAutoScaling", (h, v) =>
+		{
+			if (v is Button button) button.FontAutoScalingEnabled = false;
+		});
+		Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("DisableFontAutoScaling", (h, v) =>
+		{
+			if (v is Entry entry) entry.FontAutoScalingEnabled = false;
+		});
+		Microsoft.Maui.Handlers.EditorHandler.Mapper.AppendToMapping("DisableFontAutoScaling", (h, v) =>
+		{
+			if (v is Editor editor) editor.FontAutoScalingEnabled = false;
+		});
+		Microsoft.Maui.Handlers.SearchBarHandler.Mapper.AppendToMapping("DisableFontAutoScaling", (h, v) =>
+		{
+			if (v is SearchBar searchBar) searchBar.FontAutoScalingEnabled = false;
+		});
+		Microsoft.Maui.Handlers.DatePickerHandler.Mapper.AppendToMapping("DisableFontAutoScaling", (h, v) =>
+		{
+			if (v is DatePicker datePicker) datePicker.FontAutoScalingEnabled = false;
+		});
+		Microsoft.Maui.Handlers.TimePickerHandler.Mapper.AppendToMapping("DisableFontAutoScaling", (h, v) =>
+		{
+			if (v is TimePicker timePicker) timePicker.FontAutoScalingEnabled = false;
+		});
+		Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("DisableFontAutoScaling", (h, v) =>
+		{
+			if (v is Picker picker) picker.FontAutoScalingEnabled = false;
+		});
 
 #if DEBUG
 		builder.Logging.AddDebug();

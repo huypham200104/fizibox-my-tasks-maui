@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 using MyTasksApp.Core.Enums;
+using MyTasksApp.Services;
 using MyTasksApp.Services.Interfaces;
 using MyTasksApp.ViewModels.Base;
 using MyTasksApp.Views;
@@ -17,6 +18,7 @@ public class SettingsViewModel : BaseViewModel
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
     private readonly ITaskService _taskService;
+    private readonly ISnackbarService _snackbarService;
 
     // Quản lý Snackbar thông báo phản hồi thao tác
     private bool _isSnackbarVisible;
@@ -38,11 +40,13 @@ public class SettingsViewModel : BaseViewModel
     public SettingsViewModel(
         ISettingsService settingsService,
         ILocalizationService localizationService,
-        ITaskService taskService)
+        ITaskService taskService,
+        ISnackbarService? snackbarService = null)
     {
         _settingsService = settingsService;
         _localizationService = localizationService;
         _taskService = taskService;
+        _snackbarService = snackbarService ?? new SnackbarService();
 
         // Khởi tạo trạng thái ban đầu từ Services
         SyncStateFromSettings();
@@ -59,6 +63,11 @@ public class SettingsViewModel : BaseViewModel
         SimulateEmptyCommand = new AsyncRelayCommand(OnSimulateEmptyAsync);
         SimulateNotFoundCommand = new AsyncRelayCommand(OnSimulateNotFoundAsync);
         ResetMockDataCommand = new AsyncRelayCommand(OnResetMockDataAsync);
+
+        TestSnackbarSuccessCommand = new RelayCommand(OnTestSnackbarSuccess);
+        TestSnackbarDangerCommand = new RelayCommand(OnTestSnackbarDanger);
+        TestSnackbarWarningCommand = new RelayCommand(OnTestSnackbarWarning);
+        TestSnackbarUndoCommand = new RelayCommand(OnTestSnackbarUndo);
     }
 
     #region Observable Properties - Trạng thái lựa chọn
@@ -201,12 +210,6 @@ public class SettingsViewModel : BaseViewModel
     public string LangVietnamese => _localizationService["LangVietnamese"];
     public string LangEnglish => _localizationService["LangEnglish"];
 
-    public string SectionPreview => _localizationService["SectionPreview"];
-    public string PreviewTitle => _localizationService["PreviewTitle"];
-    public string PreviewDesc => _localizationService["PreviewDesc"];
-    public string PreviewTaskTitle => _localizationService["PreviewTaskTitle"];
-    public string PreviewTaskProject => _localizationService["PreviewTaskProject"];
-
     public string SectionReviewerTools => _localizationService["SectionReviewerTools"];
     public string ReviewerToolsDesc => _localizationService["ReviewerToolsDesc"];
     public string StateLoading => _localizationService["StateLoading"];
@@ -232,6 +235,11 @@ public class SettingsViewModel : BaseViewModel
     public ICommand SimulateNotFoundCommand { get; }
     public ICommand ResetMockDataCommand { get; }
 
+    public ICommand TestSnackbarSuccessCommand { get; }
+    public ICommand TestSnackbarDangerCommand { get; }
+    public ICommand TestSnackbarWarningCommand { get; }
+    public ICommand TestSnackbarUndoCommand { get; }
+
     #endregion
 
     #region Command Handlers
@@ -244,6 +252,7 @@ public class SettingsViewModel : BaseViewModel
 
         SnackbarMessage = message;
         IsSnackbarVisible = true;
+        _snackbarService.ShowSuccess(message);
 
         Task.Run(async () =>
         {
@@ -256,6 +265,30 @@ public class SettingsViewModel : BaseViewModel
                 }
             }
             catch (TaskCanceledException) { }
+        });
+    }
+
+    private void OnTestSnackbarSuccess()
+    {
+        _snackbarService.ShowSuccess(_localizationService["SnackbarTestSuccess"]);
+    }
+
+    private void OnTestSnackbarDanger()
+    {
+        _snackbarService.ShowDanger(_localizationService["SnackbarTestDanger"]);
+    }
+
+    private void OnTestSnackbarWarning()
+    {
+        _snackbarService.ShowWarning(_localizationService["SnackbarTestWarning"]);
+    }
+
+    private void OnTestSnackbarUndo()
+    {
+        _snackbarService.ShowUndo(_localizationService["SnackbarTestUndo"], async () =>
+        {
+            await Task.CompletedTask;
+            _snackbarService.ShowSuccess($"{_localizationService["SnackbarTaskRestored"]}Demo Task #1");
         });
     }
 
@@ -426,11 +459,6 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(AppLanguageDesc));
         OnPropertyChanged(nameof(LangVietnamese));
         OnPropertyChanged(nameof(LangEnglish));
-        OnPropertyChanged(nameof(SectionPreview));
-        OnPropertyChanged(nameof(PreviewTitle));
-        OnPropertyChanged(nameof(PreviewDesc));
-        OnPropertyChanged(nameof(PreviewTaskTitle));
-        OnPropertyChanged(nameof(PreviewTaskProject));
         OnPropertyChanged(nameof(SectionReviewerTools));
         OnPropertyChanged(nameof(ReviewerToolsDesc));
         OnPropertyChanged(nameof(StateLoading));

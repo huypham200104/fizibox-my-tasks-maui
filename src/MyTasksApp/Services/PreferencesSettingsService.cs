@@ -165,6 +165,9 @@ public class PreferencesSettingsService : ISettingsService
                 res["WarningSurface"] = Color.FromArgb("#451A03");
                 res["Success"] = Color.FromArgb("#22C55E");
                 res["SuccessSurface"] = Color.FromArgb("#052E16");
+                res["SnackbarBg"] = Color.FromArgb("#020617");
+                res["SnackbarUndoBg"] = Color.FromArgb("#1E1B4B");
+                res["SnackbarUndoText"] = Color.FromArgb("#818CF8");
             }
             else
             {
@@ -190,6 +193,9 @@ public class PreferencesSettingsService : ISettingsService
                 res["WarningSurface"] = Color.FromArgb("#FFFBEB");
                 res["Success"] = Color.FromArgb("#16A34A");
                 res["SuccessSurface"] = Color.FromArgb("#F0FDF4");
+                res["SnackbarBg"] = Color.FromArgb("#FFFFFF");
+                res["SnackbarUndoBg"] = Color.FromArgb("#EEF2FF");
+                res["SnackbarUndoText"] = Color.FromArgb("#4F46E5");
             }
         });
     }
