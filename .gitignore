@@ -494,3 +494,12 @@ $RECYCLE.BIN/
 *.db-shm
 mytasks.db
 
+# Temporary root test & prefs files
+prefs.xml
+test_cap.png
+current_*.png
+screen_*.png
+
+# Duplicate screenshot directory
+docs/screenshots/
+
