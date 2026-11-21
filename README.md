@@ -136,7 +136,6 @@ fizibox-my-tasks-maui/
 ├── docs/
 │   ├── mistake.md                         # Nhật ký xử lý sự cố môi trường & giải pháp
 │   └── CHI_TIET_VIEC_UX_NOTES.md          # Đặc tả chi tiết trải nghiệm người dùng
-├── capture_screenshots.ps1                # Script PowerShell tự động chụp màn hình qua ADB
 ├── ASSIGNMENT.md                          # Đề bài gốc của Fizibox
 ├── BUSINESS.md                            # Quy tắc nghiệp vụ & 5 điểm tự quyết
 ├── DESIGN.md                              # Hệ thống Design Tokens & Typography

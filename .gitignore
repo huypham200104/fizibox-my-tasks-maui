@@ -499,6 +499,7 @@ prefs.xml
 test_cap.png
 current_*.png
 screen_*.png
+*.ps1
 
 # Duplicate screenshot directory
 docs/screenshots/
