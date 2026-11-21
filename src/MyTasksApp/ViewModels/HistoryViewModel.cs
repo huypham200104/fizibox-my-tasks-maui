@@ -26,7 +26,10 @@ public class HistoryViewModel : BaseViewModel
     private string _filterPeriodText = string.Empty;
     private bool _isRefreshing;
     private bool _isDataLoaded;
+    private bool _isDataDirty;
     private bool _isInternalUpdate;
+    public bool IsPageVisible { get; set; }
+    private CancellationTokenSource? _filterCts;
 
     private readonly List<TaskItem> _rawCompletedTasks = new();
 
@@ -100,9 +103,9 @@ public class HistoryViewModel : BaseViewModel
         set => SetProperty(ref _isRefreshing, value);
     }
 
-    public bool HasCompletedTasks => GroupedTasks.Count > 0;
-    public bool IsEmpty => !IsBusy && _rawCompletedTasks.Count == 0 && string.IsNullOrWhiteSpace(_searchText);
-    public bool IsSearchEmpty => !IsBusy && _rawCompletedTasks.Count > 0 && GroupedTasks.Count == 0 && !string.IsNullOrWhiteSpace(_searchText);
+    public bool HasCompletedTasks => IsNotBusy && GroupedTasks.Count > 0;
+    public bool IsEmpty => IsNotBusy && _rawCompletedTasks.Count == 0 && string.IsNullOrWhiteSpace(_searchText);
+    public bool IsSearchEmpty => IsNotBusy && _rawCompletedTasks.Count > 0 && GroupedTasks.Count == 0 && !string.IsNullOrWhiteSpace(_searchText);
 
     // =================================================================
     // LOCALIZATION WRAPPERS FOR UI BINDING
@@ -114,7 +117,7 @@ public class HistoryViewModel : BaseViewModel
     public string CompletedBadge => _localizationService?["HistoryCompletedBadge"] ?? "Đã hoàn thành";
     public string CompletedSectionTitle => _localizationService?["HistoryCompletedSection"] ?? "Công việc đã hoàn thành";
     public string AchievementTitle => _localizationService?["HistoryAchievementTitle"] ?? "Công việc đã hoàn thành";
-    public string SearchPlaceholder => _localizationService?["HistorySearchPlaceholder"] ?? "Tìm kiếm công việc đã hoàn thành...";
+    public string SearchPlaceholder => _localizationService?["HistorySearchPlaceholder"] ?? "Tìm theo tiêu đề hoặc tên dự án...";
     public string EmptyMessage => _localizationService?["HistoryEmptyMessage"] ?? "Chưa có công việc hoàn thành";
     public string EmptySubMessage => _localizationService?["HistoryEmptySubMessage"] ?? "Những công việc bạn hoàn thành sẽ xuất hiện tại đây.";
     public string SearchEmptyMessage => _localizationService?["HistorySearchEmptyMessage"] ?? "Không tìm thấy kết quả";
@@ -132,8 +135,8 @@ public class HistoryViewModel : BaseViewModel
 
     public AsyncRelayCommand LoadHistoryCommand { get; }
     public AsyncRelayCommand RefreshCommand { get; }
-    public RelayCommand<object> SelectFilterCommand { get; }
-    public RelayCommand ToggleSortOrderCommand { get; }
+    public AsyncRelayCommand<object> SelectFilterCommand { get; }
+    public AsyncRelayCommand ToggleSortOrderCommand { get; }
     public RelayCommand ClearSearchCommand { get; }
     public AsyncRelayCommand NavigateToTodayCommand { get; }
     public AsyncRelayCommand<TaskItem> OpenTaskDetailCommand { get; }
@@ -152,8 +155,8 @@ public class HistoryViewModel : BaseViewModel
 
         LoadHistoryCommand = new AsyncRelayCommand(ExecuteLoadHistoryAsync);
         RefreshCommand = new AsyncRelayCommand(ExecuteRefreshAsync);
-        SelectFilterCommand = new RelayCommand<object>(ExecuteSelectFilter);
-        ToggleSortOrderCommand = new RelayCommand(ExecuteToggleSortOrder);
+        SelectFilterCommand = new AsyncRelayCommand<object>(ExecuteSelectFilterAsync);
+        ToggleSortOrderCommand = new AsyncRelayCommand(ExecuteToggleSortOrderAsync);
         ClearSearchCommand = new RelayCommand(ExecuteClearSearch);
         NavigateToTodayCommand = new AsyncRelayCommand(ExecuteNavigateToTodayAsync);
         OpenTaskDetailCommand = new AsyncRelayCommand<TaskItem>(ExecuteOpenTaskDetailAsync);
@@ -169,9 +172,19 @@ public class HistoryViewModel : BaseViewModel
         UpdateFilterPeriodText();
     }
 
+    public const int SkeletonMinTransitionDelayMs = 250;
+
     public async Task EnsureDataLoadedAsync()
     {
-        if (_isDataLoaded) return;
+        if (_isDataLoaded)
+        {
+            if (_isDataDirty)
+            {
+                _isDataDirty = false;
+                await ExecuteLoadHistoryAsync();
+            }
+            return;
+        }
         await ExecuteLoadHistoryAsync();
     }
 
@@ -182,6 +195,9 @@ public class HistoryViewModel : BaseViewModel
         try
         {
             IsBusy = true;
+            NotifyStateProperties();
+
+            var delayTask = Task.Delay(SkeletonMinTransitionDelayMs);
             var tasks = await _taskService.GetCompletedTasksAsync();
 
             _rawCompletedTasks.Clear();
@@ -190,6 +206,8 @@ public class HistoryViewModel : BaseViewModel
             UpdateFilterPeriodText();
             ApplyFilterAndGrouping();
             _isDataLoaded = true;
+
+            await delayTask;
         }
         finally
         {
@@ -218,21 +236,110 @@ public class HistoryViewModel : BaseViewModel
         }
     }
 
-    private void ExecuteSelectFilter(object? filterParam)
+    private async Task ExecuteSelectFilterAsync(object? filterParam)
     {
+        HistoryFilterType targetFilter = _selectedFilter;
         if (filterParam is HistoryFilterType filterType)
         {
-            SelectedFilter = filterType;
+            targetFilter = filterType;
         }
         else if (filterParam is string filterStr && Enum.TryParse<HistoryFilterType>(filterStr, true, out var parsed))
         {
-            SelectedFilter = parsed;
+            targetFilter = parsed;
+        }
+
+        if (_selectedFilter == targetFilter) return;
+
+        _filterCts?.Cancel();
+        _filterCts?.Dispose();
+        _filterCts = new CancellationTokenSource();
+        var token = _filterCts.Token;
+
+        // 1. Phản hồi nút bấm tức thì (0ms): Thay đổi style nút active ngay trên UI
+        _selectedFilter = targetFilter;
+        OnPropertyChanged(nameof(SelectedFilter));
+        NotifyFilterProperties();
+        UpdateFilterPeriodText();
+
+        // 2. Kích hoạt Skeleton Shimmer vi mô siêu nhanh (120-150ms)
+        try
+        {
+            IsBusy = true;
+            NotifyStateProperties();
+
+            var delayTask = Task.Delay(130, token);
+
+            var (newCount, newGroups) = await Task.Run(
+                () => ComputeFilteredGroups(targetFilter, _isSortDescending, _searchText, _rawCompletedTasks),
+                token);
+
+            await delayTask;
+
+            if (token.IsCancellationRequested) return;
+
+            CompletedTasksCount = newCount;
+            GroupedTasks.Clear();
+            foreach (var item in newGroups)
+            {
+                GroupedTasks.Add(item);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                IsBusy = false;
+                NotifyStateProperties();
+            }
         }
     }
 
-    private void ExecuteToggleSortOrder()
+    private async Task ExecuteToggleSortOrderAsync()
     {
-        IsSortDescending = !IsSortDescending;
+        _filterCts?.Cancel();
+        _filterCts?.Dispose();
+        _filterCts = new CancellationTokenSource();
+        var token = _filterCts.Token;
+
+        _isSortDescending = !_isSortDescending;
+        OnPropertyChanged(nameof(IsSortDescending));
+
+        try
+        {
+            IsBusy = true;
+            NotifyStateProperties();
+
+            var delayTask = Task.Delay(120, token);
+
+            var (newCount, newGroups) = await Task.Run(
+                () => ComputeFilteredGroups(_selectedFilter, _isSortDescending, _searchText, _rawCompletedTasks),
+                token);
+
+            await delayTask;
+
+            if (token.IsCancellationRequested) return;
+
+            CompletedTasksCount = newCount;
+            GroupedTasks.Clear();
+            foreach (var item in newGroups)
+            {
+                GroupedTasks.Add(item);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                IsBusy = false;
+                NotifyStateProperties();
+            }
+        }
     }
 
     private void ExecuteClearSearch()
@@ -306,6 +413,12 @@ public class HistoryViewModel : BaseViewModel
     {
         if (_isInternalUpdate) return;
 
+        if (!IsPageVisible)
+        {
+            _isDataDirty = true;
+            return;
+        }
+
         RunOnMainThread(async () =>
         {
             var tasks = await _taskService.GetCompletedTasksAsync();
@@ -359,15 +472,35 @@ public class HistoryViewModel : BaseViewModel
 
     public void ApplyFilterAndGrouping()
     {
+        var (count, newGroups) = ComputeFilteredGroups(_selectedFilter, _isSortDescending, _searchText, _rawCompletedTasks);
+        CompletedTasksCount = count;
+
+        RunOnMainThread(() =>
+        {
+            GroupedTasks.Clear();
+            foreach (var item in newGroups)
+            {
+                GroupedTasks.Add(item);
+            }
+            NotifyStateProperties();
+        });
+    }
+
+    private (int Count, List<HistoryGroupItem> Groups) ComputeFilteredGroups(
+        HistoryFilterType filter,
+        bool isSortDescending,
+        string searchText,
+        List<TaskItem> sourceTasks)
+    {
         DateTime today = DateTime.Today;
         DateTime mondayOfWeek = WeekViewModel.GetMondayOfWeek(today);
         DateTime sundayOfWeek = mondayOfWeek.AddDays(6);
 
         // 1. Lọc theo thời gian (Filter by Period)
-        IEnumerable<TaskItem> filtered = _rawCompletedTasks.Where(t =>
+        IEnumerable<TaskItem> filtered = sourceTasks.Where(t =>
         {
             DateTime itemDate = (t.CompletedAt ?? t.DueDate).Date;
-            return _selectedFilter switch
+            return filter switch
             {
                 HistoryFilterType.Today => itemDate == today,
                 HistoryFilterType.ThisWeek => itemDate >= mondayOfWeek && itemDate <= sundayOfWeek,
@@ -376,20 +509,20 @@ public class HistoryViewModel : BaseViewModel
             };
         });
 
-        // 2. Lọc theo từ khóa tìm kiếm (Filter by Search Keyword)
-        if (!string.IsNullOrWhiteSpace(_searchText))
+        // 2. Lọc theo từ khóa tìm kiếm (Tiêu đề hoặc Tên dự án)
+        if (!string.IsNullOrWhiteSpace(searchText))
         {
-            string keyword = _searchText.Trim();
+            string keyword = searchText.Trim();
             filtered = filtered.Where(t =>
                 (!string.IsNullOrEmpty(t.Title) && t.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
                 (!string.IsNullOrEmpty(t.ProjectName) && t.ProjectName.Contains(keyword, StringComparison.OrdinalIgnoreCase)));
         }
 
         var filteredList = filtered.ToList();
-        CompletedTasksCount = filteredList.Count;
+        int count = filteredList.Count;
 
         // 3. Sắp xếp theo ngày & giờ hoàn thành (Sort order)
-        filteredList = _isSortDescending
+        filteredList = isSortDescending
             ? filteredList.OrderByDescending(t => t.CompletedAt ?? t.DueDate).ThenByDescending(t => t.DueTime).ToList()
             : filteredList.OrderBy(t => t.CompletedAt ?? t.DueDate).ThenBy(t => t.DueTime).ToList();
 
@@ -397,18 +530,18 @@ public class HistoryViewModel : BaseViewModel
         var groups = filteredList
             .GroupBy(t => (t.CompletedAt ?? t.DueDate).Date);
 
-        groups = _isSortDescending
+        groups = isSortDescending
             ? groups.OrderByDescending(g => g.Key)
             : groups.OrderBy(g => g.Key);
 
-        GroupedTasks.Clear();
+        var newGroups = new List<HistoryGroupItem>();
+        bool isEn = _localizationService?.CurrentLanguage == AppLanguage.English;
+
         foreach (var group in groups)
         {
             DateTime date = group.Key;
             string title;
             string subtitle;
-
-            bool isEn = _localizationService?.CurrentLanguage == AppLanguage.English;
 
             if (date == today)
             {
@@ -434,10 +567,10 @@ public class HistoryViewModel : BaseViewModel
                 }
             }
 
-            GroupedTasks.Add(new HistoryGroupItem(date, title, subtitle, group));
+            newGroups.Add(new HistoryGroupItem(date, title, subtitle, group));
         }
 
-        NotifyStateProperties();
+        return (count, newGroups);
     }
 
     private string FormatVietnameseDateTitle(DateTime date)

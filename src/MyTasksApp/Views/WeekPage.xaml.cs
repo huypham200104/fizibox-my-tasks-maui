@@ -59,6 +59,7 @@ public partial class WeekPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        _viewModel.IsPageVisible = true;
 
         if (_viewModel.IsBusy)
         {
@@ -72,6 +73,7 @@ public partial class WeekPage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+        _viewModel.IsPageVisible = false;
         StopSkeletonPulseAnimation();
     }
 

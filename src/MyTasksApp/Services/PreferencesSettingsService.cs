@@ -71,8 +71,12 @@ public class PreferencesSettingsService : ISettingsService
         SettingsChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    private static ResourceDictionary? _activeThemeDictionary;
+
     public void SetTheme(AppThemeMode theme)
     {
+        if (_currentTheme == theme) return;
+
         _currentTheme = theme;
         SetPreference(KeyTheme, (int)theme);
         ApplyThemeResources(theme);
@@ -141,61 +145,82 @@ public class PreferencesSettingsService : ISettingsService
             var res = Application.Current.Resources;
             if (res == null) return;
 
+            var targetTheme = theme == AppThemeMode.Dark ? AppTheme.Dark : AppTheme.Light;
+            if (Application.Current.UserAppTheme != targetTheme)
+            {
+                Application.Current.UserAppTheme = targetTheme;
+            }
+
+            var newDict = new ResourceDictionary();
             if (theme == AppThemeMode.Dark)
             {
-                Application.Current.UserAppTheme = AppTheme.Dark;
-
                 // Cập nhật DynamicResource sang Dark Palette
-                res["Background"] = Color.FromArgb("#0F172A");
-                res["Surface"] = Color.FromArgb("#1E293B");
-                res["SurfaceVariant"] = Color.FromArgb("#334155");
-                res["BorderColor"] = Color.FromArgb("#334155");
-                res["TextPrimary"] = Color.FromArgb("#F8FAFC");
-                res["TextSecondary"] = Color.FromArgb("#94A3B8");
-                res["TextMuted"] = Color.FromArgb("#64748B");
-                res["Primary"] = Color.FromArgb("#6366F1");
-                res["PrimaryVariant"] = Color.FromArgb("#818CF8");
-                res["PrimaryLight"] = Color.FromArgb("#1E1B4B");
-                res["PrimaryLightDark"] = Color.FromArgb("#1E1B4B");
-                res["ProgressTrack"] = Color.FromArgb("#312E81");
-                res["ProgressFill"] = Color.FromArgb("#6366F1");
-                res["Danger"] = Color.FromArgb("#EF4444");
-                res["DangerSurface"] = Color.FromArgb("#450A0A");
-                res["Warning"] = Color.FromArgb("#F59E0B");
-                res["WarningSurface"] = Color.FromArgb("#451A03");
-                res["Success"] = Color.FromArgb("#22C55E");
-                res["SuccessSurface"] = Color.FromArgb("#052E16");
-                res["SnackbarBg"] = Color.FromArgb("#020617");
-                res["SnackbarUndoBg"] = Color.FromArgb("#1E1B4B");
-                res["SnackbarUndoText"] = Color.FromArgb("#818CF8");
+                newDict["Background"] = Color.FromArgb("#0F172A");
+                newDict["Surface"] = Color.FromArgb("#1E293B");
+                newDict["SurfaceVariant"] = Color.FromArgb("#334155");
+                newDict["BorderColor"] = Color.FromArgb("#334155");
+                newDict["TextPrimary"] = Color.FromArgb("#F8FAFC");
+                newDict["TextSecondary"] = Color.FromArgb("#94A3B8");
+                newDict["TextMuted"] = Color.FromArgb("#64748B");
+                newDict["Primary"] = Color.FromArgb("#6366F1");
+                newDict["PrimaryVariant"] = Color.FromArgb("#818CF8");
+                newDict["PrimaryLight"] = Color.FromArgb("#1E1B4B");
+                newDict["PrimaryLightDark"] = Color.FromArgb("#1E1B4B");
+                newDict["ProgressTrack"] = Color.FromArgb("#312E81");
+                newDict["ProgressFill"] = Color.FromArgb("#6366F1");
+                newDict["Danger"] = Color.FromArgb("#EF4444");
+                newDict["DangerSurface"] = Color.FromArgb("#450A0A");
+                newDict["Warning"] = Color.FromArgb("#F59E0B");
+                newDict["WarningSurface"] = Color.FromArgb("#451A03");
+                newDict["Success"] = Color.FromArgb("#22C55E");
+                newDict["SuccessSurface"] = Color.FromArgb("#052E16");
+                newDict["SnackbarBg"] = Color.FromArgb("#020617");
+                newDict["SnackbarUndoBg"] = Color.FromArgb("#1E1B4B");
+                newDict["SnackbarUndoText"] = Color.FromArgb("#818CF8");
             }
             else
             {
-                Application.Current.UserAppTheme = AppTheme.Light;
-
                 // Cập nhật DynamicResource sang Light Palette
-                res["Background"] = Color.FromArgb("#F8FAFC");
-                res["Surface"] = Color.FromArgb("#FFFFFF");
-                res["SurfaceVariant"] = Color.FromArgb("#F1F5F9");
-                res["BorderColor"] = Color.FromArgb("#E2E8F0");
-                res["TextPrimary"] = Color.FromArgb("#0F172A");
-                res["TextSecondary"] = Color.FromArgb("#475569");
-                res["TextMuted"] = Color.FromArgb("#94A3B8");
-                res["Primary"] = Color.FromArgb("#4F46E5");
-                res["PrimaryVariant"] = Color.FromArgb("#4338CA");
-                res["PrimaryLight"] = Color.FromArgb("#EEF2FF");
-                res["PrimaryLightDark"] = Color.FromArgb("#EEF2FF");
-                res["ProgressTrack"] = Color.FromArgb("#E0E7FF");
-                res["ProgressFill"] = Color.FromArgb("#4F46E5");
-                res["Danger"] = Color.FromArgb("#DC2626");
-                res["DangerSurface"] = Color.FromArgb("#FEF2F2");
-                res["Warning"] = Color.FromArgb("#D97706");
-                res["WarningSurface"] = Color.FromArgb("#FFFBEB");
-                res["Success"] = Color.FromArgb("#16A34A");
-                res["SuccessSurface"] = Color.FromArgb("#F0FDF4");
-                res["SnackbarBg"] = Color.FromArgb("#FFFFFF");
-                res["SnackbarUndoBg"] = Color.FromArgb("#EEF2FF");
-                res["SnackbarUndoText"] = Color.FromArgb("#4F46E5");
+                newDict["Background"] = Color.FromArgb("#F8FAFC");
+                newDict["Surface"] = Color.FromArgb("#FFFFFF");
+                newDict["SurfaceVariant"] = Color.FromArgb("#F1F5F9");
+                newDict["BorderColor"] = Color.FromArgb("#E2E8F0");
+                newDict["TextPrimary"] = Color.FromArgb("#0F172A");
+                newDict["TextSecondary"] = Color.FromArgb("#475569");
+                newDict["TextMuted"] = Color.FromArgb("#94A3B8");
+                newDict["Primary"] = Color.FromArgb("#4F46E5");
+                newDict["PrimaryVariant"] = Color.FromArgb("#4338CA");
+                newDict["PrimaryLight"] = Color.FromArgb("#EEF2FF");
+                newDict["PrimaryLightDark"] = Color.FromArgb("#EEF2FF");
+                newDict["ProgressTrack"] = Color.FromArgb("#E0E7FF");
+                newDict["ProgressFill"] = Color.FromArgb("#4F46E5");
+                newDict["Danger"] = Color.FromArgb("#DC2626");
+                newDict["DangerSurface"] = Color.FromArgb("#FEF2F2");
+                newDict["Warning"] = Color.FromArgb("#D97706");
+                newDict["WarningSurface"] = Color.FromArgb("#FFFBEB");
+                newDict["Success"] = Color.FromArgb("#16A34A");
+                newDict["SuccessSurface"] = Color.FromArgb("#F0FDF4");
+                newDict["SnackbarBg"] = Color.FromArgb("#FFFFFF");
+                newDict["SnackbarUndoBg"] = Color.FromArgb("#EEF2FF");
+                newDict["SnackbarUndoText"] = Color.FromArgb("#4F46E5");
+            }
+
+            // Gộp tất cả token vào ResourceDictionary riêng biệt và hoán đổi trong MergedDictionaries 
+            // để kích hoạt làm mới giao diện trong 1 lượt duy nhất thay vì 22 lần riêng lẻ
+            if (_activeThemeDictionary != null)
+            {
+                res.MergedDictionaries.Remove(_activeThemeDictionary);
+            }
+            _activeThemeDictionary = newDict;
+            res.MergedDictionaries.Add(_activeThemeDictionary);
+
+            // Xóa các key bị lưu đè ở root dictionary nếu có từ trước
+            foreach (var key in newDict.Keys)
+            {
+                if (key is string strKey && res.ContainsKey(strKey))
+                {
+                    try { res.Remove(strKey); } catch { }
+                }
             }
         });
     }

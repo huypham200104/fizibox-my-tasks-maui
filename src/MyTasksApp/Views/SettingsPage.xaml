@@ -11,10 +11,55 @@
              BackgroundColor="{DynamicResource Background}">
 
     <Grid>
+        <!-- SKELETON LOADING PLACEHOLDER (IsVisible="{Binding IsBusy}") -->
+        <ScrollView IsVisible="{Binding IsBusy}" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout x:Name="SkeletonContainer" Spacing="22" Padding="20,16,20,80">
+                <!-- Header skeleton -->
+                <VerticalStackLayout Spacing="8" Margin="0,4,0,4">
+                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 6"
+                            HeightRequest="28"
+                            WidthRequest="140"
+                            HorizontalOptions="Start" />
+                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 6"
+                            HeightRequest="16"
+                            WidthRequest="220"
+                            HorizontalOptions="Start" />
+                </VerticalStackLayout>
+
+                <!-- Section Appearance skeleton -->
+                <Border BackgroundColor="{DynamicResource Surface}"
+                        Stroke="{DynamicResource BorderColor}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16"
+                        HeightRequest="160" />
+
+                <!-- Section General skeleton -->
+                <Border BackgroundColor="{DynamicResource Surface}"
+                        Stroke="{DynamicResource BorderColor}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16"
+                        HeightRequest="180" />
+
+                <!-- Section Data skeleton -->
+                <Border BackgroundColor="{DynamicResource Surface}"
+                        Stroke="{DynamicResource BorderColor}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16"
+                        HeightRequest="120" />
+            </VerticalStackLayout>
+        </ScrollView>
+
         <!-- ============================================================= -->
         <!-- NỘI DUNG CHÍNH CUỘN MÀN HÌNH                                  -->
         <!-- ============================================================= -->
-        <ScrollView VerticalScrollBarVisibility="Never">
+        <ScrollView IsVisible="{Binding IsNotBusy}" VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Spacing="22" Padding="20,16,20,80">
 
                 <!-- ============================================================= -->
@@ -54,9 +99,6 @@
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 16"
                             Padding="16">
-                        <Border.Shadow>
-                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.04" />
-                        </Border.Shadow>
                         <VerticalStackLayout Spacing="14">
 
                             <!-- Nhóm: Chế độ giao diện -->
@@ -293,9 +335,6 @@
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 16"
                             Padding="16">
-                        <Border.Shadow>
-                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.04" />
-                        </Border.Shadow>
                         <VerticalStackLayout Spacing="14">
                             <VerticalStackLayout Spacing="2">
                                 <Label Text="{Binding AppLanguageText}"
@@ -308,12 +347,12 @@
                                        TextColor="{DynamicResource TextSecondary}" />
                             </VerticalStackLayout>
 
-                            <!-- Bộ chọn 2 ngôn ngữ có cờ (Touch Target >= 48dp, Bố cục 2 tầng chống tràn chữ) -->
-                            <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                            <!-- Bộ chọn 2 ngôn ngữ có cờ (Bố cục 1 dòng [Cờ] [Tên] [Dấu tích] chuẩn Responsive) -->
+                            <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
                                 <!-- Tiếng Việt -->
                                 <Border StrokeShape="RoundRectangle 12"
-                                        HeightRequest="68"
-                                        Padding="12,10"
+                                        HeightRequest="52"
+                                        Padding="8,6"
                                         Stroke="{Binding LangVietnameseBorder}"
                                         StrokeThickness="{Binding LangVietnameseBorderThickness}"
                                         BackgroundColor="{Binding LangVietnameseBackground}"
@@ -322,45 +361,44 @@
                                         <TapGestureRecognizer Tapped="OnCardTapped" Command="{Binding SelectLanguageCommand}" CommandParameter="Vietnamese" />
                                     </Border.GestureRecognizers>
 
-                                    <Grid RowDefinitions="Auto, *" RowSpacing="6">
-                                        <!-- Tầng 1: Cờ quốc gia bên trái + Dấu tích bên phải -->
-                                        <Grid Grid.Row="0" ColumnDefinitions="Auto, *">
-                                            <Label Text="🇻🇳" FontSize="20" VerticalOptions="Center" />
-                                            <Border Grid.Column="1"
-                                                    WidthRequest="20"
-                                                    HeightRequest="20"
-                                                    StrokeShape="RoundRectangle 10"
-                                                    BackgroundColor="{DynamicResource Primary}"
-                                                    StrokeThickness="0"
-                                                    IsVisible="{Binding IsVietnamese}"
-                                                    HorizontalOptions="End"
-                                                    VerticalOptions="Center">
-                                                <fluent:SymbolIcon Symbol="Checkmark"
-                                                                   FontSize="11"
-                                                                   ForegroundColor="White"
-                                                                   HorizontalOptions="Center"
-                                                                   VerticalOptions="Center" />
-                                            </Border>
-                                        </Grid>
+                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="4" VerticalOptions="Center">
+                                        <!-- Cờ quốc gia -->
+                                        <Label Grid.Column="0" Text="🇻🇳" FontSize="16" VerticalOptions="Center" />
 
-                                        <!-- Tầng 2: Tên ngôn ngữ chiếm trọn bề ngang thẻ -->
-                                        <Label Grid.Row="1"
+                                        <!-- Tên ngôn ngữ -->
+                                        <Label Grid.Column="1"
                                                Text="{Binding LangVietnamese}"
                                                FontFamily="InterSemiBold"
-                                               FontSize="14"
+                                               FontSize="12"
                                                TextColor="{Binding LangVietnameseTextColor}"
-                                               VerticalOptions="End"
+                                               VerticalOptions="Center"
                                                HorizontalOptions="Start"
-                                               MaxLines="1"
-                                               LineBreakMode="NoWrap" />
+                                               LineBreakMode="TailTruncation" />
+
+                                        <!-- Dấu tích chọn -->
+                                        <Border Grid.Column="2"
+                                                WidthRequest="18"
+                                                HeightRequest="18"
+                                                StrokeShape="RoundRectangle 9"
+                                                BackgroundColor="{DynamicResource Primary}"
+                                                StrokeThickness="0"
+                                                IsVisible="{Binding IsVietnamese}"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="Center">
+                                            <fluent:SymbolIcon Symbol="Checkmark"
+                                                               FontSize="10"
+                                                               ForegroundColor="White"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center" />
+                                        </Border>
                                     </Grid>
                                 </Border>
 
                                 <!-- English -->
                                 <Border Grid.Column="1"
                                         StrokeShape="RoundRectangle 12"
-                                        HeightRequest="68"
-                                        Padding="12,10"
+                                        HeightRequest="52"
+                                        Padding="8,6"
                                         Stroke="{Binding LangEnglishBorder}"
                                         StrokeThickness="{Binding LangEnglishBorderThickness}"
                                         BackgroundColor="{Binding LangEnglishBackground}"
@@ -369,37 +407,36 @@
                                         <TapGestureRecognizer Tapped="OnCardTapped" Command="{Binding SelectLanguageCommand}" CommandParameter="English" />
                                     </Border.GestureRecognizers>
 
-                                    <Grid RowDefinitions="Auto, *" RowSpacing="6">
-                                        <!-- Tầng 1: Cờ quốc gia bên trái + Dấu tích bên phải -->
-                                        <Grid Grid.Row="0" ColumnDefinitions="Auto, *">
-                                            <Label Text="🇬🇧" FontSize="20" VerticalOptions="Center" />
-                                            <Border Grid.Column="1"
-                                                    WidthRequest="20"
-                                                    HeightRequest="20"
-                                                    StrokeShape="RoundRectangle 10"
-                                                    BackgroundColor="{DynamicResource Primary}"
-                                                    StrokeThickness="0"
-                                                    IsVisible="{Binding IsEnglish}"
-                                                    HorizontalOptions="End"
-                                                    VerticalOptions="Center">
-                                                <fluent:SymbolIcon Symbol="Checkmark"
-                                                                   FontSize="11"
-                                                                   ForegroundColor="White"
-                                                                   HorizontalOptions="Center"
-                                                                   VerticalOptions="Center" />
-                                            </Border>
-                                        </Grid>
+                                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="4" VerticalOptions="Center">
+                                        <!-- Cờ quốc gia -->
+                                        <Label Grid.Column="0" Text="🇬🇧" FontSize="16" VerticalOptions="Center" />
 
-                                        <!-- Tầng 2: Tên ngôn ngữ chiếm trọn bề ngang thẻ -->
-                                        <Label Grid.Row="1"
+                                        <!-- Tên ngôn ngữ -->
+                                        <Label Grid.Column="1"
                                                Text="{Binding LangEnglish}"
                                                FontFamily="InterSemiBold"
-                                               FontSize="14"
+                                               FontSize="12"
                                                TextColor="{Binding LangEnglishTextColor}"
-                                               VerticalOptions="End"
+                                               VerticalOptions="Center"
                                                HorizontalOptions="Start"
-                                               MaxLines="1"
-                                               LineBreakMode="NoWrap" />
+                                               LineBreakMode="TailTruncation" />
+
+                                        <!-- Dấu tích chọn -->
+                                        <Border Grid.Column="2"
+                                                WidthRequest="18"
+                                                HeightRequest="18"
+                                                StrokeShape="RoundRectangle 9"
+                                                BackgroundColor="{DynamicResource Primary}"
+                                                StrokeThickness="0"
+                                                IsVisible="{Binding IsEnglish}"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="Center">
+                                            <fluent:SymbolIcon Symbol="Checkmark"
+                                                               FontSize="10"
+                                                               ForegroundColor="White"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center" />
+                                        </Border>
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -437,9 +474,6 @@
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 16"
                             Padding="16,8">
-                        <Border.Shadow>
-                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.04" />
-                        </Border.Shadow>
                         <VerticalStackLayout Spacing="0">
 
                             <!-- Hàng 1: Trạng thái đang tải -->
@@ -681,9 +715,6 @@
                             StrokeThickness="1"
                             StrokeShape="RoundRectangle 16"
                             Padding="16">
-                        <Border.Shadow>
-                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.04" />
-                        </Border.Shadow>
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="14" VerticalOptions="Center">
                             <!-- Logo bo góc vuông mềm (Squircle) chuẩn thương hiệu với clip hình học -->
                             <Border WidthRequest="46"
@@ -694,12 +725,6 @@
                                     BackgroundColor="{DynamicResource Surface}"
                                     Padding="3"
                                     VerticalOptions="Center">
-                                <Border.Shadow>
-                                    <Shadow Brush="Black"
-                                            Offset="0,1"
-                                            Radius="4"
-                                            Opacity="0.08" />
-                                </Border.Shadow>
                                 <Image Source="logo.png"
                                        Aspect="AspectFill"
                                        WidthRequest="38"

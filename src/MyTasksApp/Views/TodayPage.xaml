@@ -144,22 +144,122 @@
                     </Border>
 
                     <!-- 4. SKELETON SHIMMER LOADING -->
-                    <VerticalStackLayout IsVisible="{Binding IsBusy}" Spacing="12">
-                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                    <VerticalStackLayout x:Name="SkeletonContainer" IsVisible="{Binding IsBusy}" Spacing="12">
+                        <!-- Thẻ Skeleton mẫu 1 -->
+                        <Border BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"
-                                StrokeThickness="0"
-                                HeightRequest="72"
-                                Opacity="0.6" />
-                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                Padding="14,12">
+                            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                                <!-- Placeholder Checkbox tròn -->
+                                <Border WidthRequest="24"
+                                        HeightRequest="24"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{DynamicResource SurfaceVariant}"
+                                        StrokeThickness="0"
+                                        VerticalOptions="Start"
+                                        Margin="6,4,6,0" />
+
+                                <!-- Nội dung task skeleton 2 tầng (AGENTS.md Quy chuẩn 6) -->
+                                <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="180"
+                                            HorizontalOptions="Start" />
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 6"
+                                                HeightRequest="14"
+                                                WidthRequest="80" />
+                                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 6"
+                                                HeightRequest="14"
+                                                WidthRequest="60" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+
+                        <!-- Thẻ Skeleton mẫu 2 -->
+                        <Border BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"
-                                StrokeThickness="0"
-                                HeightRequest="72"
-                                Opacity="0.6" />
-                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                Padding="14,12">
+                            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                                <Border WidthRequest="24"
+                                        HeightRequest="24"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{DynamicResource SurfaceVariant}"
+                                        StrokeThickness="0"
+                                        VerticalOptions="Start"
+                                        Margin="6,4,6,0" />
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="220"
+                                            HorizontalOptions="Start" />
+                                <HorizontalStackLayout Spacing="8">
+                                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 6"
+                                                HeightRequest="14"
+                                                WidthRequest="100" />
+                                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 6"
+                                                HeightRequest="14"
+                                                WidthRequest="50" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+
+                        <!-- Thẻ Skeleton mẫu 3 -->
+                        <Border BackgroundColor="{DynamicResource Surface}"
+                                Stroke="{DynamicResource BorderColor}"
+                                StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"
-                                StrokeThickness="0"
-                                HeightRequest="72"
-                                Opacity="0.6" />
+                                Padding="14,12">
+                            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                                <Border WidthRequest="24"
+                                        HeightRequest="24"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{DynamicResource SurfaceVariant}"
+                                        StrokeThickness="0"
+                                        VerticalOptions="Start"
+                                        Margin="6,4,6,0" />
+
+                                <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 6"
+                                            HeightRequest="14"
+                                            WidthRequest="150"
+                                            HorizontalOptions="Start" />
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 6"
+                                                HeightRequest="14"
+                                                WidthRequest="70" />
+                                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 6"
+                                                HeightRequest="14"
+                                                WidthRequest="65" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
                     </VerticalStackLayout>
 
                     <!-- 5. EMPTY STATE (ĐỒNG BỘ QUA CONTROL DÙNG CHUNG) -->

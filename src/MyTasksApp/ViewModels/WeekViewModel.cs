@@ -34,6 +34,8 @@ public class WeekViewModel : BaseViewModel
     private bool _isRefreshing;
     private bool _isInternalUpdate;
     private bool _isDataLoaded;
+    private bool _isDataDirty;
+    public bool IsPageVisible { get; set; }
 
     // Modal tạo việc nhanh
     private bool _isCreateModalVisible;
@@ -307,7 +309,15 @@ public class WeekViewModel : BaseViewModel
 
     public async Task EnsureDataLoadedAsync()
     {
-        if (_isDataLoaded) return;
+        if (_isDataLoaded)
+        {
+            if (_isDataDirty)
+            {
+                _isDataDirty = false;
+                await RefreshWeekDaysAndTasksAsync();
+            }
+            return;
+        }
         await ExecuteLoadWeekDataAsync();
     }
 
@@ -756,15 +766,45 @@ public class WeekViewModel : BaseViewModel
             Status = TaskStatus.Pending
         };
 
+        // Đóng modal tạo việc
         IsCreateModalVisible = false;
 
-        bool success = await _taskService.AddTaskAsync(newTask);
-        if (success)
+        // Optimistic UI cho WeekPage: Thêm trực tiếp thẻ công việc 0ms
+        _isInternalUpdate = true;
+        try
         {
+            if (newTask.DueDate.Date == SelectedDate.Date)
+            {
+                DayTasks.Add(newTask);
+                UpdateDayProgressMetrics();
+            }
+
+            var dayItem = WeekDays.FirstOrDefault(d => d.Date.Date == newTask.DueDate.Date);
+            if (dayItem != null)
+            {
+                dayItem.TaskCount++;
+            }
+
             string createSuccess = _localizationService?["SnackbarTaskCreated"] ?? "Đã tạo công việc mới thành công";
             ShowSnackbar(createSuccess, canUndo: false);
-            // Cập nhật lại tuần để badge của ngày mới tạo tăng lên
-            await RefreshWeekDaysAndTasksAsync();
+
+            bool success = await _taskService.AddTaskAsync(newTask);
+            if (!success)
+            {
+                if (newTask.DueDate.Date == SelectedDate.Date)
+                {
+                    DayTasks.Remove(newTask);
+                    UpdateDayProgressMetrics();
+                }
+                if (dayItem != null && dayItem.TaskCount > 0)
+                {
+                    dayItem.TaskCount--;
+                }
+            }
+        }
+        finally
+        {
+            _isInternalUpdate = false;
         }
     }
 
@@ -827,6 +867,12 @@ public class WeekViewModel : BaseViewModel
     private void OnTasksChanged(object? sender, EventArgs e)
     {
         if (_isInternalUpdate) return;
+
+        if (!IsPageVisible)
+        {
+            _isDataDirty = true;
+            return;
+        }
 
         RunOnMainThread(async () =>
         {

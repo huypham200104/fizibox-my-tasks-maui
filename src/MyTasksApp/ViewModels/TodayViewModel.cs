@@ -31,6 +31,8 @@ public class TodayViewModel : BaseViewModel
     private bool _isRefreshing;
     private bool _isInternalUpdate;
     private bool _isDataLoaded;
+    private bool _isDataDirty;
+    public bool IsPageVisible { get; set; } = true;
 
     // Quản lý Modal tạo việc nhanh (Bottom Sheet)
     private bool _isCreateModalVisible;
@@ -260,9 +262,20 @@ public class TodayViewModel : BaseViewModel
         });
     }
 
+    public const int SkeletonMinTransitionDelayMs = 250;
+
     public async Task EnsureDataLoadedAsync()
     {
-        if (_isDataLoaded) return;
+        if (_isDataLoaded)
+        {
+            if (_isDataDirty)
+            {
+                _isDataDirty = false;
+                var tasks = await _taskService.GetTodayTasksAsync();
+                OrganizeTasks(tasks);
+            }
+            return;
+        }
         await ExecuteLoadTasksAsync();
     }
 
@@ -275,10 +288,12 @@ public class TodayViewModel : BaseViewModel
             IsBusy = true;
             OnPropertyChanged(nameof(IsEmpty));
 
+            var delayTask = Task.Delay(SkeletonMinTransitionDelayMs);
             UpdateDateText();
             var tasks = await _taskService.GetTodayTasksAsync();
             OrganizeTasks(tasks);
             _isDataLoaded = true;
+            await delayTask;
         }
         finally
         {
@@ -500,15 +515,39 @@ public class TodayViewModel : BaseViewModel
             Status = TaskStatus.Pending
         };
 
+        // 1. Đóng modal tạo việc ngay lập tức
         IsCreateModalVisible = false;
 
-        bool success = await _taskService.AddTaskAsync(newTask);
-        if (success)
+        // 2. Optimistic UI: Cập nhật giao diện tức thì 0ms, không xóa dựng lại danh sách cũ
+        _isInternalUpdate = true;
+        try
         {
+            DateTime today = DateTime.Today;
+            if (newTask.DueDate.Date < today)
+            {
+                OverdueTasks.Add(newTask);
+            }
+            else
+            {
+                TodayTasks.Add(newTask);
+            }
+            UpdateProgressMetrics();
+
             string createSuccess = _localizationService?["SnackbarTaskCreated"] ?? "Đã tạo công việc mới thành công";
             ShowSnackbar(createSuccess, canUndo: false);
-            var tasks = await _taskService.GetTodayTasksAsync();
-            OrganizeTasks(tasks);
+
+            // 3. Lưu ngầm vào cơ sở dữ liệu
+            bool success = await _taskService.AddTaskAsync(newTask);
+            if (!success)
+            {
+                TodayTasks.Remove(newTask);
+                OverdueTasks.Remove(newTask);
+                UpdateProgressMetrics();
+            }
+        }
+        finally
+        {
+            _isInternalUpdate = false;
         }
     }
 
@@ -571,6 +610,12 @@ public class TodayViewModel : BaseViewModel
     private void OnTasksChanged(object? sender, EventArgs e)
     {
         if (_isInternalUpdate) return;
+
+        if (!IsPageVisible)
+        {
+            _isDataDirty = true;
+            return;
+        }
 
         MainThread.BeginInvokeOnMainThread(async () =>
         {

@@ -6,8 +6,10 @@ namespace MyTasksApp.Views;
 public partial class TodayPage : ContentPage
 {
     private readonly TodayViewModel _viewModel;
+    private CancellationTokenSource? _pulseAnimationCts;
     private bool _isUpButtonVisible;
     private bool _isDownButtonVisible;
+    private bool _isScrollButtonUpdatePending;
 
     public TodayPage(TodayViewModel viewModel)
     {
@@ -44,18 +46,44 @@ public partial class TodayPage : ContentPage
                 Shell.SetTabBarIsVisible(this, true);
             }
         }
+        else if (e.PropertyName == nameof(TodayViewModel.IsBusy))
+        {
+            if (_viewModel.IsBusy)
+            {
+                StartSkeletonPulseAnimation();
+            }
+            else
+            {
+                StopSkeletonPulseAnimation();
+            }
+
+            if (!_isScrollButtonUpdatePending)
+            {
+                _isScrollButtonUpdatePending = true;
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Task.Delay(80);
+                    _isScrollButtonUpdatePending = false;
+                    UpdateScrollButtonsVisibility();
+                });
+            }
+        }
         else if (e.PropertyName == nameof(TodayViewModel.IsEmpty) ||
-                 e.PropertyName == nameof(TodayViewModel.IsBusy) ||
                  e.PropertyName == nameof(TodayViewModel.TotalTasksCount) ||
                  e.PropertyName == nameof(TodayViewModel.HasOverdueTasks) ||
                  e.PropertyName == nameof(TodayViewModel.HasTodayTasks) ||
                  e.PropertyName == nameof(TodayViewModel.HasCompletedTasks))
         {
-            MainThread.BeginInvokeOnMainThread(async () =>
+            if (!_isScrollButtonUpdatePending)
             {
-                await Task.Delay(60);
-                UpdateScrollButtonsVisibility();
-            });
+                _isScrollButtonUpdatePending = true;
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Task.Delay(80);
+                    _isScrollButtonUpdatePending = false;
+                    UpdateScrollButtonsVisibility();
+                });
+            }
         }
     }
 
@@ -156,10 +184,70 @@ public partial class TodayPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        _viewModel.IsPageVisible = true;
+
+        if (_viewModel.IsBusy)
+        {
+            StartSkeletonPulseAnimation();
+        }
+
         // Chỉ tải dữ liệu ban đầu 1 lần, chuyển tab không bị load lại gây lag/khựng nhịp (Điểm 6)
         await _viewModel.EnsureDataLoadedAsync();
         await Task.Delay(100);
         UpdateScrollButtonsVisibility();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _viewModel.IsPageVisible = false;
+        StopSkeletonPulseAnimation();
+    }
+
+    private void StartSkeletonPulseAnimation()
+    {
+        StopSkeletonPulseAnimation();
+        _pulseAnimationCts = new CancellationTokenSource();
+        var token = _pulseAnimationCts.Token;
+
+        _ = AnimateSkeletonPulseAsync(token);
+    }
+
+    private async Task AnimateSkeletonPulseAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested && _viewModel.IsBusy && SkeletonContainer != null)
+            {
+                await SkeletonContainer.FadeToAsync(0.5, 600, Easing.SinInOut);
+                if (token.IsCancellationRequested || !_viewModel.IsBusy) break;
+                await SkeletonContainer.FadeToAsync(1.0, 600, Easing.SinInOut);
+            }
+        }
+        catch
+        {
+            // Bỏ qua ngoại lệ hủy animation
+        }
+        finally
+        {
+            if (SkeletonContainer != null)
+            {
+                SkeletonContainer.Opacity = 1.0;
+            }
+        }
+    }
+
+    private void StopSkeletonPulseAnimation()
+    {
+        _pulseAnimationCts?.Cancel();
+        _pulseAnimationCts?.Dispose();
+        _pulseAnimationCts = null;
+
+        if (SkeletonContainer != null)
+        {
+            SkeletonContainer.CancelAnimations();
+            SkeletonContainer.Opacity = 1.0;
+        }
     }
 
     protected override bool OnBackButtonPressed()

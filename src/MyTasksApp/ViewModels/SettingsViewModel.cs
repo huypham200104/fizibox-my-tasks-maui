@@ -19,6 +19,25 @@ public class SettingsViewModel : BaseViewModel
     private readonly ILocalizationService _localizationService;
     private readonly ITaskService _taskService;
     private readonly ISnackbarService _snackbarService;
+    private bool _isDataLoaded;
+    public bool IsPageVisible { get; set; }
+
+    public const int SkeletonMinTransitionDelayMs = 150;
+
+    public async Task EnsurePageLoadedAsync()
+    {
+        if (_isDataLoaded) return;
+        try
+        {
+            IsBusy = true;
+            await Task.Delay(SkeletonMinTransitionDelayMs);
+            _isDataLoaded = true;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
     // Quản lý Snackbar thông báo phản hồi thao tác
     private bool _isSnackbarVisible;
@@ -292,21 +311,21 @@ public class SettingsViewModel : BaseViewModel
         });
     }
 
-    private void OnSelectTheme(string? theme)
+    private async void OnSelectTheme(string? theme)
     {
-        if (theme == "Dark")
-        {
-            _settingsService.SetTheme(AppThemeMode.Dark);
-            ShowSnackbar(_localizationService["FeedbackThemeDark"]);
-        }
-        else
-        {
-            _settingsService.SetTheme(AppThemeMode.Light);
-            ShowSnackbar(_localizationService["FeedbackThemeLight"]);
-        }
+        var targetTheme = theme == "Dark" ? AppThemeMode.Dark : AppThemeMode.Light;
+        if (_settingsService.CurrentTheme == targetTheme) return;
+
+        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà trước khi áp dụng tài nguyên
+        await Task.Delay(60);
+
+        _settingsService.SetTheme(targetTheme);
+        ShowSnackbar(targetTheme == AppThemeMode.Dark 
+            ? _localizationService["FeedbackThemeDark"] 
+            : _localizationService["FeedbackThemeLight"]);
     }
 
-    private void OnSelectFontSize(string? size)
+    private async void OnSelectFontSize(string? size)
     {
         var (targetSize, msgKey) = size switch
         {
@@ -315,13 +334,23 @@ public class SettingsViewModel : BaseViewModel
             _ => (AppFontSize.Normal, "FeedbackFontNormal")
         };
 
+        if (_settingsService.CurrentFontSize == targetSize) return;
+
+        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà
+        await Task.Delay(60);
+
         _settingsService.SetFontSize(targetSize);
         ShowSnackbar(_localizationService[msgKey]);
     }
 
-    private void OnSelectLanguage(string? lang)
+    private async void OnSelectLanguage(string? lang)
     {
         var targetLang = lang == "English" ? AppLanguage.English : AppLanguage.Vietnamese;
+        if (_settingsService.CurrentLanguage == targetLang) return;
+
+        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà
+        await Task.Delay(60);
+
         _settingsService.SetLanguage(targetLang);
         _localizationService.SetLanguage(targetLang);
         ShowSnackbar(targetLang == AppLanguage.English 
