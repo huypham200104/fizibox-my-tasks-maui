@@ -16,6 +16,7 @@ namespace MyTasksApp.ViewModels;
 public class WeekViewModel : BaseViewModel
 {
     private readonly ITaskService _taskService;
+    private readonly ILocalizationService? _localizationService;
     private readonly CultureInfo _viCulture = new("vi-VN");
 
     private DateTime _currentWeekStart;
@@ -188,9 +189,14 @@ public class WeekViewModel : BaseViewModel
     public AsyncRelayCommand SaveNewTaskCommand { get; }
     public RelayCommand DismissSnackbarCommand { get; }
 
-    public WeekViewModel(ITaskService taskService)
+    public string EmptyMessage => _localizationService?["WeekEmptyMessage"] ?? "Không có công việc";
+    public string EmptySubMessage => _localizationService?["WeekEmptySubMessage"] ?? "Ngày này chưa có công việc nào được lên lịch.";
+    public string AppSubtitle => _localizationService?["AppSubtitle"] ?? "Việc của tôi";
+
+    public WeekViewModel(ITaskService taskService, ILocalizationService? localizationService = null)
     {
         _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
+        _localizationService = localizationService;
         Title = "Tuần này";
 
         // Khởi tạo tuần chứa ngày hôm nay
@@ -202,14 +208,14 @@ public class WeekViewModel : BaseViewModel
         UpdateSelectedDayTitle();
 
         // Khởi tạo sẵn 7 ngày ngay từ constructor để UI binding lập tức, không bị trễ hay trống
-        string[] vietnameseDayNames = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
+        string[] dayNames = GetDayNames();
         for (int i = 0; i < 7; i++)
         {
             DateTime dayDate = _currentWeekStart.AddDays(i);
             WeekDays.Add(new WeekDayItem
             {
                 Date = dayDate,
-                DayOfWeekShort = vietnameseDayNames[i],
+                DayOfWeekShort = dayNames[i],
                 DayNumber = dayDate.Day.ToString(),
                 TaskCount = 0,
                 IsToday = dayDate.Date == today,
@@ -232,6 +238,37 @@ public class WeekViewModel : BaseViewModel
         DismissSnackbarCommand = new RelayCommand(ExecuteDismissSnackbar);
 
         _taskService.TasksChanged += OnTasksChanged;
+
+        if (_localizationService != null)
+        {
+            _localizationService.LanguageChanged += OnLanguageChanged;
+        }
+    }
+
+    private string[] GetDayNames()
+    {
+        if (_localizationService?.CurrentLanguage == AppLanguage.English)
+        {
+            return new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+        }
+        return new[] { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            UpdateWeekRangeText();
+            UpdateSelectedDayTitle();
+            string[] dayNames = GetDayNames();
+            for (int i = 0; i < WeekDays.Count && i < dayNames.Length; i++)
+            {
+                WeekDays[i].DayOfWeekShort = dayNames[i];
+            }
+            OnPropertyChanged(nameof(EmptyMessage));
+            OnPropertyChanged(nameof(EmptySubMessage));
+            OnPropertyChanged(nameof(AppSubtitle));
+        });
     }
 
     public async Task EnsureDataLoadedAsync()
@@ -249,30 +286,51 @@ public class WeekViewModel : BaseViewModel
     private void UpdateWeekRangeText()
     {
         DateTime endOfWeek = _currentWeekStart.AddDays(6);
-        if (_currentWeekStart.Month == endOfWeek.Month)
+        if (_localizationService?.CurrentLanguage == AppLanguage.English)
         {
-            WeekRangeText = $"{_currentWeekStart.Day} – {endOfWeek.Day} Tháng {_currentWeekStart.Month}, {_currentWeekStart.Year}";
-        }
-        else if (_currentWeekStart.Year == endOfWeek.Year)
-        {
-            WeekRangeText = $"{_currentWeekStart.Day} Thg {_currentWeekStart.Month} – {endOfWeek.Day} Thg {endOfWeek.Month}, {endOfWeek.Year}";
+            if (_currentWeekStart.Month == endOfWeek.Month)
+            {
+                WeekRangeText = $"{_currentWeekStart.ToString("MMM d", CultureInfo.InvariantCulture)} – {endOfWeek.Day}, {_currentWeekStart.Year}";
+            }
+            else
+            {
+                WeekRangeText = $"{_currentWeekStart.ToString("MMM d", CultureInfo.InvariantCulture)} – {endOfWeek.ToString("MMM d", CultureInfo.InvariantCulture)}, {endOfWeek.Year}";
+            }
         }
         else
         {
-            WeekRangeText = $"{_currentWeekStart:dd/MM/yyyy} – {endOfWeek:dd/MM/yyyy}";
+            if (_currentWeekStart.Month == endOfWeek.Month)
+            {
+                WeekRangeText = $"{_currentWeekStart.Day} – {endOfWeek.Day} Tháng {_currentWeekStart.Month}, {_currentWeekStart.Year}";
+            }
+            else if (_currentWeekStart.Year == endOfWeek.Year)
+            {
+                WeekRangeText = $"{_currentWeekStart.Day} Thg {_currentWeekStart.Month} – {endOfWeek.Day} Thg {endOfWeek.Month}, {endOfWeek.Year}";
+            }
+            else
+            {
+                WeekRangeText = $"{_currentWeekStart:dd/MM/yyyy} – {endOfWeek:dd/MM/yyyy}";
+            }
         }
     }
 
     private void UpdateSelectedDayTitle()
     {
-        string raw = _selectedDate.ToString("dddd, dd 'tháng' MM", _viCulture);
-        if (!string.IsNullOrEmpty(raw))
+        if (_localizationService?.CurrentLanguage == AppLanguage.English)
         {
-            SelectedDayTitle = char.ToUpper(raw[0], _viCulture) + raw[1..];
+            SelectedDayTitle = _selectedDate.ToString("dddd, MMM d", CultureInfo.InvariantCulture);
         }
         else
         {
-            SelectedDayTitle = _selectedDate.ToString("dd/MM/yyyy");
+            string raw = _selectedDate.ToString("dddd, dd 'tháng' MM", _viCulture);
+            if (!string.IsNullOrEmpty(raw))
+            {
+                SelectedDayTitle = char.ToUpper(raw[0], _viCulture) + raw[1..];
+            }
+            else
+            {
+                SelectedDayTitle = _selectedDate.ToString("dd/MM/yyyy");
+            }
         }
     }
 
@@ -315,7 +373,7 @@ public class WeekViewModel : BaseViewModel
         UpdateSelectedDayTitle();
 
         DateTime today = DateTime.Today;
-        string[] vietnameseDayNames = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
+        string[] dayNames = GetDayNames();
 
         bool needInit = WeekDays.Count != 7;
         var initialList = needInit ? new List<WeekDayItem>() : null;
@@ -330,7 +388,7 @@ public class WeekViewModel : BaseViewModel
                 initialList!.Add(new WeekDayItem
                 {
                     Date = dayDate,
-                    DayOfWeekShort = vietnameseDayNames[i],
+                    DayOfWeekShort = dayNames[i],
                     DayNumber = dayDate.Day.ToString(),
                     TaskCount = tasksForDay.Count,
                     IsToday = dayDate.Date == today,
@@ -341,7 +399,7 @@ public class WeekViewModel : BaseViewModel
             {
                 var day = WeekDays[i];
                 day.Date = dayDate;
-                day.DayOfWeekShort = vietnameseDayNames[i];
+                day.DayOfWeekShort = dayNames[i];
                 day.DayNumber = dayDate.Day.ToString();
                 day.TaskCount = tasksForDay.Count;
                 day.IsToday = dayDate.Date == today;

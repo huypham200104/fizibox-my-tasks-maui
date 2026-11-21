@@ -27,17 +27,22 @@ public static class MauiProgram
 
 		// Đăng ký Services (Sử dụng NoSQL LiteDB lưu trữ dữ liệu vĩnh viễn và đồng bộ realtime)
 		builder.Services.AddSingleton<ITaskService, LiteDbTaskService>();
+		builder.Services.AddSingleton<ISettingsService, PreferencesSettingsService>();
+		builder.Services.AddSingleton<ILocalizationService, LocalizationService>();
 
 		// Đăng ký ViewModels
 		builder.Services.AddSingleton<TodayViewModel>();
 		builder.Services.AddSingleton<WeekViewModel>();
+		builder.Services.AddSingleton<SettingsViewModel>();
 
-		// Đăng ký Views (Singleton cho các tab chính giúp chuyển tab tức thì 0ms, không lag/khựng)
+		// Đăng ký AppShell & Views (Singleton cho các tab chính giúp chuyển tab tức thì 0ms, không lag/khựng)
+		builder.Services.AddSingleton<AppShell>();
 		builder.Services.AddSingleton<TodayPage>();
 		builder.Services.AddSingleton<WeekPage>();
 		builder.Services.AddSingleton<HistoryPage>();
 		builder.Services.AddSingleton<SettingsPage>();
 		builder.Services.AddTransient<TaskDetailPage>();
+		builder.Services.AddTransient<MockStatePreviewPage>();
 
 #if DEBUG
 		builder.Logging.AddDebug();

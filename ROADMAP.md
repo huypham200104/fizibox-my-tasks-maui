@@ -28,8 +28,8 @@ Tài liệu theo dõi tiến độ thực hiện các tính năng của ứng d�
   - [x] Xây dựng `BaseViewModel` quản lý `IsBusy`, `Title`, `Strings`, và cơ chế lắng nghe sự kiện chung.
 - [ ] **1.3. Infrastructure Layer (Services & Mock Data)**
   - [x] Xây dựng `MockTaskService` (In-memory, nạp sẵn bộ dữ liệu mẫu thực tế 16–22/11/2026, hỗ trợ kích hoạt giả lập Loading/Empty/Not Found, ngăn xếp Undo xóa việc).
-  - [ ] Xây dựng `PreferencesSettingsService` (Lưu Theme, Cỡ chữ, Ngôn ngữ qua `Preferences`).
-  - [ ] Xây dựng `LocalizationService` (Quản lý từ điển song ngữ VI/EN, cập nhật nhãn tức thì không cần restart).
+  - [x] Xây dựng `PreferencesSettingsService` (Lưu Theme, Cỡ chữ, Ngôn ngữ qua `Preferences`).
+  - [x] Xây dựng `LocalizationService` (Quản lý từ điển song ngữ VI/EN, cập nhật nhãn tức thì không cần restart).
   - [ ] Xây dựng `SnackbarService` (Quản lý hiển thị thông báo nổi 4 trạng thái: Thành công, Lỗi, Cảnh báo, Hoàn tác).
 - [x] **1.4. Design System & Dynamic Resources**
   - [x] Thiết lập bảng màu tập trung (Primary Indigo, Background, Surface, Text, Danger, Warning, Success) cho cả Light/Dark Mode.
@@ -39,21 +39,21 @@ Tài liệu theo dõi tiến độ thực hiện các tính năng của ứng d�
 ---
 
 ### Giai đoạn 2: Shell Navigation 4 Tab & Màn hình Cài đặt (SettingsPage)
-- [ ] **2.1. Cấu hình AppShell & DI Container**
+- [x] **2.1. Cấu hình AppShell & DI Container**
   - [x] Cấu hình TabBar 4 tab: Hôm nay (`TodayPage`), Tuần này (`WeekPage`), Đã xong (`HistoryPage`), Cài đặt (`SettingsPage`).
   - [x] Đăng ký Services và ViewModels vào DI container (`MauiProgram.cs`).
   - [x] Đăng ký Route cho trang Chi tiết (`TaskDetailPage`).
-- [ ] **2.2. Xây dựng Màn hình Cài đặt (SettingsPage & SettingsViewModel)**
-  - [ ] Bộ chọn Theme dạng 2 Card trực quan Sáng / Tối (Áp dụng ngay trên toàn app).
-  - [ ] Bộ điều khiển Cỡ chữ Segmented: Nhỏ / Thường / Lớn (Áp dụng ngay không restart).
-  - [ ] Bộ chọn Ngôn ngữ có cờ quốc gia: Tiếng Việt 🇻🇳 / English 🇬🇧 (Cập nhật tức thì tất cả nhãn).
-  - [ ] Khối "Xem trước" (Live Preview Card) cập nhật real-time giao diện thẻ việc mẫu.
-  - [ ] Khu vực Reviewer Tools:
-    - [ ] Nút "Xem thử" Trạng thái đang tải.
-    - [ ] Nút "Xem thử" Danh sách trống.
-    - [ ] Nút "Xem thử" Không tìm thấy công việc (Điều hướng `id=-1`).
-    - [ ] Nút "Đặt lại dữ liệu mẫu" (Reset mock data).
-  - [ ] Khối Thông tin ứng dụng (App Icon, MyTasks v1.0.0).
+- [x] **2.2. Xây dựng Màn hình Cài đặt (SettingsPage & SettingsViewModel)**
+  - [x] Bộ chọn Theme dạng 2 Card trực quan Sáng / Tối (Áp dụng ngay trên toàn app).
+  - [x] Bộ điều khiển Cỡ chữ Segmented: Nhỏ / Thường / Lớn (Áp dụng ngay không restart).
+  - [x] Bộ chọn Ngôn ngữ có cờ quốc gia: Tiếng Việt 🇻🇳 / English 🇬🇧 (Cập nhật tức thì tất cả nhãn).
+  - [x] Khối "Xem trước" (Live Preview Card) cập nhật real-time giao diện thẻ việc mẫu.
+  - [x] Khu vực Reviewer Tools:
+    - [x] Nút "Xem thử" Trạng thái đang tải.
+    - [x] Nút "Xem thử" Danh sách trống.
+    - [x] Nút "Xem thử" Không tìm thấy công việc (Điều hướng `id=-1`).
+    - [x] Nút "Đặt lại dữ liệu mẫu" (Reset mock data).
+  - [x] Khối Thông tin ứng dụng (App Icon, MyTasks v1.0.0).
 
 ---
 
