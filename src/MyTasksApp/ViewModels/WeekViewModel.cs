@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using MyTasksApp.Core.Enums;
 using MyTasksApp.Core.Models;
+using MyTasksApp.Services;
 using MyTasksApp.Services.Interfaces;
 using MyTasksApp.ViewModels.Base;
 using MyTasksApp.Views;
@@ -17,6 +18,7 @@ public class WeekViewModel : BaseViewModel
 {
     private readonly ITaskService _taskService;
     private readonly ILocalizationService? _localizationService;
+    private readonly ISnackbarService _snackbarService;
     private readonly CultureInfo _viCulture = new("vi-VN");
 
     private DateTime _currentWeekStart;
@@ -32,6 +34,8 @@ public class WeekViewModel : BaseViewModel
     private bool _isRefreshing;
     private bool _isInternalUpdate;
     private bool _isDataLoaded;
+    private bool _isDataDirty;
+    public bool IsPageVisible { get; set; }
 
     // Modal tạo việc nhanh
     private bool _isCreateModalVisible;
@@ -46,6 +50,12 @@ public class WeekViewModel : BaseViewModel
     private string _snackbarMessage = string.Empty;
     private bool _canUndo;
     private CancellationTokenSource? _snackbarCts;
+    private CancellationTokenSource? _loadCts;
+
+    /// <summary>
+    /// Thời gian trễ tối thiểu để hiển thị Skeleton chuyển cảnh mượt mà (mặc định 250ms).
+    /// </summary>
+    public int TransitionDelayMs { get; set; } = 250;
 
     public ObservableCollection<WeekDayItem> WeekDays { get; } = new();
     public ObservableCollection<TaskItem> DayTasks { get; } = new();
@@ -193,10 +203,24 @@ public class WeekViewModel : BaseViewModel
     public string EmptySubMessage => _localizationService?["WeekEmptySubMessage"] ?? "Ngày này chưa có công việc nào được lên lịch.";
     public string AppSubtitle => _localizationService?["AppSubtitle"] ?? "Việc của tôi";
 
-    public WeekViewModel(ITaskService taskService, ILocalizationService? localizationService = null)
+    public string ModalCreateTitle => _localizationService?["ModalCreateTitle"] ?? "Tạo công việc mới";
+    public string ModalCreateSubtitle => _localizationService?["ModalCreateSubtitle"] ?? "Nhập thông tin công việc cần hoàn thành hôm nay";
+    public string FieldTaskTitle => _localizationService?["FieldTaskTitle"] ?? "Tên công việc";
+    public string FieldTaskTitlePlaceholder => _localizationService?["FieldTaskTitlePlaceholder"] ?? "Ví dụ: Thiết kế giao diện Home";
+    public string FieldTaskProject => _localizationService?["FieldTaskProject"] ?? "Dự án";
+    public string FieldTaskProjectPlaceholder => _localizationService?["FieldTaskProjectPlaceholder"] ?? "Tên dự án (Ví dụ: MyTasks App)";
+    public string FieldTaskDesc => _localizationService?["FieldTaskDesc"] ?? "Mô tả chi tiết";
+    public string FieldTaskDescPlaceholder => _localizationService?["FieldTaskDescPlaceholder"] ?? "Nhập ghi chú thêm cho công việc...";
+    public string BtnCancel => _localizationService?["BtnCancel"] ?? "Hủy";
+    public string BtnSaveTask => _localizationService?["BtnSaveTask"] ?? "Lưu công việc";
+    public string DueDateLabel => _localizationService?["DetailDueDate"] ?? "Hạn ngày";
+    public string DueTimeLabel => _localizationService?["DetailDueTime"] ?? "Hạn giờ";
+
+    public WeekViewModel(ITaskService taskService, ILocalizationService? localizationService = null, ISnackbarService? snackbarService = null)
     {
         _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
         _localizationService = localizationService;
+        _snackbarService = snackbarService ?? new SnackbarService();
         Title = "Tuần này";
 
         // Khởi tạo tuần chứa ngày hôm nay
@@ -268,12 +292,32 @@ public class WeekViewModel : BaseViewModel
             OnPropertyChanged(nameof(EmptyMessage));
             OnPropertyChanged(nameof(EmptySubMessage));
             OnPropertyChanged(nameof(AppSubtitle));
+            OnPropertyChanged(nameof(ModalCreateTitle));
+            OnPropertyChanged(nameof(ModalCreateSubtitle));
+            OnPropertyChanged(nameof(FieldTaskTitle));
+            OnPropertyChanged(nameof(FieldTaskTitlePlaceholder));
+            OnPropertyChanged(nameof(FieldTaskProject));
+            OnPropertyChanged(nameof(FieldTaskProjectPlaceholder));
+            OnPropertyChanged(nameof(FieldTaskDesc));
+            OnPropertyChanged(nameof(FieldTaskDescPlaceholder));
+            OnPropertyChanged(nameof(BtnCancel));
+            OnPropertyChanged(nameof(BtnSaveTask));
+            OnPropertyChanged(nameof(DueDateLabel));
+            OnPropertyChanged(nameof(DueTimeLabel));
         });
     }
 
     public async Task EnsureDataLoadedAsync()
     {
-        if (_isDataLoaded) return;
+        if (_isDataLoaded)
+        {
+            if (_isDataDirty)
+            {
+                _isDataDirty = false;
+                await RefreshWeekDaysAndTasksAsync();
+            }
+            return;
+        }
         await ExecuteLoadWeekDataAsync();
     }
 
@@ -343,6 +387,11 @@ public class WeekViewModel : BaseViewModel
             IsBusy = true;
             OnPropertyChanged(nameof(IsEmpty));
 
+            if (TransitionDelayMs > 0)
+            {
+                await Task.Delay(TransitionDelayMs);
+            }
+
             await RefreshWeekDaysAndTasksAsync();
             _isDataLoaded = true;
         }
@@ -378,10 +427,13 @@ public class WeekViewModel : BaseViewModel
         bool needInit = WeekDays.Count != 7;
         var initialList = needInit ? new List<WeekDayItem>() : null;
 
+        // Tối ưu hóa: Truy vấn toàn bộ công việc 1 lần duy nhất thay vì đọc đĩa tuần tự 8 lần
+        var allTasks = await _taskService.GetAllTasksAsync();
+
         for (int i = 0; i < 7; i++)
         {
             DateTime dayDate = _currentWeekStart.AddDays(i);
-            var tasksForDay = await _taskService.GetTasksByDateAsync(dayDate);
+            int tasksForDayCount = allTasks.Count(t => t.DueDate.Date == dayDate.Date);
 
             if (needInit)
             {
@@ -390,7 +442,7 @@ public class WeekViewModel : BaseViewModel
                     Date = dayDate,
                     DayOfWeekShort = dayNames[i],
                     DayNumber = dayDate.Day.ToString(),
-                    TaskCount = tasksForDay.Count,
+                    TaskCount = tasksForDayCount,
                     IsToday = dayDate.Date == today,
                     IsSelected = dayDate.Date == _selectedDate.Date
                 });
@@ -401,7 +453,7 @@ public class WeekViewModel : BaseViewModel
                 day.Date = dayDate;
                 day.DayOfWeekShort = dayNames[i];
                 day.DayNumber = dayDate.Day.ToString();
-                day.TaskCount = tasksForDay.Count;
+                day.TaskCount = tasksForDayCount;
                 day.IsToday = dayDate.Date == today;
                 day.IsSelected = dayDate.Date == _selectedDate.Date;
             }
@@ -416,8 +468,20 @@ public class WeekViewModel : BaseViewModel
             }
         }
 
-        // Tải danh sách công việc của ngày đang chọn
-        await LoadSelectedDayTasksAsync();
+        // Cập nhật danh sách công việc của ngày đang chọn trực tiếp từ danh sách đã lấy
+        var selectedDayTasks = allTasks
+            .Where(t => t.DueDate.Date == _selectedDate.Date)
+            .OrderBy(t => t.Status == TaskStatus.Completed)
+            .ThenBy(t => t.DueTime)
+            .ToList();
+
+        DayTasks.Clear();
+        foreach (var task in selectedDayTasks)
+        {
+            DayTasks.Add(task);
+        }
+
+        UpdateDayProgressMetrics();
     }
 
     private async Task LoadSelectedDayTasksAsync()
@@ -458,20 +522,78 @@ public class WeekViewModel : BaseViewModel
 
     private async Task ExecutePreviousWeekAsync()
     {
-        // Lùi 7 ngày
-        CurrentWeekStart = CurrentWeekStart.AddDays(-7);
-        // Bảo toàn thứ tương ứng trong tuần
-        SelectedDate = SelectedDate.AddDays(-7);
-        await RefreshWeekDaysAndTasksAsync();
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        _loadCts = new CancellationTokenSource();
+        var token = _loadCts.Token;
+
+        try
+        {
+            IsBusy = true;
+            DayTasks.Clear();
+
+            // Lùi 7 ngày
+            CurrentWeekStart = CurrentWeekStart.AddDays(-7);
+            // Bảo toàn thứ tương ứng trong tuần
+            SelectedDate = SelectedDate.AddDays(-7);
+
+            if (TransitionDelayMs > 0)
+            {
+                await Task.Delay(TransitionDelayMs, token);
+            }
+
+            await RefreshWeekDaysAndTasksAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Bỏ qua nếu bị hủy bởi thao tác chuyển tuần/ngày tiếp theo
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                IsBusy = false;
+                OnPropertyChanged(nameof(IsEmpty));
+            }
+        }
     }
 
     private async Task ExecuteNextWeekAsync()
     {
-        // Tiến 7 ngày
-        CurrentWeekStart = CurrentWeekStart.AddDays(7);
-        // Bảo toàn thứ tương ứng trong tuần
-        SelectedDate = SelectedDate.AddDays(7);
-        await RefreshWeekDaysAndTasksAsync();
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        _loadCts = new CancellationTokenSource();
+        var token = _loadCts.Token;
+
+        try
+        {
+            IsBusy = true;
+            DayTasks.Clear();
+
+            // Tiến 7 ngày
+            CurrentWeekStart = CurrentWeekStart.AddDays(7);
+            // Bảo toàn thứ tương ứng trong tuần
+            SelectedDate = SelectedDate.AddDays(7);
+
+            if (TransitionDelayMs > 0)
+            {
+                await Task.Delay(TransitionDelayMs, token);
+            }
+
+            await RefreshWeekDaysAndTasksAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Bỏ qua nếu bị hủy bởi thao tác chuyển tuần/ngày tiếp theo
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                IsBusy = false;
+                OnPropertyChanged(nameof(IsEmpty));
+            }
+        }
     }
 
     private async Task ExecuteSelectDayAsync(object? parameter)
@@ -492,14 +614,52 @@ public class WeekViewModel : BaseViewModel
 
         if (_selectedDate.Date == targetDate.Date) return;
 
+        // Cập nhật ngay ngày chọn và highlight dải 7 ngày để UI phản hồi tức thì (0ms)
         SelectedDate = targetDate;
-
         foreach (var day in WeekDays)
         {
             day.IsSelected = day.Date.Date == targetDate.Date;
         }
 
-        await LoadSelectedDayTasksAsync();
+        // Hủy lượt nạp cũ nếu người dùng chạm liên tục giữa nhiều ngày (Last-Request-Wins)
+        _loadCts?.Cancel();
+        _loadCts?.Dispose();
+        _loadCts = new CancellationTokenSource();
+        var token = _loadCts.Token;
+
+        try
+        {
+            IsBusy = true;
+            DayTasks.Clear();
+
+            // Micro-transition delay 250ms hiển thị Skeleton mượt mà, tránh flicker
+            if (TransitionDelayMs > 0)
+            {
+                await Task.Delay(TransitionDelayMs, token);
+            }
+
+            var tasks = await _taskService.GetTasksByDateAsync(_selectedDate);
+            if (token.IsCancellationRequested) return;
+
+            foreach (var task in tasks.OrderBy(t => t.DueTime))
+            {
+                DayTasks.Add(task);
+            }
+
+            UpdateDayProgressMetrics();
+        }
+        catch (OperationCanceledException)
+        {
+            // Bỏ qua ngoại lệ khi người dùng chạm ngày khác
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                IsBusy = false;
+                OnPropertyChanged(nameof(IsEmpty));
+            }
+        }
     }
 
     private async Task ExecuteToggleTaskStatusAsync(object? parameter)
@@ -590,32 +750,65 @@ public class WeekViewModel : BaseViewModel
     {
         if (string.IsNullOrWhiteSpace(NewTaskTitle))
         {
-            ShowSnackbar("Vui lòng nhập tên công việc", canUndo: false);
+            string emptyWarning = _localizationService?["SnackbarEnterTitle"] ?? "Vui lòng nhập tên công việc";
+            ShowSnackbar(emptyWarning, canUndo: false, SnackbarType.Warning);
             return;
         }
 
+        string defaultProject = _localizationService?["DefaultProjectPersonal"] ?? "Công việc cá nhân";
         var newTask = new TaskItem
         {
             Title = NewTaskTitle.Trim(),
             Description = NewTaskDescription?.Trim() ?? string.Empty,
-            ProjectName = string.IsNullOrWhiteSpace(NewTaskProject) ? "Công việc cá nhân" : NewTaskProject.Trim(),
+            ProjectName = string.IsNullOrWhiteSpace(NewTaskProject) ? defaultProject : NewTaskProject.Trim(),
             DueDate = NewTaskDueDate.Date,
             DueTime = NewTaskDueTime,
             Status = TaskStatus.Pending
         };
 
+        // Đóng modal tạo việc
         IsCreateModalVisible = false;
 
-        bool success = await _taskService.AddTaskAsync(newTask);
-        if (success)
+        // Optimistic UI cho WeekPage: Thêm trực tiếp thẻ công việc 0ms
+        _isInternalUpdate = true;
+        try
         {
-            ShowSnackbar("Đã tạo công việc mới thành công", canUndo: false);
-            // Cập nhật lại tuần để badge của ngày mới tạo tăng lên
-            await RefreshWeekDaysAndTasksAsync();
+            if (newTask.DueDate.Date == SelectedDate.Date)
+            {
+                DayTasks.Add(newTask);
+                UpdateDayProgressMetrics();
+            }
+
+            var dayItem = WeekDays.FirstOrDefault(d => d.Date.Date == newTask.DueDate.Date);
+            if (dayItem != null)
+            {
+                dayItem.TaskCount++;
+            }
+
+            string createSuccess = _localizationService?["SnackbarTaskCreated"] ?? "Đã tạo công việc mới thành công";
+            ShowSnackbar(createSuccess, canUndo: false);
+
+            bool success = await _taskService.AddTaskAsync(newTask);
+            if (!success)
+            {
+                if (newTask.DueDate.Date == SelectedDate.Date)
+                {
+                    DayTasks.Remove(newTask);
+                    UpdateDayProgressMetrics();
+                }
+                if (dayItem != null && dayItem.TaskCount > 0)
+                {
+                    dayItem.TaskCount--;
+                }
+            }
+        }
+        finally
+        {
+            _isInternalUpdate = false;
         }
     }
 
-    private void ShowSnackbar(string message, bool canUndo)
+    private void ShowSnackbar(string message, bool canUndo, SnackbarType type = SnackbarType.Success)
     {
         _snackbarCts?.Cancel();
         _snackbarCts = new CancellationTokenSource();
@@ -624,12 +817,29 @@ public class WeekViewModel : BaseViewModel
         CanUndo = canUndo;
         IsSnackbarVisible = true;
 
+        if (canUndo)
+        {
+            _snackbarService.ShowUndo(message, async () => await ExecuteUndoDeleteAsync());
+        }
+        else if (type == SnackbarType.Warning)
+        {
+            _snackbarService.ShowWarning(message);
+        }
+        else if (type == SnackbarType.Danger)
+        {
+            _snackbarService.ShowDanger(message);
+        }
+        else
+        {
+            _snackbarService.ShowSuccess(message);
+        }
+
         var token = _snackbarCts.Token;
         _ = Task.Run(async () =>
         {
             try
             {
-                await Task.Delay(4000, token);
+                await Task.Delay(5000, token);
                 if (!token.IsCancellationRequested)
                 {
                     RunOnMainThread(() =>
@@ -651,11 +861,18 @@ public class WeekViewModel : BaseViewModel
     {
         _snackbarCts?.Cancel();
         IsSnackbarVisible = false;
+        _snackbarService.Dismiss();
     }
 
     private void OnTasksChanged(object? sender, EventArgs e)
     {
         if (_isInternalUpdate) return;
+
+        if (!IsPageVisible)
+        {
+            _isDataDirty = true;
+            return;
+        }
 
         RunOnMainThread(async () =>
         {

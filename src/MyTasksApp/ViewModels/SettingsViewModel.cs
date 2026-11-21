@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 using MyTasksApp.Core.Enums;
+using MyTasksApp.Services;
 using MyTasksApp.Services.Interfaces;
 using MyTasksApp.ViewModels.Base;
 using MyTasksApp.Views;
@@ -17,6 +18,26 @@ public class SettingsViewModel : BaseViewModel
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
     private readonly ITaskService _taskService;
+    private readonly ISnackbarService _snackbarService;
+    private bool _isDataLoaded;
+    public bool IsPageVisible { get; set; }
+
+    public const int SkeletonMinTransitionDelayMs = 150;
+
+    public async Task EnsurePageLoadedAsync()
+    {
+        if (_isDataLoaded) return;
+        try
+        {
+            IsBusy = true;
+            await Task.Delay(SkeletonMinTransitionDelayMs);
+            _isDataLoaded = true;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
     // Quản lý Snackbar thông báo phản hồi thao tác
     private bool _isSnackbarVisible;
@@ -38,11 +59,13 @@ public class SettingsViewModel : BaseViewModel
     public SettingsViewModel(
         ISettingsService settingsService,
         ILocalizationService localizationService,
-        ITaskService taskService)
+        ITaskService taskService,
+        ISnackbarService? snackbarService = null)
     {
         _settingsService = settingsService;
         _localizationService = localizationService;
         _taskService = taskService;
+        _snackbarService = snackbarService ?? new SnackbarService();
 
         // Khởi tạo trạng thái ban đầu từ Services
         SyncStateFromSettings();
@@ -59,6 +82,11 @@ public class SettingsViewModel : BaseViewModel
         SimulateEmptyCommand = new AsyncRelayCommand(OnSimulateEmptyAsync);
         SimulateNotFoundCommand = new AsyncRelayCommand(OnSimulateNotFoundAsync);
         ResetMockDataCommand = new AsyncRelayCommand(OnResetMockDataAsync);
+
+        TestSnackbarSuccessCommand = new RelayCommand(OnTestSnackbarSuccess);
+        TestSnackbarDangerCommand = new RelayCommand(OnTestSnackbarDanger);
+        TestSnackbarWarningCommand = new RelayCommand(OnTestSnackbarWarning);
+        TestSnackbarUndoCommand = new RelayCommand(OnTestSnackbarUndo);
     }
 
     #region Observable Properties - Trạng thái lựa chọn
@@ -182,6 +210,7 @@ public class SettingsViewModel : BaseViewModel
 
     public string SettingsTitle => _localizationService["SettingsTitle"];
     public string SettingsSubtitle => _localizationService["SettingsSubtitle"];
+    public string AppSubtitle => _localizationService?["AppSubtitle"] ?? "Việc của tôi";
 
     public string SectionAppearance => _localizationService["SectionAppearance"];
     public string ThemeMode => _localizationService["ThemeMode"];
@@ -200,12 +229,6 @@ public class SettingsViewModel : BaseViewModel
     public string AppLanguageDesc => _localizationService["AppLanguageDesc"];
     public string LangVietnamese => _localizationService["LangVietnamese"];
     public string LangEnglish => _localizationService["LangEnglish"];
-
-    public string SectionPreview => _localizationService["SectionPreview"];
-    public string PreviewTitle => _localizationService["PreviewTitle"];
-    public string PreviewDesc => _localizationService["PreviewDesc"];
-    public string PreviewTaskTitle => _localizationService["PreviewTaskTitle"];
-    public string PreviewTaskProject => _localizationService["PreviewTaskProject"];
 
     public string SectionReviewerTools => _localizationService["SectionReviewerTools"];
     public string ReviewerToolsDesc => _localizationService["ReviewerToolsDesc"];
@@ -232,6 +255,11 @@ public class SettingsViewModel : BaseViewModel
     public ICommand SimulateNotFoundCommand { get; }
     public ICommand ResetMockDataCommand { get; }
 
+    public ICommand TestSnackbarSuccessCommand { get; }
+    public ICommand TestSnackbarDangerCommand { get; }
+    public ICommand TestSnackbarWarningCommand { get; }
+    public ICommand TestSnackbarUndoCommand { get; }
+
     #endregion
 
     #region Command Handlers
@@ -244,6 +272,7 @@ public class SettingsViewModel : BaseViewModel
 
         SnackbarMessage = message;
         IsSnackbarVisible = true;
+        _snackbarService.ShowSuccess(message);
 
         Task.Run(async () =>
         {
@@ -259,21 +288,45 @@ public class SettingsViewModel : BaseViewModel
         });
     }
 
-    private void OnSelectTheme(string? theme)
+    private void OnTestSnackbarSuccess()
     {
-        if (theme == "Dark")
-        {
-            _settingsService.SetTheme(AppThemeMode.Dark);
-            ShowSnackbar(_localizationService["FeedbackThemeDark"]);
-        }
-        else
-        {
-            _settingsService.SetTheme(AppThemeMode.Light);
-            ShowSnackbar(_localizationService["FeedbackThemeLight"]);
-        }
+        _snackbarService.ShowSuccess(_localizationService["SnackbarTestSuccess"]);
     }
 
-    private void OnSelectFontSize(string? size)
+    private void OnTestSnackbarDanger()
+    {
+        _snackbarService.ShowDanger(_localizationService["SnackbarTestDanger"]);
+    }
+
+    private void OnTestSnackbarWarning()
+    {
+        _snackbarService.ShowWarning(_localizationService["SnackbarTestWarning"]);
+    }
+
+    private void OnTestSnackbarUndo()
+    {
+        _snackbarService.ShowUndo(_localizationService["SnackbarTestUndo"], async () =>
+        {
+            await Task.CompletedTask;
+            _snackbarService.ShowSuccess($"{_localizationService["SnackbarTaskRestored"]}Demo Task #1");
+        });
+    }
+
+    private async void OnSelectTheme(string? theme)
+    {
+        var targetTheme = theme == "Dark" ? AppThemeMode.Dark : AppThemeMode.Light;
+        if (_settingsService.CurrentTheme == targetTheme) return;
+
+        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà trước khi áp dụng tài nguyên
+        await Task.Delay(60);
+
+        _settingsService.SetTheme(targetTheme);
+        ShowSnackbar(targetTheme == AppThemeMode.Dark 
+            ? _localizationService["FeedbackThemeDark"] 
+            : _localizationService["FeedbackThemeLight"]);
+    }
+
+    private async void OnSelectFontSize(string? size)
     {
         var (targetSize, msgKey) = size switch
         {
@@ -282,13 +335,23 @@ public class SettingsViewModel : BaseViewModel
             _ => (AppFontSize.Normal, "FeedbackFontNormal")
         };
 
+        if (_settingsService.CurrentFontSize == targetSize) return;
+
+        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà
+        await Task.Delay(60);
+
         _settingsService.SetFontSize(targetSize);
         ShowSnackbar(_localizationService[msgKey]);
     }
 
-    private void OnSelectLanguage(string? lang)
+    private async void OnSelectLanguage(string? lang)
     {
         var targetLang = lang == "English" ? AppLanguage.English : AppLanguage.Vietnamese;
+        if (_settingsService.CurrentLanguage == targetLang) return;
+
+        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà
+        await Task.Delay(60);
+
         _settingsService.SetLanguage(targetLang);
         _localizationService.SetLanguage(targetLang);
         ShowSnackbar(targetLang == AppLanguage.English 
@@ -409,6 +472,7 @@ public class SettingsViewModel : BaseViewModel
 
     private void NotifyAllStringsChanged()
     {
+        OnPropertyChanged(nameof(AppSubtitle));
         OnPropertyChanged(nameof(SettingsTitle));
         OnPropertyChanged(nameof(SettingsSubtitle));
         OnPropertyChanged(nameof(SectionAppearance));
@@ -426,11 +490,6 @@ public class SettingsViewModel : BaseViewModel
         OnPropertyChanged(nameof(AppLanguageDesc));
         OnPropertyChanged(nameof(LangVietnamese));
         OnPropertyChanged(nameof(LangEnglish));
-        OnPropertyChanged(nameof(SectionPreview));
-        OnPropertyChanged(nameof(PreviewTitle));
-        OnPropertyChanged(nameof(PreviewDesc));
-        OnPropertyChanged(nameof(PreviewTaskTitle));
-        OnPropertyChanged(nameof(PreviewTaskProject));
         OnPropertyChanged(nameof(SectionReviewerTools));
         OnPropertyChanged(nameof(ReviewerToolsDesc));
         OnPropertyChanged(nameof(StateLoading));

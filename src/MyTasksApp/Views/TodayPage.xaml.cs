@@ -6,7 +6,10 @@ namespace MyTasksApp.Views;
 public partial class TodayPage : ContentPage
 {
     private readonly TodayViewModel _viewModel;
-    private bool _isAtBottomOrScrolled;
+    private CancellationTokenSource? _pulseAnimationCts;
+    private bool _isUpButtonVisible;
+    private bool _isDownButtonVisible;
+    private bool _isScrollButtonUpdatePending;
 
     public TodayPage(TodayViewModel viewModel)
     {
@@ -43,47 +46,258 @@ public partial class TodayPage : ContentPage
                 Shell.SetTabBarIsVisible(this, true);
             }
         }
+        else if (e.PropertyName == nameof(TodayViewModel.IsBusy))
+        {
+            if (_viewModel.IsBusy)
+            {
+                StartSkeletonPulseAnimation();
+            }
+            else
+            {
+                StopSkeletonPulseAnimation();
+            }
+
+            if (!_isScrollButtonUpdatePending)
+            {
+                _isScrollButtonUpdatePending = true;
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Task.Delay(80);
+                    _isScrollButtonUpdatePending = false;
+                    UpdateScrollButtonsVisibility();
+                });
+            }
+        }
+        else if (e.PropertyName == nameof(TodayViewModel.IsEmpty) ||
+                 e.PropertyName == nameof(TodayViewModel.TotalTasksCount) ||
+                 e.PropertyName == nameof(TodayViewModel.HasOverdueTasks) ||
+                 e.PropertyName == nameof(TodayViewModel.HasTodayTasks) ||
+                 e.PropertyName == nameof(TodayViewModel.HasCompletedTasks))
+        {
+            if (!_isScrollButtonUpdatePending)
+            {
+                _isScrollButtonUpdatePending = true;
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Task.Delay(80);
+                    _isScrollButtonUpdatePending = false;
+                    UpdateScrollButtonsVisibility();
+                });
+            }
+        }
     }
 
     private void OnMainScrollViewScrolled(object? sender, ScrolledEventArgs e)
     {
-        // Nhận biết vị trí cuộn: Nếu cuộn quá 150px thì đổi sang mũi tên lên, ngược lại là mũi tên xuống
-        if (e.ScrollY > 150)
+        UpdateScrollButtonsVisibility(e.ScrollY);
+    }
+
+    private void OnMainScrollViewSizeChanged(object? sender, EventArgs e)
+    {
+        UpdateScrollButtonsVisibility();
+    }
+
+    private void UpdateScrollButtonsVisibility(double? scrollY = null)
+    {
+        double currentY = Math.Max(0, scrollY ?? MainScrollView.ScrollY);
+        double viewportHeight = MainScrollView.Height;
+        double contentHeight = MainScrollView.ContentSize.Height;
+        double maxScroll = Math.Max(0, contentHeight - viewportHeight);
+
+        // 1. Nếu danh sách task trống HOẶC đang loading HOẶC nội dung ngắn nằm vừa trọn màn hình (không thể cuộn)
+        if (_viewModel.IsEmpty || _viewModel.IsBusy || viewportHeight <= 0 || maxScroll < 50)
         {
-            if (!_isAtBottomOrScrolled)
-            {
-                _isAtBottomOrScrolled = true;
-                ScrollIcon.Symbol = Symbol.ArrowUp;
-            }
+            SetButtonVisibility(ScrollUpButton, false, isUpButton: true);
+            SetButtonVisibility(ScrollDownButton, false, isUpButton: false);
+            return;
+        }
+
+        const double threshold = 40.0;
+        bool isAtTop = currentY <= threshold;
+        bool isAtBottom = currentY >= maxScroll - threshold;
+
+        if (isAtTop)
+        {
+            // Đang ở đầu trang: chỉ hiển thị nút Xuống
+            SetButtonVisibility(ScrollUpButton, false, isUpButton: true);
+            SetButtonVisibility(ScrollDownButton, true, isUpButton: false);
+        }
+        else if (isAtBottom)
+        {
+            // Đang ở cuối trang: chỉ hiển thị nút Lên
+            SetButtonVisibility(ScrollUpButton, true, isUpButton: true);
+            SetButtonVisibility(ScrollDownButton, false, isUpButton: false);
         }
         else
         {
-            if (_isAtBottomOrScrolled)
-            {
-                _isAtBottomOrScrolled = false;
-                ScrollIcon.Symbol = Symbol.ArrowDown;
-            }
+            // Ở giữa: hiển thị cả 2 nút (Lên và Xuống)
+            SetButtonVisibility(ScrollUpButton, true, isUpButton: true);
+            SetButtonVisibility(ScrollDownButton, true, isUpButton: false);
         }
     }
 
-    private async void OnQuickScrollTapped(object? sender, TappedEventArgs e)
+    private void SetButtonVisibility(VisualElement button, bool targetVisible, bool isUpButton)
     {
-        if (_isAtBottomOrScrolled)
+        bool currentState = isUpButton ? _isUpButtonVisible : _isDownButtonVisible;
+        if (currentState == targetVisible)
+            return;
+
+        if (isUpButton)
+            _isUpButtonVisible = targetVisible;
+        else
+            _isDownButtonVisible = targetVisible;
+
+        button.CancelAnimations();
+
+        if (targetVisible)
         {
-            // Cuộn mượt về đầu trang
-            await MainScrollView.ScrollToAsync(0, 0, animated: true);
+            button.Opacity = 0;
+            button.IsVisible = true;
+            _ = button.FadeToAsync(1, 150, Easing.CubicOut);
         }
         else
         {
-            // Cuộn mượt xuống cuối danh sách
-            await MainScrollView.ScrollToAsync(0, MainScrollView.ContentSize.Height, animated: true);
+            _ = AnimateHideAsync(button, isUpButton);
         }
+    }
+
+    private async Task AnimateHideAsync(VisualElement button, bool isUpButton)
+    {
+        await button.FadeToAsync(0, 150, Easing.CubicIn);
+        bool currentState = isUpButton ? _isUpButtonVisible : _isDownButtonVisible;
+        if (!currentState)
+        {
+            button.IsVisible = false;
+        }
+    }
+
+    private async void OnScrollUpTapped(object? sender, TappedEventArgs e)
+    {
+        await MainScrollView.ScrollToAsync(0, 0, animated: true);
+    }
+
+    private async void OnScrollDownTapped(object? sender, TappedEventArgs e)
+    {
+        await MainScrollView.ScrollToAsync(0, MainScrollView.ContentSize.Height, animated: true);
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        _viewModel.IsPageVisible = true;
+
+        if (_viewModel.IsBusy)
+        {
+            StartSkeletonPulseAnimation();
+        }
+
         // Chỉ tải dữ liệu ban đầu 1 lần, chuyển tab không bị load lại gây lag/khựng nhịp (Điểm 6)
         await _viewModel.EnsureDataLoadedAsync();
+        await Task.Delay(100);
+        UpdateScrollButtonsVisibility();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _viewModel.IsPageVisible = false;
+        StopSkeletonPulseAnimation();
+    }
+
+    private void StartSkeletonPulseAnimation()
+    {
+        StopSkeletonPulseAnimation();
+        _pulseAnimationCts = new CancellationTokenSource();
+        var token = _pulseAnimationCts.Token;
+
+        _ = AnimateSkeletonPulseAsync(token);
+    }
+
+    private async Task AnimateSkeletonPulseAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested && _viewModel.IsBusy && SkeletonContainer != null)
+            {
+                await SkeletonContainer.FadeToAsync(0.5, 600, Easing.SinInOut);
+                if (token.IsCancellationRequested || !_viewModel.IsBusy) break;
+                await SkeletonContainer.FadeToAsync(1.0, 600, Easing.SinInOut);
+            }
+        }
+        catch
+        {
+            // Bỏ qua ngoại lệ hủy animation
+        }
+        finally
+        {
+            if (SkeletonContainer != null)
+            {
+                SkeletonContainer.Opacity = 1.0;
+            }
+        }
+    }
+
+    private void StopSkeletonPulseAnimation()
+    {
+        _pulseAnimationCts?.Cancel();
+        _pulseAnimationCts?.Dispose();
+        _pulseAnimationCts = null;
+
+        if (SkeletonContainer != null)
+        {
+            SkeletonContainer.CancelAnimations();
+            SkeletonContainer.Opacity = 1.0;
+        }
+    }
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (_viewModel.IsCreateModalVisible)
+        {
+            _viewModel.CloseCreateModalCommand.Execute(null);
+            return true;
+        }
+        return base.OnBackButtonPressed();
+    }
+
+    private async void OnTitleEntryCompleted(object? sender, EventArgs e)
+    {
+        NewTaskProjectEntry.Focus();
+        await Task.Delay(50);
+        await CreateModalScrollView.ScrollToAsync(NewTaskProjectEntry, ScrollToPosition.Center, animated: true);
+    }
+
+    private async void OnProjectEntryCompleted(object? sender, EventArgs e)
+    {
+        NewTaskDescEditor.Focus();
+        await Task.Delay(50);
+        await CreateModalScrollView.ScrollToAsync(NewTaskDescEditor, ScrollToPosition.Center, animated: true);
+    }
+
+    private async void OnDescEditorCompleted(object? sender, EventArgs e)
+    {
+        NewTaskDescEditor.Unfocus();
+        await Task.Delay(50);
+        await CreateModalScrollView.ScrollToAsync(0, CreateModalScrollView.ContentSize.Height, animated: true);
+    }
+
+    private async void OnDescEditorTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (e.NewTextValue != null && e.NewTextValue.EndsWith('\n'))
+        {
+            NewTaskDescEditor.Text = e.NewTextValue.TrimEnd('\r', '\n');
+            NewTaskDescEditor.Unfocus();
+            await Task.Delay(50);
+            await CreateModalScrollView.ScrollToAsync(0, CreateModalScrollView.ContentSize.Height, animated: true);
+        }
+    }
+
+    private async void OnFieldFocused(object? sender, FocusEventArgs e)
+    {
+        if (sender is VisualElement element)
+        {
+            await Task.Delay(150);
+            await CreateModalScrollView.ScrollToAsync(element, ScrollToPosition.Center, animated: true);
+        }
     }
 }

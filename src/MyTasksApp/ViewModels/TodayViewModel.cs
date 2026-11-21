@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using MyTasksApp.Core.Enums;
 using MyTasksApp.Core.Models;
+using MyTasksApp.Services;
 using MyTasksApp.Services.Interfaces;
 using MyTasksApp.ViewModels.Base;
 using MyTasksApp.Views;
@@ -18,6 +19,7 @@ public class TodayViewModel : BaseViewModel
 {
     private readonly ITaskService _taskService;
     private readonly ILocalizationService? _localizationService;
+    private readonly ISnackbarService _snackbarService;
     private readonly CultureInfo _viCulture = new("vi-VN");
 
     private string _currentDateText = string.Empty;
@@ -29,6 +31,8 @@ public class TodayViewModel : BaseViewModel
     private bool _isRefreshing;
     private bool _isInternalUpdate;
     private bool _isDataLoaded;
+    private bool _isDataDirty;
+    public bool IsPageVisible { get; set; } = true;
 
     // Quản lý Modal tạo việc nhanh (Bottom Sheet)
     private bool _isCreateModalVisible;
@@ -171,10 +175,22 @@ public class TodayViewModel : BaseViewModel
     public string ProgressTodayTitle => _localizationService?["ProgressTodayTitle"] ?? "Tiến độ hôm nay";
     public string AppSubtitle => _localizationService?["AppSubtitle"] ?? "Việc của tôi";
 
-    public TodayViewModel(ITaskService taskService, ILocalizationService? localizationService = null)
+    public string ModalCreateTitle => _localizationService?["ModalCreateTitle"] ?? "Tạo công việc mới";
+    public string ModalCreateSubtitle => _localizationService?["ModalCreateSubtitle"] ?? "Nhập thông tin công việc cần hoàn thành hôm nay";
+    public string FieldTaskTitle => _localizationService?["FieldTaskTitle"] ?? "Tên công việc";
+    public string FieldTaskTitlePlaceholder => _localizationService?["FieldTaskTitlePlaceholder"] ?? "Ví dụ: Thiết kế giao diện Home";
+    public string FieldTaskProject => _localizationService?["FieldTaskProject"] ?? "Dự án";
+    public string FieldTaskProjectPlaceholder => _localizationService?["FieldTaskProjectPlaceholder"] ?? "Tên dự án (Ví dụ: MyTasks App)";
+    public string FieldTaskDesc => _localizationService?["FieldTaskDesc"] ?? "Mô tả chi tiết";
+    public string FieldTaskDescPlaceholder => _localizationService?["FieldTaskDescPlaceholder"] ?? "Nhập ghi chú thêm cho công việc...";
+    public string BtnCancel => _localizationService?["BtnCancel"] ?? "Hủy";
+    public string BtnSaveTask => _localizationService?["BtnSaveTask"] ?? "Lưu công việc";
+
+    public TodayViewModel(ITaskService taskService, ILocalizationService? localizationService = null, ISnackbarService? snackbarService = null)
     {
         _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
         _localizationService = localizationService;
+        _snackbarService = snackbarService ?? new SnackbarService();
         Title = "Hôm nay";
 
         UpdateDateText();
@@ -233,12 +249,33 @@ public class TodayViewModel : BaseViewModel
             OnPropertyChanged(nameof(SectionCompletedTitle));
             OnPropertyChanged(nameof(ProgressTodayTitle));
             OnPropertyChanged(nameof(AppSubtitle));
+            OnPropertyChanged(nameof(ModalCreateTitle));
+            OnPropertyChanged(nameof(ModalCreateSubtitle));
+            OnPropertyChanged(nameof(FieldTaskTitle));
+            OnPropertyChanged(nameof(FieldTaskTitlePlaceholder));
+            OnPropertyChanged(nameof(FieldTaskProject));
+            OnPropertyChanged(nameof(FieldTaskProjectPlaceholder));
+            OnPropertyChanged(nameof(FieldTaskDesc));
+            OnPropertyChanged(nameof(FieldTaskDescPlaceholder));
+            OnPropertyChanged(nameof(BtnCancel));
+            OnPropertyChanged(nameof(BtnSaveTask));
         });
     }
 
+    public const int SkeletonMinTransitionDelayMs = 250;
+
     public async Task EnsureDataLoadedAsync()
     {
-        if (_isDataLoaded) return;
+        if (_isDataLoaded)
+        {
+            if (_isDataDirty)
+            {
+                _isDataDirty = false;
+                var tasks = await _taskService.GetTodayTasksAsync();
+                OrganizeTasks(tasks);
+            }
+            return;
+        }
         await ExecuteLoadTasksAsync();
     }
 
@@ -251,10 +288,12 @@ public class TodayViewModel : BaseViewModel
             IsBusy = true;
             OnPropertyChanged(nameof(IsEmpty));
 
+            var delayTask = Task.Delay(SkeletonMinTransitionDelayMs);
             UpdateDateText();
             var tasks = await _taskService.GetTodayTasksAsync();
             OrganizeTasks(tasks);
             _isDataLoaded = true;
+            await delayTask;
         }
         finally
         {
@@ -460,32 +499,59 @@ public class TodayViewModel : BaseViewModel
     {
         if (string.IsNullOrWhiteSpace(NewTaskTitle))
         {
-            ShowSnackbar("Vui lòng nhập tên công việc", canUndo: false);
+            string emptyWarning = _localizationService?["SnackbarEnterTitle"] ?? "Vui lòng nhập tên công việc";
+            ShowSnackbar(emptyWarning, canUndo: false, SnackbarType.Warning);
             return;
         }
 
+        string defaultProject = _localizationService?["DefaultProjectPersonal"] ?? "Công việc cá nhân";
         var newTask = new TaskItem
         {
             Title = NewTaskTitle.Trim(),
             Description = NewTaskDescription?.Trim() ?? string.Empty,
-            ProjectName = string.IsNullOrWhiteSpace(NewTaskProject) ? "Công việc cá nhân" : NewTaskProject.Trim(),
+            ProjectName = string.IsNullOrWhiteSpace(NewTaskProject) ? defaultProject : NewTaskProject.Trim(),
             DueDate = NewTaskDueDate.Date,
             DueTime = NewTaskDueTime,
             Status = TaskStatus.Pending
         };
 
+        // 1. Đóng modal tạo việc ngay lập tức
         IsCreateModalVisible = false;
 
-        bool success = await _taskService.AddTaskAsync(newTask);
-        if (success)
+        // 2. Optimistic UI: Cập nhật giao diện tức thì 0ms, không xóa dựng lại danh sách cũ
+        _isInternalUpdate = true;
+        try
         {
-            ShowSnackbar("Đã tạo công việc mới thành công", canUndo: false);
-            var tasks = await _taskService.GetTodayTasksAsync();
-            OrganizeTasks(tasks);
+            DateTime today = DateTime.Today;
+            if (newTask.DueDate.Date < today)
+            {
+                OverdueTasks.Add(newTask);
+            }
+            else
+            {
+                TodayTasks.Add(newTask);
+            }
+            UpdateProgressMetrics();
+
+            string createSuccess = _localizationService?["SnackbarTaskCreated"] ?? "Đã tạo công việc mới thành công";
+            ShowSnackbar(createSuccess, canUndo: false);
+
+            // 3. Lưu ngầm vào cơ sở dữ liệu
+            bool success = await _taskService.AddTaskAsync(newTask);
+            if (!success)
+            {
+                TodayTasks.Remove(newTask);
+                OverdueTasks.Remove(newTask);
+                UpdateProgressMetrics();
+            }
+        }
+        finally
+        {
+            _isInternalUpdate = false;
         }
     }
 
-    private void ShowSnackbar(string message, bool canUndo)
+    private void ShowSnackbar(string message, bool canUndo, SnackbarType type = SnackbarType.Success)
     {
         _snackbarCts?.Cancel();
         _snackbarCts = new CancellationTokenSource();
@@ -494,12 +560,29 @@ public class TodayViewModel : BaseViewModel
         CanUndo = canUndo;
         IsSnackbarVisible = true;
 
+        if (canUndo)
+        {
+            _snackbarService.ShowUndo(message, async () => await ExecuteUndoDeleteAsync());
+        }
+        else if (type == SnackbarType.Warning)
+        {
+            _snackbarService.ShowWarning(message);
+        }
+        else if (type == SnackbarType.Danger)
+        {
+            _snackbarService.ShowDanger(message);
+        }
+        else
+        {
+            _snackbarService.ShowSuccess(message);
+        }
+
         var token = _snackbarCts.Token;
         _ = Task.Run(async () =>
         {
             try
             {
-                await Task.Delay(4000, token);
+                await Task.Delay(5000, token);
                 if (!token.IsCancellationRequested)
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
@@ -521,11 +604,18 @@ public class TodayViewModel : BaseViewModel
     {
         _snackbarCts?.Cancel();
         IsSnackbarVisible = false;
+        _snackbarService.Dismiss();
     }
 
     private void OnTasksChanged(object? sender, EventArgs e)
     {
         if (_isInternalUpdate) return;
+
+        if (!IsPageVisible)
+        {
+            _isDataDirty = true;
+            return;
+        }
 
         MainThread.BeginInvokeOnMainThread(async () =>
         {

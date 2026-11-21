@@ -49,7 +49,9 @@ Hệ màu chủ đạo dựa trên sắc thái **Modern Indigo / Slate** kết h
 | `WarningSurface`| Nền hạn hôm nay | `#FFFBEB` (Amber-50) | `#451A03` (Amber-950) | Nền chip hạn hôm nay, nền ghi chú |
 | `Success` | Hoàn thành / Đã xong | `#16A34A` (Green-600) | `#22C55E` (Green-500) | Nhãn "Đã xong", icon tích xanh, Snackbar thành công |
 | `SuccessSurface`| Nền hoàn thành nhẹ | `#F0FDF4` (Green-50) | `#052E16` (Green-950) | Nền thẻ hoàn thành, nền icon tích xanh |
-| `SnackbarBg` | Nền thanh thông báo | `#1E293B` (Slate-800) | `#020617` (Slate-950) | Nền thanh Floating Snackbar nổi |
+| `SnackbarBg` | Nền thanh thông báo | `#FFFFFF` (Surface) | `#020617` (Slate-950) | Nền thanh Floating Snackbar nổi |
+| `SnackbarUndoBg` | Nền nút Hoàn tác | `#EEF2FF` (PrimaryLight) | `#1E1B4B` (PrimaryLightDark) | Nền nút Hoàn tác trong Snackbar |
+| `SnackbarUndoText`| Chữ nút Hoàn tác | `#4F46E5` (Primary) | `#818CF8` (PrimaryVariantDark) | Màu chữ nút Hoàn tác trong Snackbar |
 | `ProgressTrack`| Nền thanh tiến độ | `#E0E7FF` (Indigo-100) | `#312E81` (Indigo-900) | Nền rãnh thanh tiến độ (Linear Progress Bar track) |
 | `ProgressFill` | Vệt thanh tiến độ | `#4F46E5` (Indigo-600) | `#6366F1` (Indigo-500) | Vệt màu hiển thị % hoàn thành |
 
@@ -212,7 +214,11 @@ Mọi Bottom Sheet đều có thanh kéo (Drag Handle) ở đỉnh, bo góc trê
 ### 3.6. Hệ Thống Floating SnackBar
 *(Tham chiếu: `snack_bar.png`)*
 
-Nổi phía trên TabBar khoảng `16dp`, lề 2 bên `16dp`, bo góc `RadiusMd` (12dp), nền tối `SnackbarBg` (`#1E293B`).
+Nổi phía trên TabBar khoảng `16dp`, lề 2 bên `16dp`, bo góc `RadiusMd` (12dp), viền mỏng 1dp `BorderColor`.
+* **Màu sắc theo Theme:**
+  - **Light Mode:** Nền trắng `Surface` (`#FFFFFF`), viền `BorderColor` (`#E2E8F0`), chữ thông báo `TextPrimary` (`#0F172A`), đổ bóng nhẹ `Opacity="0.18"`. Nút "Hoàn tác" nền tím nhạt `SnackbarUndoBg` (`#EEF2FF`), chữ tím `SnackbarUndoText` (`#4F46E5`). Icon thùng rác `TextSecondary` (`#475569`).
+  - **Dark Mode:** Nền đen sâu `SnackbarBgDark` (`#020617`), viền `BorderColor` (`#334155`), chữ thông báo `TextPrimary` (`#F8FAFC`), đổ bóng sâu. Nút "Hoàn tác" nền `SnackbarUndoBgDark` (`#1E1B4B`), chữ tím sáng `SnackbarUndoTextDark` (`#818CF8`). Icon thùng rác `TextSecondary` (`#94A3B8`).
+* **Hiển thị văn bản dài:** Chế độ `LineBreakMode="WordWrap"` tự động co giãn xuống nhiều dòng không cắt cụt, các icon và nút thao tác luôn căn giữa dọc (`VerticalOptions="Center"`).
 
 * **Cấu trúc 4 loại:**
   1. `Success`: Icon vòng tròn xanh check trắng + Thông điệp *"Đã hoàn thành công việc"* + Nút `✕`.

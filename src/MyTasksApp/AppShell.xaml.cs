@@ -21,10 +21,11 @@ public partial class AppShell : Shell
         UpdateTabTitles();
         _localizationService.LanguageChanged += OnLanguageChanged;
 
-        // Eager Loading: Khởi tạo trước các Singleton Page vào DI cache để chuyển tab tức thì 0ms
-        _ = serviceProvider.GetRequiredService<WeekPage>();
-        _ = serviceProvider.GetRequiredService<HistoryPage>();
-        _ = serviceProvider.GetRequiredService<SettingsPage>();
+        // Eager Loading: Gán trực tiếp các Singleton Page vào ShellContent để chuyển tab tức thì 0ms
+        TabTodayContent.Content = serviceProvider.GetRequiredService<TodayPage>();
+        TabWeekContent.Content = serviceProvider.GetRequiredService<WeekPage>();
+        TabHistoryContent.Content = serviceProvider.GetRequiredService<HistoryPage>();
+        TabSettingsContent.Content = serviceProvider.GetRequiredService<SettingsPage>();
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)

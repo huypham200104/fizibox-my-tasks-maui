@@ -11,8 +11,7 @@
     <TabBar>
         <ShellContent x:Name="TabTodayContent"
                       Title="Hôm nay"
-                      Route="TodayPage"
-                      ContentTemplate="{DataTemplate views:TodayPage}">
+                      Route="TodayPage">
             <ShellContent.Icon>
                 <fluent:SymbolImageSource Symbol="Home" />
             </ShellContent.Icon>
@@ -20,8 +19,7 @@
 
         <ShellContent x:Name="TabWeekContent"
                       Title="Tuần này"
-                      Route="WeekPage"
-                      ContentTemplate="{DataTemplate views:WeekPage}">
+                      Route="WeekPage">
             <ShellContent.Icon>
                 <fluent:SymbolImageSource Symbol="Calendar" />
             </ShellContent.Icon>
@@ -29,8 +27,7 @@
 
         <ShellContent x:Name="TabHistoryContent"
                       Title="Lịch sử"
-                      Route="HistoryPage"
-                      ContentTemplate="{DataTemplate views:HistoryPage}">
+                      Route="HistoryPage">
             <ShellContent.Icon>
                 <fluent:SymbolImageSource Symbol="History" />
             </ShellContent.Icon>
@@ -38,8 +35,7 @@
 
         <ShellContent x:Name="TabSettingsContent"
                       Title="Cài đặt"
-                      Route="SettingsPage"
-                      ContentTemplate="{DataTemplate views:SettingsPage}">
+                      Route="SettingsPage">
             <ShellContent.Icon>
                 <fluent:SymbolImageSource Symbol="Settings" />
             </ShellContent.Icon>

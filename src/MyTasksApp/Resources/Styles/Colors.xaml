@@ -54,8 +54,12 @@
     <Color x:Key="SuccessSurfaceDark">#052E16</Color>  <!-- Green-950 -->
 
     <!-- Component Tokens -->
-    <Color x:Key="SnackbarBg">#1E293B</Color>          <!-- Slate-800 -->
-    <Color x:Key="SnackbarBgDark">#020617</Color>      <!-- Slate-950 -->
+    <Color x:Key="SnackbarBg">#FFFFFF</Color>          <!-- White (Surface) for Light mode -->
+    <Color x:Key="SnackbarBgDark">#020617</Color>      <!-- Slate-950 for Dark mode -->
+    <Color x:Key="SnackbarUndoBg">#EEF2FF</Color>      <!-- Indigo-50 (PrimaryLight) -->
+    <Color x:Key="SnackbarUndoBgDark">#1E1B4B</Color>  <!-- Indigo-950 (PrimaryLightDark) -->
+    <Color x:Key="SnackbarUndoText">#4F46E5</Color>    <!-- Indigo-600 (Primary) -->
+    <Color x:Key="SnackbarUndoTextDark">#818CF8</Color><!-- Indigo-400 (PrimaryVariantDark) -->
     <Color x:Key="ProgressTrack">#E0E7FF</Color>       <!-- Indigo-100 -->
     <Color x:Key="ProgressTrackDark">#312E81</Color>   <!-- Indigo-900 -->
     <Color x:Key="ProgressFill">#4F46E5</Color>        <!-- Indigo-600 -->

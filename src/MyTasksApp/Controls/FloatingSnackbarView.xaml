@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
+             x:Class="MyTasksApp.Controls.FloatingSnackbarView"
+             VerticalOptions="End"
+             HorizontalOptions="Fill"
+             Margin="16,0,16,24"
+             IsVisible="False">
+
+    <Border x:Name="SnackbarBorder"
+            IsVisible="False"
+            BackgroundColor="{DynamicResource SnackbarBg}"
+            Stroke="{DynamicResource BorderColor}"
+            StrokeShape="RoundRectangle 12"
+            StrokeThickness="1"
+            Padding="16,12"
+            HorizontalOptions="Fill">
+        <Border.Shadow>
+            <Shadow Brush="Black"
+                    Offset="0,4"
+                    Radius="12"
+                    Opacity="0.18" />
+        </Border.Shadow>
+        <Border.GestureRecognizers>
+            <SwipeGestureRecognizer Direction="Down" Swiped="OnSwipeDownDismiss" />
+        </Border.GestureRecognizers>
+
+        <Grid ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="12" VerticalOptions="Center">
+            <!-- Icon 4 loại trạng thái theo ui_design/snack_bar.png -->
+            <fluent:SymbolIcon x:Name="IconSuccess"
+                               Symbol="CheckmarkCircle"
+                               ForegroundColor="{DynamicResource Success}"
+                               FontSize="20"
+                               VerticalOptions="Center"
+                               IsVisible="True" />
+
+            <fluent:SymbolIcon x:Name="IconDanger"
+                               Symbol="ErrorCircle"
+                               ForegroundColor="{DynamicResource Danger}"
+                               FontSize="20"
+                               VerticalOptions="Center"
+                               IsVisible="False" />
+
+            <fluent:SymbolIcon x:Name="IconWarning"
+                               Symbol="Warning"
+                               ForegroundColor="{DynamicResource Warning}"
+                               FontSize="20"
+                               VerticalOptions="Center"
+                               IsVisible="False" />
+
+            <fluent:SymbolIcon x:Name="IconUndo"
+                               Symbol="Delete"
+                               ForegroundColor="{DynamicResource TextSecondary}"
+                               FontSize="20"
+                               VerticalOptions="Center"
+                               IsVisible="False" />
+
+            <!-- Nội dung Message -->
+            <Label x:Name="MessageLabel"
+                   Grid.Column="1"
+                   Text=""
+                   TextColor="{DynamicResource TextPrimary}"
+                   FontSize="{DynamicResource FontSizeBody}"
+                   FontFamily="InterMedium"
+                   LineBreakMode="WordWrap"
+                   VerticalOptions="Center" />
+
+            <!-- Nút Hoàn tác -->
+            <Button x:Name="UndoBtn"
+                    Grid.Column="2"
+                    Text="Hoàn tác"
+                    Clicked="OnUndoClicked"
+                    IsVisible="False"
+                    BackgroundColor="{DynamicResource SnackbarUndoBg}"
+                    TextColor="{DynamicResource SnackbarUndoText}"
+                    FontSize="{DynamicResource FontSizeCaption}"
+                    FontFamily="InterSemiBold"
+                    CornerRadius="8"
+                    Padding="12,4"
+                    HeightRequest="36"
+                    MinimumHeightRequest="36"
+                    VerticalOptions="Center" />
+
+            <!-- Nút đóng ✕ (Touch target chuẩn 44x44dp) -->
+            <Border Grid.Column="3"
+                    WidthRequest="44"
+                    HeightRequest="44"
+                    StrokeShape="RoundRectangle 22"
+                    BackgroundColor="Transparent"
+                    StrokeThickness="0"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDismissClicked" />
+                </Border.GestureRecognizers>
+                <fluent:SymbolIcon Symbol="Dismiss"
+                                   ForegroundColor="{DynamicResource TextMuted}"
+                                   FontSize="16"
+                                   InputTransparent="True"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+            </Border>
+        </Grid>
+    </Border>
+</ContentView>

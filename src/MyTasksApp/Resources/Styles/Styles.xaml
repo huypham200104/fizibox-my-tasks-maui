@@ -23,6 +23,7 @@
     </Style>
 
     <Style TargetType="Button">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
         <Setter Property="FontFamily" Value="InterRegular"/>
@@ -67,6 +68,7 @@
     </Style>
 
     <Style TargetType="DatePicker">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="InterRegular"/>
@@ -88,6 +90,7 @@
     </Style>
 
     <Style TargetType="Editor">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="InterRegular"/>
@@ -110,6 +113,7 @@
     </Style>
 
     <Style TargetType="Entry">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="InterRegular"/>
@@ -154,6 +158,7 @@
     </Style>
 
     <Style TargetType="Label">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="InterRegular" />
@@ -187,6 +192,7 @@
     </Style>
 
     <Style TargetType="Picker">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
         <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
@@ -226,6 +232,7 @@
     </Style>
 
     <Style TargetType="RadioButton">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="BackgroundColor" Value="Transparent"/>
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
         <Setter Property="FontFamily" Value="InterRegular"/>
@@ -251,6 +258,7 @@
     </Style>
 
     <Style TargetType="SearchBar">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
         <Setter Property="PlaceholderColor" Value="{StaticResource Gray500}" />
         <Setter Property="CancelButtonColor" Value="{StaticResource Gray500}" />
@@ -335,6 +343,7 @@
     </Style>
 
     <Style TargetType="TimePicker">
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
         <Setter Property="BackgroundColor" Value="Transparent"/>
         <Setter Property="FontFamily" Value="InterRegular"/>
