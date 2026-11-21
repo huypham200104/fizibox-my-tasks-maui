@@ -181,4 +181,33 @@ public class TaskDetailViewModelTests
         vm.IsTimePickerSheetVisible.Should().BeFalse();
         vm.CurrentTask!.DueTime.Should().Be(new TimeSpan(17, 0, 0));
     }
+
+    [Fact]
+    public async Task StatusSelection_AndLocalizationSync_ShouldUpdateCorrectly()
+    {
+        // Arrange
+        var service = new MockTaskService();
+        var loc = new LocalizationService();
+        var vm = new TaskDetailViewModel(service, loc);
+        await vm.LoadTaskByIdAsync(1);
+        vm.CurrentTask!.Status = TaskStatus.InProgress;
+
+        // Assert Vietnamese
+        vm.CurrentStatusText.Should().Be("Đang thực hiện");
+        vm.OpenStatusSheetCommand.Execute(null);
+        vm.IsTempStatusInProgress.Should().BeTrue();
+        vm.IsTempStatusPending.Should().BeFalse();
+        vm.IsTempStatusCompleted.Should().BeFalse();
+
+        // Switch language to English
+        loc.SetLanguage(AppLanguage.English);
+
+        // Assert English sync
+        vm.CurrentStatusText.Should().Be("In Progress");
+        vm.Title.Should().Be("Task Details");
+        vm.SectionDescTitle.Should().Be("Task Description");
+        vm.SectionInfoTitle.Should().Be("Task Information");
+        vm.DueDateLabel.Should().Be("Due Date");
+        vm.SheetStatusTitle.Should().Be("Change Status");
+    }
 }

@@ -210,6 +210,7 @@ public class SettingsViewModel : BaseViewModel
 
     public string SettingsTitle => _localizationService["SettingsTitle"];
     public string SettingsSubtitle => _localizationService["SettingsSubtitle"];
+    public string AppSubtitle => _localizationService?["AppSubtitle"] ?? "Việc của tôi";
 
     public string SectionAppearance => _localizationService["SectionAppearance"];
     public string ThemeMode => _localizationService["ThemeMode"];
@@ -471,6 +472,7 @@ public class SettingsViewModel : BaseViewModel
 
     private void NotifyAllStringsChanged()
     {
+        OnPropertyChanged(nameof(AppSubtitle));
         OnPropertyChanged(nameof(SettingsTitle));
         OnPropertyChanged(nameof(SettingsSubtitle));
         OnPropertyChanged(nameof(SectionAppearance));

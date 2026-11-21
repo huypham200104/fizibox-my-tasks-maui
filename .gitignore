@@ -482,8 +482,6 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-/ui_design
-/docs
 
 # Superpowers plugin files
 .superpowers/

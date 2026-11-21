@@ -8,8 +8,9 @@
              xmlns:vm="clr-namespace:MyTasksApp.ViewModels"
              x:Class="MyTasksApp.Views.TaskDetailPage"
              x:DataType="vm:TaskDetailViewModel"
-             Title="Chi tiết công việc"
+             Title="{Binding Title}"
              Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False"
              BackgroundColor="{DynamicResource Background}">
 
     <Grid>
@@ -17,31 +18,29 @@
         <!-- 1. GIAO DIỆN CHÍNH KHI TÌM THẤY CÔNG VIỆC (ISNOTFOUND = FALSE) -->
         <!-- ============================================================= -->
         <Grid IsVisible="{Binding IsNotFound, Converter={StaticResource InvertedBoolConverter}}"
-              RowDefinitions="Auto, *">
+              RowDefinitions="Auto, *, Auto">
 
             <!-- 1.1. TOP APP BAR (Nút quay lại + Tiêu đề + Menu 3 chấm) -->
-            <Border BackgroundColor="{DynamicResource Surface}"
+            <Border Grid.Row="0"
+                    BackgroundColor="{DynamicResource Surface}"
                     Stroke="{DynamicResource BorderColor}"
                     StrokeThickness="0,0,0,1"
-                    Padding="16,12">
+                    Padding="16,10">
                 <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
                     <!-- Nút Quay lại < -->
-                    <Border WidthRequest="44"
-                            HeightRequest="44"
-                            StrokeShape="RoundRectangle 12"
-                            Stroke="{DynamicResource BorderColor}"
-                            StrokeThickness="1"
-                            BackgroundColor="{DynamicResource SurfaceVariant}"
-                            VerticalOptions="Center">
-                        <Border.GestureRecognizers>
+                    <Grid WidthRequest="44"
+                          HeightRequest="44"
+                          VerticalOptions="Center"
+                          HorizontalOptions="Start">
+                        <Grid.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding GoBackCommand}" />
-                        </Border.GestureRecognizers>
+                        </Grid.GestureRecognizers>
                         <fluent:SymbolIcon Symbol="ChevronLeft"
-                                           FontSize="20"
+                                           FontSize="22"
                                            ForegroundColor="{DynamicResource TextPrimary}"
                                            HorizontalOptions="Center"
                                            VerticalOptions="Center" />
-                    </Border>
+                    </Grid>
 
                     <!-- Tiêu đề trang -->
                     <Label Grid.Column="1"
@@ -53,30 +52,28 @@
                            HorizontalOptions="Center" />
 
                     <!-- Nút Menu 3 chấm ⋮ -->
-                    <Border Grid.Column="2"
-                            WidthRequest="44"
-                            HeightRequest="44"
-                            StrokeShape="RoundRectangle 12"
-                            Stroke="{DynamicResource BorderColor}"
-                            StrokeThickness="1"
-                            BackgroundColor="{DynamicResource SurfaceVariant}"
-                            VerticalOptions="Center">
-                        <Border.GestureRecognizers>
+                    <Grid Grid.Column="2"
+                          WidthRequest="44"
+                          HeightRequest="44"
+                          VerticalOptions="Center"
+                          HorizontalOptions="End">
+                        <Grid.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding OpenActionMenuCommand}" />
-                        </Border.GestureRecognizers>
+                        </Grid.GestureRecognizers>
                         <fluent:SymbolIcon Symbol="MoreVertical"
-                                           FontSize="20"
+                                           FontSize="22"
                                            ForegroundColor="{DynamicResource TextPrimary}"
                                            HorizontalOptions="Center"
                                            VerticalOptions="Center" />
-                    </Border>
+                    </Grid>
                 </Grid>
             </Border>
 
-            <!-- 1.2. NỘI DUNG CUỘN CHI TIẾT & NÚT CTA ĐÁY -->
-            <Grid Grid.Row="1" RowDefinitions="*, Auto">
-                <ScrollView VerticalScrollBarVisibility="Never">
-                    <VerticalStackLayout Padding="20,20,20,32" Spacing="24">
+            <!-- 1.2. NỘI DUNG CUỘN CHI TIẾT -->
+            <ScrollView Grid.Row="1"
+                        VerticalOptions="Fill"
+                        VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Padding="20,20,20,32" Spacing="24">
 
                         <!-- KHỐI TIÊU ĐỀ LỚN & STATUS BADGE -->
                         <VerticalStackLayout Spacing="14">
@@ -132,8 +129,17 @@
                                     </Border.Style>
 
                                     <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <!-- Icon Trạng thái -->
-                                        <fluent:SymbolIcon FontSize="14">
+                                        <!-- Icon Trạng thái: Dùng Border tròn cho InProgress để tránh lỗi viền trắng trên Android -->
+                                        <Border WidthRequest="10"
+                                                HeightRequest="10"
+                                                StrokeShape="RoundRectangle 5"
+                                                BackgroundColor="{DynamicResource Warning}"
+                                                StrokeThickness="0"
+                                                VerticalOptions="Center"
+                                                IsVisible="{Binding CurrentTask.IsInProgress}" />
+
+                                        <fluent:SymbolIcon FontSize="14"
+                                                           IsVisible="{Binding CurrentTask.IsInProgress, Converter={StaticResource InvertedBoolConverter}}">
                                             <fluent:SymbolIcon.Style>
                                                 <Style TargetType="fluent:SymbolIcon">
                                                     <Setter Property="Symbol" Value="Circle" />
@@ -143,29 +149,23 @@
                                                             <Setter Property="Symbol" Value="CheckmarkCircle" />
                                                             <Setter Property="ForegroundColor" Value="{DynamicResource Success}" />
                                                         </DataTrigger>
-                                                        <DataTrigger TargetType="fluent:SymbolIcon" Binding="{Binding CurrentTask.IsInProgress}" Value="True">
-                                                            <Setter Property="Symbol" Value="Record" />
-                                                            <Setter Property="ForegroundColor" Value="{DynamicResource Warning}" />
-                                                        </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </fluent:SymbolIcon.Style>
                                         </fluent:SymbolIcon>
 
-                                        <!-- Nhãn Trạng thái -->
-                                        <Label FontFamily="InterSemiBold"
+                                        <!-- Nhãn Trạng thái đồng bộ song ngữ -->
+                                        <Label Text="{Binding CurrentStatusText}"
+                                               FontFamily="InterSemiBold"
                                                FontSize="{DynamicResource FontSizeCaption}">
                                             <Label.Style>
                                                 <Style TargetType="Label">
-                                                    <Setter Property="Text" Value="Chưa hoàn thành" />
                                                     <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
                                                     <Style.Triggers>
                                                         <DataTrigger TargetType="Label" Binding="{Binding CurrentTask.IsCompleted}" Value="True">
-                                                            <Setter Property="Text" Value="Đã hoàn thành" />
                                                             <Setter Property="TextColor" Value="{DynamicResource Success}" />
                                                         </DataTrigger>
                                                         <DataTrigger TargetType="Label" Binding="{Binding CurrentTask.IsInProgress}" Value="True">
-                                                            <Setter Property="Text" Value="Đang thực hiện" />
                                                             <Setter Property="TextColor" Value="{DynamicResource Warning}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -183,7 +183,7 @@
                                 <fluent:SymbolIcon Symbol="DocumentText"
                                                    FontSize="18"
                                                    ForegroundColor="{DynamicResource TextSecondary}" />
-                                <Label Text="Mô tả công việc"
+                                <Label Text="{Binding SectionDescTitle}"
                                        FontFamily="InterSemiBold"
                                        FontSize="{DynamicResource FontSizeSubtitle}"
                                        TextColor="{DynamicResource TextPrimary}" />
@@ -208,7 +208,7 @@
                                 <fluent:SymbolIcon Symbol="Info"
                                                    FontSize="18"
                                                    ForegroundColor="{DynamicResource TextSecondary}" />
-                                <Label Text="Thông tin công việc"
+                                <Label Text="{Binding SectionInfoTitle}"
                                        FontFamily="InterSemiBold"
                                        FontSize="{DynamicResource FontSizeSubtitle}"
                                        TextColor="{DynamicResource TextPrimary}" />
@@ -233,7 +233,7 @@
                                                            ForegroundColor="{DynamicResource TextSecondary}"
                                                            VerticalOptions="Center" />
                                         <Label Grid.Column="1"
-                                               Text="Hạn hoàn thành"
+                                               Text="{Binding DueDateLabel}"
                                                FontFamily="InterRegular"
                                                FontSize="{DynamicResource FontSizeBody}"
                                                TextColor="{DynamicResource TextSecondary}"
@@ -267,7 +267,7 @@
                                                            ForegroundColor="{DynamicResource TextSecondary}"
                                                            VerticalOptions="Center" />
                                         <Label Grid.Column="1"
-                                               Text="Thời gian"
+                                               Text="{Binding DueTimeLabel}"
                                                FontFamily="InterRegular"
                                                FontSize="{DynamicResource FontSizeBody}"
                                                TextColor="{DynamicResource TextSecondary}"
@@ -301,7 +301,7 @@
                                                            ForegroundColor="{DynamicResource TextSecondary}"
                                                            VerticalOptions="Center" />
                                         <Label Grid.Column="1"
-                                               Text="Dự án"
+                                               Text="{Binding ProjectLabel}"
                                                FontFamily="InterRegular"
                                                FontSize="{DynamicResource FontSizeBody}"
                                                TextColor="{DynamicResource TextSecondary}"
@@ -335,27 +335,25 @@
                                                            ForegroundColor="{DynamicResource TextSecondary}"
                                                            VerticalOptions="Center" />
                                         <Label Grid.Column="1"
-                                               Text="Trạng thái"
+                                               Text="{Binding StatusLabel}"
                                                FontFamily="InterRegular"
                                                FontSize="{DynamicResource FontSizeBody}"
                                                TextColor="{DynamicResource TextSecondary}"
                                                Margin="12,0,0,0"
                                                VerticalOptions="Center" />
                                         <Label Grid.Column="2"
+                                               Text="{Binding CurrentStatusText}"
                                                FontFamily="InterSemiBold"
                                                FontSize="{DynamicResource FontSizeBody}"
                                                VerticalOptions="Center">
                                             <Label.Style>
                                                 <Style TargetType="Label">
-                                                    <Setter Property="Text" Value="Chưa hoàn thành" />
                                                     <Setter Property="TextColor" Value="{DynamicResource Primary}" />
                                                     <Style.Triggers>
                                                         <DataTrigger TargetType="Label" Binding="{Binding CurrentTask.IsCompleted}" Value="True">
-                                                            <Setter Property="Text" Value="Đã hoàn thành" />
                                                             <Setter Property="TextColor" Value="{DynamicResource Success}" />
                                                         </DataTrigger>
                                                         <DataTrigger TargetType="Label" Binding="{Binding CurrentTask.IsInProgress}" Value="True">
-                                                            <Setter Property="Text" Value="Đang thực hiện" />
                                                             <Setter Property="TextColor" Value="{DynamicResource Warning}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -380,7 +378,7 @@
                                 <fluent:SymbolIcon Symbol="Note"
                                                    FontSize="18"
                                                    ForegroundColor="{DynamicResource TextSecondary}" />
-                                <Label Text="Ghi chú"
+                                <Label Text="{Binding SectionNotesTitle}"
                                        FontFamily="InterSemiBold"
                                        FontSize="{DynamicResource FontSizeSubtitle}"
                                        TextColor="{DynamicResource TextPrimary}" />
@@ -426,37 +424,59 @@
                     </VerticalStackLayout>
                 </ScrollView>
 
-                <!-- 1.3. NÚT CTA CỐ ĐỊNH CHÂN TRANG (HOÀN THÀNH / MỞ LẠI) -->
-                <Border Grid.Row="1"
-                        BackgroundColor="{DynamicResource Surface}"
-                        Stroke="{DynamicResource BorderColor}"
-                        StrokeThickness="0,1,0,0"
-                        Padding="20,12,20,16">
-                    <Grid>
-                        <!-- Nút Solid Primary: "Hoàn thành công việc" (khi việc chưa xong) -->
-                        <Button Text="Hoàn thành công việc"
-                                Command="{Binding ToggleMainStatusCommand}"
-                                HeightRequest="50"
-                                CornerRadius="14"
-                                BackgroundColor="{DynamicResource Primary}"
-                                TextColor="White"
-                                FontFamily="InterSemiBold"
-                                FontSize="{DynamicResource FontSizeBody}"
-                                IsVisible="{Binding IsCompletedState, Converter={StaticResource InvertedBoolConverter}}" />
+            <!-- 1.3. NÚT CTA CỐ ĐỊNH CHÂN TRANG (HOÀN THÀNH / MỞ LẠI) -->
+            <Grid Grid.Row="2"
+                  HeightRequest="76"
+                  BackgroundColor="{DynamicResource Surface}"
+                  Padding="20,12"
+                  VerticalOptions="End">
+                <!-- Đường kẻ phân cách phía trên -->
+                <BoxView HeightRequest="1"
+                         Color="{DynamicResource BorderColor}"
+                         VerticalOptions="Start"
+                         HorizontalOptions="Fill" />
 
-                        <!-- Nút Outlined: "Mở lại công việc" (khi việc đã xong) -->
-                        <Button Text="Mở lại công việc"
-                                Command="{Binding ToggleMainStatusCommand}"
-                                HeightRequest="50"
-                                CornerRadius="14"
-                                BackgroundColor="{DynamicResource Surface}"
-                                BorderColor="{DynamicResource Primary}"
-                                BorderWidth="1.5"
-                                TextColor="{DynamicResource Primary}"
-                                FontFamily="InterSemiBold"
-                                FontSize="{DynamicResource FontSizeBody}"
-                                IsVisible="{Binding IsCompletedState}" />
-                    </Grid>
+                <!-- Nút Solid Primary: "Hoàn thành công việc" (khi việc chưa xong) -->
+                <Border StrokeShape="RoundRectangle 14"
+                        BackgroundColor="{DynamicResource Primary}"
+                        StrokeThickness="0"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Center"
+                        Padding="0,14"
+                        IsVisible="{Binding IsCompletedState, Converter={StaticResource InvertedBoolConverter}}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleMainStatusCommand}" />
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                        <fluent:SymbolIcon Symbol="Checkmark" FontSize="18" ForegroundColor="White" />
+                        <Label Text="{Binding MainCtaButtonText}"
+                               TextColor="White"
+                               FontFamily="InterSemiBold"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Nút Outlined: "Mở lại công việc" (khi việc đã xong) -->
+                <Border StrokeShape="RoundRectangle 14"
+                        BackgroundColor="{DynamicResource Surface}"
+                        Stroke="{DynamicResource Primary}"
+                        StrokeThickness="1.5"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Center"
+                        Padding="0,14"
+                        IsVisible="{Binding IsCompletedState}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleMainStatusCommand}" />
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                        <fluent:SymbolIcon Symbol="ArrowCounterclockwise" FontSize="18" ForegroundColor="{DynamicResource Primary}" />
+                        <Label Text="{Binding MainCtaButtonText}"
+                               TextColor="{DynamicResource Primary}"
+                               FontFamily="InterSemiBold"
+                               FontSize="{DynamicResource FontSizeBody}"
+                               VerticalOptions="Center" />
+                    </HorizontalStackLayout>
                 </Border>
             </Grid>
         </Grid>
@@ -483,14 +503,14 @@
                                    VerticalOptions="Center" />
             </Border>
 
-            <Label Text="Không tìm thấy công việc"
+            <Label Text="{Binding NotFoundTitle}"
                    FontFamily="InterBold"
                    FontSize="{DynamicResource FontSizeTitle}"
                    TextColor="{DynamicResource TextPrimary}"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center" />
 
-            <Label Text="Công việc này không tồn tại trong bộ dữ liệu hoặc đã bị xóa khỏi hệ thống."
+            <Label Text="{Binding NotFoundDesc}"
                    FontFamily="InterRegular"
                    FontSize="{DynamicResource FontSizeBody}"
                    TextColor="{DynamicResource TextSecondary}"
@@ -498,7 +518,7 @@
                    HorizontalTextAlignment="Center"
                    MaximumWidthRequest="320" />
 
-            <Button Text="Quay lại danh sách"
+            <Button Text="{Binding NotFoundGoBackText}"
                     Command="{Binding GoBackCommand}"
                     HeightRequest="46"
                     Padding="24,0"
@@ -547,7 +567,7 @@
                             <fluent:SymbolIcon Symbol="Edit"
                                                FontSize="20"
                                                ForegroundColor="{DynamicResource TextPrimary}" />
-                            <Label Text="Chỉnh sửa thông tin"
+                            <Label Text="{Binding MenuEditTitle}"
                                    FontFamily="InterSemiBold"
                                    FontSize="{DynamicResource FontSizeBody}"
                                    TextColor="{DynamicResource TextPrimary}"
@@ -567,7 +587,7 @@
                             <fluent:SymbolIcon Symbol="Delete"
                                                FontSize="20"
                                                ForegroundColor="{DynamicResource Danger}" />
-                            <Label Text="Xóa công việc"
+                            <Label Text="{Binding MenuDeleteTitle}"
                                    FontFamily="InterSemiBold"
                                    FontSize="{DynamicResource FontSizeBody}"
                                    TextColor="{DynamicResource Danger}"
@@ -576,7 +596,7 @@
                     </Border>
 
                     <!-- Nút Hủy -->
-                    <Button Text="Hủy"
+                    <Button Text="{Binding DialogCancelText}"
                             Command="{Binding CloseActionMenuCommand}"
                             HeightRequest="48"
                             CornerRadius="12"
@@ -775,69 +795,102 @@
 
                     <!-- Header -->
                     <VerticalStackLayout Spacing="2">
-                        <Label Text="Chọn trạng thái"
+                        <Label Text="{Binding SheetStatusTitle}"
                                FontFamily="InterBold"
                                FontSize="{DynamicResource FontSizeTitle}"
                                TextColor="{DynamicResource TextPrimary}" />
-                        <Label Text="Cập nhật trạng thái công việc"
+                        <Label Text="{Binding SheetStatusSubtitle}"
                                FontFamily="InterRegular"
                                FontSize="{DynamicResource FontSizeCaption}"
                                TextColor="{DynamicResource TextSecondary}" />
                     </VerticalStackLayout>
 
                     <!-- Card 1: Chưa hoàn thành -->
-                    <Border BackgroundColor="{DynamicResource Surface}"
-                            Stroke="{DynamicResource Primary}"
-                            StrokeThickness="1.5"
+                    <Border StrokeThickness="1.5"
                             StrokeShape="RoundRectangle 14"
                             Padding="16,14">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SelectStatusOptionCommand}" CommandParameter="{x:Static enums:TaskStatus.Pending}" />
                         </Border.GestureRecognizers>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                <Setter Property="Stroke" Value="{DynamicResource BorderColor}" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsTempStatusPending}" Value="True">
+                                        <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
                         <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
-                            <Border WidthRequest="24" HeightRequest="24" StrokeShape="RoundRectangle 12"
-                                    Stroke="{DynamicResource TextMuted}" StrokeThickness="1.5" BackgroundColor="Transparent" />
+                            <Border WidthRequest="22" HeightRequest="22" StrokeShape="RoundRectangle 11"
+                                    Stroke="{DynamicResource TextMuted}" StrokeThickness="2" BackgroundColor="Transparent" />
                             <VerticalStackLayout Grid.Column="1" Spacing="2" Margin="14,0,0,0">
-                                <Label Text="Chưa hoàn thành" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
-                                <Label Text="Công việc chưa được thực hiện" FontFamily="InterRegular" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                                <Label Text="{Binding StatusPendingTitle}" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
+                                <Label Text="{Binding StatusPendingDesc}" FontFamily="InterRegular" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
                             </VerticalStackLayout>
-                            <fluent:SymbolIcon Grid.Column="2" Symbol="CheckmarkCircle" FontSize="20" ForegroundColor="{DynamicResource Primary}" />
+                            <fluent:SymbolIcon Grid.Column="2" Symbol="CheckmarkCircle" FontSize="20" ForegroundColor="{DynamicResource Primary}"
+                                               IsVisible="{Binding IsTempStatusPending}" />
                         </Grid>
                     </Border>
 
                     <!-- Card 2: Đang thực hiện -->
-                    <Border BackgroundColor="{DynamicResource Surface}"
-                            Stroke="{DynamicResource BorderColor}"
-                            StrokeThickness="1"
+                    <Border StrokeThickness="1.5"
                             StrokeShape="RoundRectangle 14"
                             Padding="16,14">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SelectStatusOptionCommand}" CommandParameter="{x:Static enums:TaskStatus.InProgress}" />
                         </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="Auto, *">
-                            <BoxView WidthRequest="22" HeightRequest="22" CornerRadius="11" Color="{DynamicResource Warning}" />
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                <Setter Property="Stroke" Value="{DynamicResource BorderColor}" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsTempStatusInProgress}" Value="True">
+                                        <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
+                            <Border WidthRequest="22" HeightRequest="22" StrokeShape="RoundRectangle 11"
+                                    BackgroundColor="{DynamicResource Warning}" StrokeThickness="0" />
                             <VerticalStackLayout Grid.Column="1" Spacing="2" Margin="14,0,0,0">
-                                <Label Text="Đang thực hiện" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
-                                <Label Text="Công việc đang được xử lý" FontFamily="InterRegular" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                                <Label Text="{Binding StatusInProgressTitle}" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
+                                <Label Text="{Binding StatusInProgressDesc}" FontFamily="InterRegular" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
                             </VerticalStackLayout>
+                            <fluent:SymbolIcon Grid.Column="2" Symbol="CheckmarkCircle" FontSize="20" ForegroundColor="{DynamicResource Primary}"
+                                               IsVisible="{Binding IsTempStatusInProgress}" />
                         </Grid>
                     </Border>
 
                     <!-- Card 3: Đã hoàn thành -->
-                    <Border BackgroundColor="{DynamicResource Surface}"
-                            Stroke="{DynamicResource BorderColor}"
-                            StrokeThickness="1"
+                    <Border StrokeThickness="1.5"
                             StrokeShape="RoundRectangle 14"
                             Padding="16,14">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SelectStatusOptionCommand}" CommandParameter="{x:Static enums:TaskStatus.Completed}" />
                         </Border.GestureRecognizers>
-                        <Grid ColumnDefinitions="Auto, *">
-                            <fluent:SymbolIcon Symbol="CheckmarkCircle" FontSize="24" ForegroundColor="{DynamicResource Success}" />
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                                <Setter Property="Stroke" Value="{DynamicResource BorderColor}" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsTempStatusCompleted}" Value="True">
+                                        <Setter Property="Stroke" Value="{DynamicResource Primary}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
+                            <fluent:SymbolIcon Symbol="CheckmarkCircle" FontSize="22" ForegroundColor="{DynamicResource Success}" />
                             <VerticalStackLayout Grid.Column="1" Spacing="2" Margin="14,0,0,0">
-                                <Label Text="Đã hoàn thành" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
-                                <Label Text="Công việc đã hoàn tất" FontFamily="InterRegular" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                                <Label Text="{Binding StatusCompletedTitle}" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
+                                <Label Text="{Binding StatusCompletedDesc}" FontFamily="InterRegular" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
                             </VerticalStackLayout>
+                            <fluent:SymbolIcon Grid.Column="2" Symbol="CheckmarkCircle" FontSize="20" ForegroundColor="{DynamicResource Primary}"
+                                               IsVisible="{Binding IsTempStatusCompleted}" />
                         </Grid>
                     </Border>
                 </VerticalStackLayout>
@@ -1250,19 +1303,19 @@
                     StrokeThickness="0"
                     Padding="24,20">
                 <VerticalStackLayout Spacing="16">
-                    <Label Text="Mở lại công việc?"
+                    <Label Text="{Binding DialogReopenTitle}"
                            FontFamily="InterBold"
                            FontSize="{DynamicResource FontSizeTitle}"
                            TextColor="{DynamicResource TextPrimary}" />
 
-                    <Label Text="Bạn có chắc chắn muốn mở lại công việc này không? Trạng thái sẽ được chuyển về Chưa hoàn thành."
+                    <Label Text="{Binding DialogReopenMsg}"
                            FontFamily="InterRegular"
                            FontSize="{DynamicResource FontSizeBody}"
                            TextColor="{DynamicResource TextSecondary}"
                            LineBreakMode="WordWrap" />
 
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,8,0,0">
-                        <Button Text="Hủy"
+                        <Button Text="{Binding DialogCancelText}"
                                 Command="{Binding CancelReopenCommand}"
                                 HeightRequest="46"
                                 CornerRadius="12"
@@ -1271,7 +1324,7 @@
                                 FontFamily="InterSemiBold"
                                 FontSize="{DynamicResource FontSizeBody}" />
                         <Button Grid.Column="1"
-                                Text="Xác nhận"
+                                Text="{Binding DialogConfirmText}"
                                 Command="{Binding ConfirmReopenCommand}"
                                 HeightRequest="46"
                                 CornerRadius="12"
@@ -1296,19 +1349,19 @@
                     StrokeThickness="0"
                     Padding="24,20">
                 <VerticalStackLayout Spacing="16">
-                    <Label Text="Xóa công việc?"
+                    <Label Text="{Binding DialogDeleteTitle}"
                            FontFamily="InterBold"
                            FontSize="{DynamicResource FontSizeTitle}"
                            TextColor="{DynamicResource Danger}" />
 
-                    <Label Text="Bạn có chắc chắn muốn xóa công việc này không? Hành động này có thể hoàn tác trong vòng 5 giây."
+                    <Label Text="{Binding DialogDeleteMsg}"
                            FontFamily="InterRegular"
                            FontSize="{DynamicResource FontSizeBody}"
                            TextColor="{DynamicResource TextSecondary}"
                            LineBreakMode="WordWrap" />
 
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,8,0,0">
-                        <Button Text="Hủy"
+                        <Button Text="{Binding DialogCancelText}"
                                 Command="{Binding CancelDeleteCommand}"
                                 HeightRequest="46"
                                 CornerRadius="12"
@@ -1317,7 +1370,7 @@
                                 FontFamily="InterSemiBold"
                                 FontSize="{DynamicResource FontSizeBody}" />
                         <Button Grid.Column="1"
-                                Text="Xóa"
+                                Text="{Binding DialogDeleteConfirmText}"
                                 Command="{Binding ConfirmDeleteCommand}"
                                 HeightRequest="46"
                                 CornerRadius="12"

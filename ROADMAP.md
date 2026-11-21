@@ -141,18 +141,18 @@ Tài liệu theo dõi tiến độ thực hiện các tính năng của ứng d�
 ---
 
 ### Giai đoạn 8: Hoàn thiện Hồ sơ & Nghiệm thu
-- [ ] **8.1. Soạn thảo `README.md` (Đầy đủ 7 nội dung bắt buộc theo ASSIGNMENT.md)**
-  - [ ] 1. Phiên bản SDK (.NET 10, MAUI), công cụ, thiết bị test.
-  - [ ] 2. Các bước cài đặt, build và chạy.
-  - [ ] 3. Cấu trúc project & kiến trúc Clean Architecture.
-  - [ ] 4. Quyết định thiết kế & 5 giả định nghiệp vụ tự quyết.
-  - [ ] 5. Hướng dẫn kích hoạt các trạng thái giả lập (Loading, Empty, Not Found, Reset mock data).
-  - [ ] 6. Ảnh chụp 4 màn hình chính, ảnh Dark Mode và Cỡ chữ lớn.
-  - [ ] 7. Các trường hợp đã test & phần chưa kiểm chứng.
-- [ ] **8.2. Soạn thảo `AI-NOTES.md`**
-  - [ ] Công cụ AI đã dùng và cách phân chia công việc.
-  - [ ] 3 ví dụ tiêu biểu (Prompt -> Kết quả -> Quyết định & lý do).
-  - [ ] 1 trường hợp AI tạo kết quả chưa phù hợp và cách giải quyết.
+- [x] **8.1. Soạn thảo `README.md` (Đầy đủ 7 nội dung bắt buộc theo ASSIGNMENT.md)**
+  - [x] 1. Phiên bản SDK (.NET 10, MAUI), công cụ, thiết bị test.
+  - [x] 2. Các bước cài đặt, build và chạy.
+  - [x] 3. Cấu trúc project & kiến trúc Clean Architecture.
+  - [x] 4. Quyết định thiết kế & 5 giả định nghiệp vụ tự quyết.
+  - [x] 5. Hướng dẫn kích hoạt các trạng thái giả lập (Loading, Empty, Not Found, Reset mock data).
+  - [x] 6. Ảnh chụp 4 màn hình chính, ảnh Dark Mode và Cỡ chữ lớn.
+  - [x] 7. Các trường hợp đã test & phần chưa kiểm chứng.
+- [x] **8.2. Soạn thảo `AI-NOTES.md`**
+  - [x] Công cụ AI đã dùng và cách phân chia công việc.
+  - [x] 3 ví dụ tiêu biểu (Prompt -> Kết quả -> Quyết định & lý do).
+  - [x] 1 trường hợp AI tạo kết quả chưa phù hợp và cách giải quyết.
 - [ ] **8.3. Kiểm thử tổng thể & Tối ưu trên Android Emulator**
   - [ ] Chạy mượt mà, không giật lag, 0 crash.
   - [ ] Kiểm tra tương thích Light/Dark Mode, Responsive Cỡ chữ Lớn, Song ngữ VI/EN.

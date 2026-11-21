@@ -119,9 +119,39 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
         _localizationService.LanguageChanged += (_, _) =>
         {
             Title = _localizationService["DetailTitle"];
+            OnPropertyChanged(nameof(Title));
+            OnPropertyChanged(nameof(CurrentStatusText));
+            OnPropertyChanged(nameof(MainCtaButtonText));
+            OnPropertyChanged(nameof(FormattedCompletedAtText));
+            OnPropertyChanged(nameof(SectionDescTitle));
+            OnPropertyChanged(nameof(SectionInfoTitle));
+            OnPropertyChanged(nameof(DueDateLabel));
+            OnPropertyChanged(nameof(DueTimeLabel));
+            OnPropertyChanged(nameof(ProjectLabel));
+            OnPropertyChanged(nameof(StatusLabel));
+            OnPropertyChanged(nameof(SectionNotesTitle));
+            OnPropertyChanged(nameof(SheetStatusTitle));
+            OnPropertyChanged(nameof(SheetStatusSubtitle));
+            OnPropertyChanged(nameof(StatusPendingTitle));
+            OnPropertyChanged(nameof(StatusPendingDesc));
+            OnPropertyChanged(nameof(StatusInProgressTitle));
+            OnPropertyChanged(nameof(StatusInProgressDesc));
+            OnPropertyChanged(nameof(StatusCompletedTitle));
+            OnPropertyChanged(nameof(StatusCompletedDesc));
+            OnPropertyChanged(nameof(MenuEditTitle));
+            OnPropertyChanged(nameof(MenuDeleteTitle));
+            OnPropertyChanged(nameof(DialogReopenTitle));
+            OnPropertyChanged(nameof(DialogReopenMsg));
+            OnPropertyChanged(nameof(DialogDeleteTitle));
+            OnPropertyChanged(nameof(DialogDeleteMsg));
+            OnPropertyChanged(nameof(DialogCancelText));
+            OnPropertyChanged(nameof(DialogConfirmText));
+            OnPropertyChanged(nameof(DialogDeleteConfirmText));
+            OnPropertyChanged(nameof(NotFoundTitle));
+            OnPropertyChanged(nameof(NotFoundDesc));
+            OnPropertyChanged(nameof(NotFoundGoBackText));
             OnPropertyChanged(nameof(PickerMonthText));
             OnPropertyChanged(nameof(PickerSelectedDateFormatted));
-            OnPropertyChanged(nameof(FormattedCompletedAtText));
         };
     }
 
@@ -136,8 +166,12 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
             {
                 OnPropertyChanged(nameof(HasTask));
                 OnPropertyChanged(nameof(IsCompletedState));
+                OnPropertyChanged(nameof(CurrentStatusText));
                 OnPropertyChanged(nameof(FormattedCompletedAtText));
                 OnPropertyChanged(nameof(MainCtaButtonText));
+                OnPropertyChanged(nameof(IsTempStatusPending));
+                OnPropertyChanged(nameof(IsTempStatusInProgress));
+                OnPropertyChanged(nameof(IsTempStatusCompleted));
             }
         }
     }
@@ -170,6 +204,48 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
             return string.Format(_localizationService["DetailCompletedAt"], dt.ToString("HH:mm"), dt.ToString("dd/MM/yyyy"));
         }
     }
+
+    public string CurrentStatusText => CurrentTask?.Status switch
+    {
+        TaskStatus.Completed => _localizationService["StatusCompletedTitle"],
+        TaskStatus.InProgress => _localizationService["StatusInProgressTitle"],
+        _ => _localizationService["StatusPendingTitle"]
+    };
+
+    // Section headers & labels
+    public string SectionDescTitle => _localizationService["DetailSectionDesc"];
+    public string SectionInfoTitle => _localizationService["DetailSectionInfo"];
+    public string DueDateLabel => _localizationService["DetailDueDate"];
+    public string DueTimeLabel => _localizationService["DetailDueTime"];
+    public string ProjectLabel => _localizationService["DetailProject"];
+    public string StatusLabel => _localizationService["DetailStatus"];
+    public string SectionNotesTitle => _localizationService["DetailSectionNotes"];
+
+    // Bottom Sheet Status
+    public string SheetStatusTitle => _localizationService["SheetStatusTitle"];
+    public string SheetStatusSubtitle => _localizationService["SheetStatusSubtitle"];
+    public string StatusPendingTitle => _localizationService["StatusPendingTitle"];
+    public string StatusPendingDesc => _localizationService["StatusPendingDesc"];
+    public string StatusInProgressTitle => _localizationService["StatusInProgressTitle"];
+    public string StatusInProgressDesc => _localizationService["StatusInProgressDesc"];
+    public string StatusCompletedTitle => _localizationService["StatusCompletedTitle"];
+    public string StatusCompletedDesc => _localizationService["StatusCompletedDesc"];
+
+    // Action Menu
+    public string MenuEditTitle => _localizationService["DetailMenuEdit"];
+    public string MenuDeleteTitle => _localizationService["DetailMenuDelete"];
+
+    // Dialogs & Not Found
+    public string DialogReopenTitle => _localizationService["DialogReopenTitle"];
+    public string DialogReopenMsg => _localizationService["DialogReopenMsg"];
+    public string DialogDeleteTitle => _localizationService["DialogDeleteTitle"];
+    public string DialogDeleteMsg => _localizationService["DialogDeleteMsg"];
+    public string DialogCancelText => _localizationService["BtnCancel"];
+    public string DialogConfirmText => _localizationService["BtnConfirm"];
+    public string DialogDeleteConfirmText => _localizationService["BtnDelete"];
+    public string NotFoundTitle => _localizationService["NotFoundDetailTitle"];
+    public string NotFoundDesc => _localizationService["NotFoundDetailDesc"];
+    public string NotFoundGoBackText => _localizationService["BtnBackToList"];
 
     #endregion
 
@@ -364,8 +440,20 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
     public TaskStatus SelectedTempStatus
     {
         get => _selectedTempStatus;
-        set => SetProperty(ref _selectedTempStatus, value);
+        set
+        {
+            if (SetProperty(ref _selectedTempStatus, value))
+            {
+                OnPropertyChanged(nameof(IsTempStatusPending));
+                OnPropertyChanged(nameof(IsTempStatusInProgress));
+                OnPropertyChanged(nameof(IsTempStatusCompleted));
+            }
+        }
     }
+
+    public bool IsTempStatusPending => SelectedTempStatus == TaskStatus.Pending;
+    public bool IsTempStatusInProgress => SelectedTempStatus == TaskStatus.InProgress;
+    public bool IsTempStatusCompleted => SelectedTempStatus == TaskStatus.Completed;
 
     public ObservableCollection<string> AvailableProjects { get; }
 
@@ -500,6 +588,7 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
             CurrentTask.CompletedAt = DateTime.Now;
             await _taskService.UpdateTaskAsync(CurrentTask);
             OnPropertyChanged(nameof(IsCompletedState));
+            OnPropertyChanged(nameof(CurrentStatusText));
             OnPropertyChanged(nameof(FormattedCompletedAtText));
             OnPropertyChanged(nameof(MainCtaButtonText));
             _snackbarService.ShowSuccess(_localizationService["SnackbarTaskCompleted"]);
@@ -515,6 +604,7 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
             CurrentTask.CompletedAt = null;
             await _taskService.UpdateTaskAsync(CurrentTask);
             OnPropertyChanged(nameof(IsCompletedState));
+            OnPropertyChanged(nameof(CurrentStatusText));
             OnPropertyChanged(nameof(FormattedCompletedAtText));
             OnPropertyChanged(nameof(MainCtaButtonText));
             _snackbarService.ShowSuccess(_localizationService["SnackbarTaskReopened"]);
@@ -561,6 +651,9 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
         if (CurrentTask != null)
         {
             SelectedTempStatus = CurrentTask.Status;
+            OnPropertyChanged(nameof(IsTempStatusPending));
+            OnPropertyChanged(nameof(IsTempStatusInProgress));
+            OnPropertyChanged(nameof(IsTempStatusCompleted));
             IsStatusSheetVisible = true;
         }
     }
@@ -583,6 +676,7 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
 
             await _taskService.UpdateTaskAsync(CurrentTask);
             OnPropertyChanged(nameof(IsCompletedState));
+            OnPropertyChanged(nameof(CurrentStatusText));
             OnPropertyChanged(nameof(FormattedCompletedAtText));
             OnPropertyChanged(nameof(MainCtaButtonText));
         }
