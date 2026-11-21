@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
+             xmlns:controls="clr-namespace:MyTasksApp.Controls"
+             x:Class="MyTasksApp.Views.MockStatePreviewPage"
+             Title="Kiểm thử giao diện"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{DynamicResource Background}">
+
+    <Grid RowDefinitions="Auto, *">
+        <!-- 1. TOP APP BAR HEADER (Nút quay lại + Tiêu đề kiểm thử hoặc Skeleton) -->
+        <Border BackgroundColor="{DynamicResource Surface}"
+                Stroke="{DynamicResource BorderColor}"
+                StrokeThickness="0,0,0,1"
+                Padding="16,12">
+            <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
+                <Border WidthRequest="44"
+                        HeightRequest="44"
+                        StrokeShape="RoundRectangle 12"
+                        Stroke="{DynamicResource BorderColor}"
+                        StrokeThickness="1"
+                        BackgroundColor="{DynamicResource SurfaceVariant}"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBackButtonClicked" />
+                    </Border.GestureRecognizers>
+                    <fluent:SymbolIcon Symbol="ChevronLeft"
+                                       FontSize="20"
+                                       ForegroundColor="{DynamicResource TextPrimary}"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                </Border>
+
+                <!-- Tiêu đề thật (hiển thị khi ở Empty / NotFound state) -->
+                <VerticalStackLayout x:Name="NormalHeaderTitleGroup"
+                                     Grid.Column="1"
+                                     Spacing="2"
+                                     VerticalOptions="Center"
+                                     Margin="12,0,0,0"
+                                     IsVisible="False">
+                    <Label x:Name="PageTitleLabel"
+                           Text="Kiểm thử giao diện"
+                           FontFamily="InterBold"
+                           FontSize="{DynamicResource FontSizeTitle}"
+                           TextColor="{DynamicResource TextPrimary}" />
+                    <Label Text="Mô phỏng phản hồi trạng thái cho Reviewer"
+                           FontFamily="InterRegular"
+                           FontSize="{DynamicResource FontSizeCaption}"
+                           TextColor="{DynamicResource TextSecondary}" />
+                </VerticalStackLayout>
+
+                <!-- Badge thật (hiển thị khi ở Empty / NotFound state) -->
+                <Border x:Name="NormalHeaderBadge"
+                        Grid.Column="2"
+                        BackgroundColor="{DynamicResource PrimaryLight}"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="0"
+                        Padding="10,6"
+                        VerticalOptions="Center"
+                        IsVisible="False">
+                    <Label Text="Mock Mode"
+                           FontFamily="InterMedium"
+                           FontSize="{DynamicResource FontSizeBadge}"
+                           TextColor="{DynamicResource Primary}" />
+                </Border>
+
+                <!-- Skeleton Header Title Group (khớp 100% skeleton.png) -->
+                <VerticalStackLayout x:Name="SkeletonHeaderTitleGroup"
+                                     Grid.Column="1"
+                                     Spacing="6"
+                                     VerticalOptions="Center"
+                                     Margin="12,0,0,0"
+                                     IsVisible="True">
+                    <Border BackgroundColor="{DynamicResource BorderColor}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10"
+                            HeightRequest="20"
+                            WidthRequest="200"
+                            HorizontalOptions="Start" />
+                    <Border BackgroundColor="{DynamicResource BorderColor}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 6"
+                            HeightRequest="12"
+                            WidthRequest="130"
+                            HorizontalOptions="Start" />
+                </VerticalStackLayout>
+
+                <!-- Skeleton Header Badge (khớp 100% skeleton.png) -->
+                <Border x:Name="SkeletonHeaderBadge"
+                        Grid.Column="2"
+                        BackgroundColor="{DynamicResource BorderColor}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 14"
+                        HeightRequest="28"
+                        WidthRequest="80"
+                        VerticalOptions="Center"
+                        IsVisible="True" />
+            </Grid>
+        </Border>
+
+        <!-- 2. NỘI DUNG CHÍNH (THEO TRẠNG THÁI KIỂM THỬ) -->
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20,24,20,40" Spacing="20">
+
+                <!-- ========================================================= -->
+                <!-- A. GIAO DIỆN MÔ PHỎNG: TRẠNG THÁI ĐANG TẢI (SHIMMER / SKELETON) -->
+                <!-- ========================================================= -->
+                <VerticalStackLayout x:Name="LoadingView" Spacing="16" IsVisible="True">
+                    <!-- Banner nạp dữ liệu với icon sync và thanh skeleton (theo skeleton.png) -->
+                    <Border BackgroundColor="{DynamicResource PrimaryLight}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 14"
+                            Padding="16,14">
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                            <fluent:SymbolIcon Symbol="ArrowSync"
+                                               FontSize="18"
+                                               ForegroundColor="{DynamicResource Primary}"
+                                               VerticalOptions="Center" />
+                            <Border Grid.Column="1"
+                                    BackgroundColor="{DynamicResource BorderColor}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 7"
+                                    HeightRequest="14"
+                                    HorizontalOptions="Fill"
+                                    VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Thẻ Skeleton mẫu 1 (khớp skeleton.png) -->
+                    <Border BackgroundColor="{DynamicResource Surface}"
+                            Stroke="{DynamicResource BorderColor}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 16"
+                            Padding="16">
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="14" VerticalOptions="Center">
+                            <!-- Checkbox / Avatar skeleton -->
+                            <Border WidthRequest="38"
+                                    HeightRequest="38"
+                                    StrokeShape="RoundRectangle 19"
+                                    BackgroundColor="{DynamicResource BorderColor}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Start" />
+
+                            <!-- Nội dung task skeleton: 2 tầng chuẩn AGENTS.md Rule 6 -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                <Border BackgroundColor="{DynamicResource BorderColor}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 7"
+                                        HeightRequest="14"
+                                        WidthRequest="220"
+                                        HorizontalOptions="Start" />
+                                <Border BackgroundColor="{DynamicResource BorderColor}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 6"
+                                        HeightRequest="12"
+                                        WidthRequest="160"
+                                        HorizontalOptions="Start" />
+                                <HorizontalStackLayout Spacing="8" Margin="0,4,0,0">
+                                    <Border BackgroundColor="{DynamicResource BorderColor}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            HeightRequest="24"
+                                            WidthRequest="80" />
+                                    <Border BackgroundColor="{DynamicResource BorderColor}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            HeightRequest="24"
+                                            WidthRequest="70" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- Thẻ Skeleton mẫu 2 (khớp skeleton.png) -->
+                    <Border BackgroundColor="{DynamicResource Surface}"
+                            Stroke="{DynamicResource BorderColor}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 16"
+                            Padding="16">
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="14" VerticalOptions="Center">
+                            <!-- Checkbox / Avatar skeleton -->
+                            <Border WidthRequest="38"
+                                    HeightRequest="38"
+                                    StrokeShape="RoundRectangle 19"
+                                    BackgroundColor="{DynamicResource BorderColor}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Start" />
+
+                            <!-- Nội dung task skeleton -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                <Border BackgroundColor="{DynamicResource BorderColor}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 7"
+                                        HeightRequest="14"
+                                        WidthRequest="240"
+                                        HorizontalOptions="Start" />
+                                <Border BackgroundColor="{DynamicResource BorderColor}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 6"
+                                        HeightRequest="12"
+                                        WidthRequest="160"
+                                        HorizontalOptions="Start" />
+                                <HorizontalStackLayout Spacing="8" Margin="0,4,0,0">
+                                    <Border BackgroundColor="{DynamicResource BorderColor}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            HeightRequest="24"
+                                            WidthRequest="80" />
+                                    <Border BackgroundColor="{DynamicResource BorderColor}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            HeightRequest="24"
+                                            WidthRequest="70" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- Thẻ Skeleton mẫu 3 (khớp skeleton.png) -->
+                    <Border BackgroundColor="{DynamicResource Surface}"
+                            Stroke="{DynamicResource BorderColor}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 16"
+                            Padding="16">
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="14" VerticalOptions="Center">
+                            <!-- Checkbox / Avatar skeleton -->
+                            <Border WidthRequest="38"
+                                    HeightRequest="38"
+                                    StrokeShape="RoundRectangle 19"
+                                    BackgroundColor="{DynamicResource BorderColor}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Start" />
+
+                            <!-- Nội dung task skeleton -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                                <Border BackgroundColor="{DynamicResource BorderColor}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 7"
+                                        HeightRequest="14"
+                                        WidthRequest="190"
+                                        HorizontalOptions="Start" />
+                                <Border BackgroundColor="{DynamicResource BorderColor}"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 6"
+                                        HeightRequest="12"
+                                        WidthRequest="110"
+                                        HorizontalOptions="Start" />
+                                <HorizontalStackLayout Spacing="8" Margin="0,4,0,0">
+                                    <Border BackgroundColor="{DynamicResource BorderColor}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            HeightRequest="24"
+                                            WidthRequest="80" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- ========================================================= -->
+                <!-- B. GIAO DIỆN MÔ PHỎNG: DANH SÁCH TRỐNG (EMPTY STATE)      -->
+                <!-- ========================================================= -->
+                <VerticalStackLayout x:Name="EmptyView"
+                                     Spacing="16"
+                                     VerticalOptions="Center"
+                                     HorizontalOptions="Center"
+                                     Padding="20,40"
+                                     IsVisible="False">
+                    <controls:EmptyStateView Symbol="CalendarEmpty"
+                                             Title="Danh sách công việc trống"
+                                             Subtitle="Hôm nay bạn không có công việc nào cần làm. Hãy tận hưởng thời gian hoặc tạo công việc mới!" />
+                </VerticalStackLayout>
+
+                <!-- ========================================================= -->
+                <!-- C. GIAO DIỆN MÔ PHỎNG: KHÔNG TÌM THẤY CÔNG VIỆC (NOT FOUND) -->
+                <!-- ========================================================= -->
+                <VerticalStackLayout x:Name="NotFoundView"
+                                     Spacing="18"
+                                     VerticalOptions="Center"
+                                     HorizontalOptions="Center"
+                                     Padding="20,40"
+                                     IsVisible="False">
+                    <!-- Icon minh họa Not Found -->
+                    <Border WidthRequest="88"
+                            HeightRequest="88"
+                            StrokeShape="RoundRectangle 44"
+                            BackgroundColor="{DynamicResource DangerSurface}"
+                            StrokeThickness="0"
+                            HorizontalOptions="Center">
+                        <fluent:SymbolIcon Symbol="Dismiss"
+                                           FontSize="42"
+                                           ForegroundColor="{DynamicResource Danger}"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                    </Border>
+
+                    <Label Text="Không tìm thấy công việc"
+                           FontFamily="InterBold"
+                           FontSize="{DynamicResource FontSizeTitle}"
+                           TextColor="{DynamicResource TextPrimary}"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+
+                    <Label Text="Công việc này không tồn tại trong bộ dữ liệu hoặc đã bị xóa khỏi hệ thống."
+                           FontFamily="InterRegular"
+                           FontSize="{DynamicResource FontSizeBody}"
+                           TextColor="{DynamicResource TextSecondary}"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           MaximumWidthRequest="320" />
+
+                    <Button Text="Quay lại màn hình Cài đặt"
+                            Clicked="OnBackButtonClicked"
+                            HeightRequest="46"
+                            Padding="24,0"
+                            CornerRadius="23"
+                            BackgroundColor="{DynamicResource Primary}"
+                            TextColor="White"
+                            FontFamily="InterSemiBold"
+                            FontSize="14"
+                            HorizontalOptions="Center"
+                            Margin="0,12,0,0" />
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>
