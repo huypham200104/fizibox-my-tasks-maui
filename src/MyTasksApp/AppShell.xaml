@@ -5,11 +5,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:MyTasksApp.Views"
     xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
-    Title="Việc của tôi"
+    Title="MyTasks"
     FlyoutBehavior="Disabled">
 
     <TabBar>
-        <ShellContent Title="Hôm nay"
+        <ShellContent x:Name="TabTodayContent"
+                      Title="Hôm nay"
                       Route="TodayPage"
                       ContentTemplate="{DataTemplate views:TodayPage}">
             <ShellContent.Icon>
@@ -17,7 +18,8 @@
             </ShellContent.Icon>
         </ShellContent>
 
-        <ShellContent Title="Tuần này"
+        <ShellContent x:Name="TabWeekContent"
+                      Title="Tuần này"
                       Route="WeekPage"
                       ContentTemplate="{DataTemplate views:WeekPage}">
             <ShellContent.Icon>
@@ -25,7 +27,8 @@
             </ShellContent.Icon>
         </ShellContent>
 
-        <ShellContent Title="Lịch sử"
+        <ShellContent x:Name="TabHistoryContent"
+                      Title="Lịch sử"
                       Route="HistoryPage"
                       ContentTemplate="{DataTemplate views:HistoryPage}">
             <ShellContent.Icon>
@@ -33,7 +36,8 @@
             </ShellContent.Icon>
         </ShellContent>
 
-        <ShellContent Title="Cài đặt"
+        <ShellContent x:Name="TabSettingsContent"
+                      Title="Cài đặt"
                       Route="SettingsPage"
                       ContentTemplate="{DataTemplate views:SettingsPage}">
             <ShellContent.Icon>

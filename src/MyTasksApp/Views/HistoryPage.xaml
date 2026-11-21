@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
+             xmlns:controls="clr-namespace:MyTasksApp.Controls"
              x:Class="MyTasksApp.Views.HistoryPage"
              Title="Lịch sử"
              Shell.NavBarIsVisible="False"
@@ -43,7 +44,8 @@
                                FontFamily="InterBold"
                                FontSize="18"
                                TextColor="{DynamicResource Primary}" />
-                        <Label Text="Việc của tôi"
+                        <Label x:Name="AppSubtitleLabel"
+                               Text="Việc của tôi"
                                FontFamily="InterRegular"
                                FontSize="10"
                                TextColor="{DynamicResource TextMuted}"
@@ -62,7 +64,8 @@
                                            ForegroundColor="{DynamicResource Success}"
                                            FontSize="13"
                                            VerticalOptions="Center" />
-                        <Label Text="Đã hoàn thành"
+                        <Label x:Name="CompletedBadgeLabel"
+                               Text="Đã hoàn thành"
                                FontFamily="InterMedium"
                                FontSize="{DynamicResource FontSizeCaption}"
                                TextColor="{DynamicResource Success}"
@@ -72,10 +75,18 @@
             </Grid>
 
             <!-- 2. PAGE TITLE (Không có thông điệp phụ theo yêu cầu) -->
-            <Label Text="Lịch sử" 
+            <Label x:Name="PageTitleLabel"
+                   Text="Lịch sử" 
                    FontFamily="InterBold"
                    FontSize="{DynamicResource FontSizeDisplay}" 
                    TextColor="{DynamicResource TextPrimary}" />
+
+            <!-- 3. EMPTY STATE (CHƯA CÓ CÔNG VIỆC HOÀN THÀNH) -->
+            <controls:EmptyStateView x:Name="EmptyState"
+                                     Symbol="ClipboardCheckmark"
+                                     Title="Chưa có công việc hoàn thành"
+                                     Subtitle="Những công việc bạn hoàn thành sẽ xuất hiện tại đây."
+                                     Margin="0,40,0,0" />
         </VerticalStackLayout>
     </ScrollView>
 

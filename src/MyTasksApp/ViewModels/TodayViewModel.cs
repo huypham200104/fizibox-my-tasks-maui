@@ -17,6 +17,7 @@ namespace MyTasksApp.ViewModels;
 public class TodayViewModel : BaseViewModel
 {
     private readonly ITaskService _taskService;
+    private readonly ILocalizationService? _localizationService;
     private readonly CultureInfo _viCulture = new("vi-VN");
 
     private string _currentDateText = string.Empty;
@@ -162,9 +163,18 @@ public class TodayViewModel : BaseViewModel
     public AsyncRelayCommand SaveNewTaskCommand { get; }
     public RelayCommand DismissSnackbarCommand { get; }
 
-    public TodayViewModel(ITaskService taskService)
+    public string EmptyMessage => _localizationService?["TodayEmptyMessage"] ?? "Hôm nay bạn không có việc cần làm!";
+    public string EmptySubMessage => _localizationService?["TodayEmptySubMessage"] ?? "Hãy nghỉ ngơi hoặc lên kế hoạch cho những ngày tiếp theo.";
+    public string SectionOverdueTitle => _localizationService?["SectionOverdue"] ?? "QUÁ HẠN";
+    public string SectionTodayTitle => _localizationService?["SectionToday"] ?? "HÔM NAY";
+    public string SectionCompletedTitle => _localizationService?["SectionCompleted"] ?? "XONG";
+    public string ProgressTodayTitle => _localizationService?["ProgressTodayTitle"] ?? "Tiến độ hôm nay";
+    public string AppSubtitle => _localizationService?["AppSubtitle"] ?? "Việc của tôi";
+
+    public TodayViewModel(ITaskService taskService, ILocalizationService? localizationService = null)
     {
         _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
+        _localizationService = localizationService;
         Title = "Hôm nay";
 
         UpdateDateText();
@@ -182,20 +192,48 @@ public class TodayViewModel : BaseViewModel
 
         // Lắng nghe sự kiện dữ liệu thay đổi để cập nhật realtime
         _taskService.TasksChanged += OnTasksChanged;
+
+        if (_localizationService != null)
+        {
+            _localizationService.LanguageChanged += OnLanguageChanged;
+        }
     }
 
     private void UpdateDateText()
     {
         DateTime now = DateTime.Now;
-        string dateRaw = now.ToString("dddd, dd 'tháng' MM", _viCulture);
-        if (!string.IsNullOrEmpty(dateRaw))
+        if (_localizationService?.CurrentLanguage == AppLanguage.English)
         {
-            CurrentDateText = char.ToUpper(dateRaw[0], _viCulture) + dateRaw[1..];
+            CurrentDateText = now.ToString("dddd, MMM d", CultureInfo.InvariantCulture);
         }
         else
         {
-            CurrentDateText = now.ToString("dd/MM/yyyy");
+            string dateRaw = now.ToString("dddd, dd 'tháng' MM", _viCulture);
+            if (!string.IsNullOrEmpty(dateRaw))
+            {
+                CurrentDateText = char.ToUpper(dateRaw[0], _viCulture) + dateRaw[1..];
+            }
+            else
+            {
+                CurrentDateText = now.ToString("dd/MM/yyyy");
+            }
         }
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            UpdateDateText();
+            UpdateProgressMetrics();
+            OnPropertyChanged(nameof(EmptyMessage));
+            OnPropertyChanged(nameof(EmptySubMessage));
+            OnPropertyChanged(nameof(SectionOverdueTitle));
+            OnPropertyChanged(nameof(SectionTodayTitle));
+            OnPropertyChanged(nameof(SectionCompletedTitle));
+            OnPropertyChanged(nameof(ProgressTodayTitle));
+            OnPropertyChanged(nameof(AppSubtitle));
+        });
     }
 
     public async Task EnsureDataLoadedAsync()
@@ -272,19 +310,20 @@ public class TodayViewModel : BaseViewModel
     {
         TotalTasksCount = OverdueTasks.Count + TodayTasks.Count + CompletedTasks.Count;
         CompletedTasksCount = CompletedTasks.Count;
+        string format = _localizationService?["ProgressCompletedFormat"] ?? "{0}/{1} việc hoàn thành";
 
         if (TotalTasksCount > 0)
         {
             ProgressRatio = (double)CompletedTasksCount / TotalTasksCount;
             int percentage = (int)Math.Round(ProgressRatio * 100);
             ProgressPercentageText = $"{percentage}%";
-            ProgressRatioText = $"{CompletedTasksCount}/{TotalTasksCount} việc hoàn thành";
+            ProgressRatioText = string.Format(format, CompletedTasksCount, TotalTasksCount);
         }
         else
         {
             ProgressRatio = 0;
             ProgressPercentageText = "0%";
-            ProgressRatioText = "0/0 việc hoàn thành";
+            ProgressRatioText = string.Format(format, 0, 0);
         }
 
         OnPropertyChanged(nameof(HasOverdueTasks));

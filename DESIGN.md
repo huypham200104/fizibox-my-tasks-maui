@@ -230,20 +230,31 @@ Nổi phía trên TabBar khoảng `16dp`, lề 2 bên `16dp`, bo góc `RadiusMd`
 * **Hiệu ứng:** Vệt sáng chạy mượt mà chu kỳ `1200ms` từ trái qua phải trên nền `SurfaceVariant`.
 * **Hỗ trợ Reduce Motion:** Nếu hệ điều hành bật chế độ giảm chuyển động, vệt sáng sẽ dừng lại, giữ màu xám tĩnh để tránh khó chịu thị giác.
 
-### 4.2. Empty State (Giao diện trống)
-* **Màn hình Hôm nay:**
-  - Icon minh họa: `FluentIcons.CheckmarkCircle` (cỡ 56dp) màu `Success`.
-  - Tiêu đề: *"Bạn đã hoàn thành hết việc hôm nay!"*.
-  - Chú thích: *"Không còn công việc nào cần xử lý. Hãy nghỉ ngơi hoặc lên kế hoạch cho ngày mai."*.
-* **Màn hình Tuần này (Ngày không có việc):**
-  - Icon minh họa: `FluentIcons.CalendarEmpty` (cỡ 56dp) màu `TextMuted`.
-  - Tiêu đề: *"Không có công việc"*.
-  - Chú thích: *"Ngày này chưa có công việc nào được lên lịch."*.
-* **Màn hình Đã xong (Tab Lịch sử):**
-  - Icon minh họa: `FluentIcons.ClipboardCheck` (cỡ 56dp) màu `TextMuted`.
-  - Tiêu đề: *"Chưa có công việc hoàn thành"*.
-  - Chú thích: *"Những công việc bạn hoàn thành sẽ xuất hiện tại đây."*.
-  - Nút CTA: *"Quay lại hôm nay"*.
+### 4.2. Empty State (Giao diện trạng thái trống - Chuẩn hóa đồng bộ)
+* **Quy chuẩn hiển thị chung (100% Token-Driven qua `EmptyStateView`):**
+  - **Khối Icon tròn thương hiệu:** Vòng tròn kích thước `88x88dp`, bo góc `44dp` (`Border StrokeThickness="0"`), nền `PrimaryLight` (`#EEF2FF` Light / `#1E1B4B` Dark).
+  - **Màu sắc Icon:** Sử dụng màu thương hiệu `Primary` (`#4F46E5` Light / `#6366F1` Dark), kích thước `42dp` căn giữa hoàn hảo.
+  - **Bố cục 2 tầng thông điệp:** Dòng trên là Tiêu đề in đậm (`FontSizeTitle`, `InterSemiBold`, `TextPrimary`); Dòng dưới là Phụ đề giải thích (`FontSizeBody`, `InterRegular`, `TextSecondary`, `LineBreakMode="WordWrap"`, `MaximumWidthRequest="340"`).
+  - **Tinh gọn không nút CTA:** Giao diện tập trung tối đa vào thông điệp, người dùng tạo mới việc qua nút FAB (+) luôn nổi sẵn trên màn hình.
+
+* **Nội dung & Icon chi tiết từng màn hình:**
+  - **Màn hình Hôm nay (`TodayPage`):**
+    - Icon minh họa: `FluentIcons.CheckmarkCircle` (42dp, màu `Primary` trên nền `PrimaryLight`).
+    - Tiêu đề: *"Hôm nay bạn không có việc cần làm!"* (EN: *"You have no tasks to do today!"*).
+    - Phụ đề: *"Hãy nghỉ ngơi hoặc lên kế hoạch cho những ngày tiếp theo."* (EN: *"Take a break or plan ahead for the upcoming days."*).
+  - **Màn hình Tuần này (`WeekPage` - Ngày không có việc):**
+    - Icon minh họa: `FluentIcons.CalendarEmpty` (42dp, màu `Primary` trên nền `PrimaryLight`).
+    - Tiêu đề: *"Không có công việc"* (EN: *"No tasks scheduled"*).
+    - Phụ đề: *"Ngày này chưa có công việc nào được lên lịch."* (EN: *"There are no tasks scheduled for this day."*).
+  - **Màn hình Đã xong (`HistoryPage`):**
+    - Icon minh họa: `FluentIcons.ClipboardCheckmark` (42dp, màu `Primary` trên nền `PrimaryLight`).
+    - Tiêu đề: *"Chưa có công việc hoàn thành"* (EN: *"No completed tasks yet"*).
+    - Phụ đề: *"Những công việc bạn hoàn thành sẽ xuất hiện tại đây."* (EN: *"Tasks that you complete will show up here."*).
+  - **Màn hình Mô phỏng (`MockStatePreviewPage`):**
+    - Icon minh họa: `FluentIcons.CalendarEmpty` (42dp, màu `Primary` trên nền `PrimaryLight`).
+    - Tiêu đề: *"Danh sách công việc trống"*.
+    - Phụ đề: *"Hôm nay bạn không có công việc nào cần làm. Hãy tận hưởng thời gian hoặc tạo công việc mới!"*.
+    - Huy hiệu ghi chú Reviewer bên dưới: *"💡 Trạng thái này xuất hiện khi chưa có việc hoặc đã hoàn tất 100%"*.
 
 ### 4.3. Not Found State (Màn hình Chi tiết)
 * **Biểu hiện:** Hiển thị khi nhận ID không hợp lệ hoặc kích hoạt từ Reviewer Tools.

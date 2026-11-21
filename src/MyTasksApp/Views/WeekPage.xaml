@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:fluent="clr-namespace:FluentIcons.Maui;assembly=FluentIcons.Maui"
+             xmlns:controls="clr-namespace:MyTasksApp.Controls"
              xmlns:models="clr-namespace:MyTasksApp.Core.Models"
              xmlns:vm="clr-namespace:MyTasksApp.ViewModels"
              x:Class="MyTasksApp.Views.WeekPage"
@@ -53,7 +54,7 @@
                                    FontFamily="InterBold"
                                    FontSize="18"
                                    TextColor="{DynamicResource Primary}" />
-                            <Label Text="Việc của tôi"
+                            <Label Text="{Binding AppSubtitle}"
                                    FontFamily="InterRegular"
                                    FontSize="10"
                                    TextColor="{DynamicResource TextMuted}"
@@ -764,28 +765,11 @@
                                 Opacity="0.6" />
                     </VerticalStackLayout>
 
-                    <!-- 6. EMPTY STATE (CHỈ ICON + THÔNG ĐIỆP, ĐÃ XÓA BUTTON THEO YÊU CẦU) -->
-                    <VerticalStackLayout IsVisible="{Binding IsEmpty}"
-                                         Spacing="12"
-                                         Padding="0,48,0,32"
-                                         HorizontalOptions="Center">
-                        <fluent:SymbolIcon Symbol="CalendarEmpty"
-                                           ForegroundColor="{DynamicResource TextMuted}"
-                                           FontSize="64"
-                                           HorizontalOptions="Center" />
-
-                        <Label Text="Không có công việc"
-                               FontFamily="InterSemiBold"
-                               FontSize="{DynamicResource FontSizeTitle}"
-                               TextColor="{DynamicResource TextPrimary}"
-                               HorizontalTextAlignment="Center" />
-
-                        <Label Text="Ngày này chưa có công việc nào được lên lịch."
-                               FontFamily="InterRegular"
-                               FontSize="{DynamicResource FontSizeCaption}"
-                               TextColor="{DynamicResource TextSecondary}"
-                               HorizontalTextAlignment="Center" />
-                    </VerticalStackLayout>
+                    <!-- 6. EMPTY STATE (ĐỒNG BỘ QUA CONTROL DÙNG CHUNG) -->
+                    <controls:EmptyStateView IsVisible="{Binding IsEmpty}"
+                                             Symbol="CalendarEmpty"
+                                             Title="{Binding EmptyMessage}"
+                                             Subtitle="{Binding EmptySubMessage}" />
 
                     <!-- 7. DANH SÁCH CÔNG VIỆC CỦA NGÀY (HIỂN THỊ TRỰC TIẾP DƯỚI DẢI 7 NGÀY) -->
                     <VerticalStackLayout IsVisible="{Binding IsNotBusy}" Spacing="12">

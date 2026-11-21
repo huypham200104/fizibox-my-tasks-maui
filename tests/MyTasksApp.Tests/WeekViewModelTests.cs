@@ -119,9 +119,9 @@ public class WeekViewModelTests
         var vm = new WeekViewModel(service);
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
-        // Chọn ngày Thứ Sáu 20/11 có sẵn 4 việc trong mock data
-        var friday = vm.WeekDays.First(d => d.Date.Day == 20);
-        await vm.SelectDayCommand.ExecuteAsync(friday);
+        // Chọn ngày có sẵn công việc trong mock data
+        var targetDay = vm.WeekDays.First(d => d.TaskCount > 0);
+        await vm.SelectDayCommand.ExecuteAsync(targetDay);
 
         vm.DayTasks.Should().NotBeEmpty();
         var task = vm.DayTasks[1]; // Việc thứ 2
@@ -144,8 +144,8 @@ public class WeekViewModelTests
         var vm = new WeekViewModel(service);
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
-        var friday = vm.WeekDays.First(d => d.Date.Day == 20);
-        await vm.SelectDayCommand.ExecuteAsync(friday);
+        var targetDay = vm.WeekDays.First(d => d.TaskCount > 0);
+        await vm.SelectDayCommand.ExecuteAsync(targetDay);
 
         var taskToDelete = vm.DayTasks.First();
         var initialCount = vm.DayTasks.Count;
