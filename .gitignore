@@ -500,6 +500,8 @@ test_cap.png
 current_*.png
 screen_*.png
 *.ps1
+run.ps1
+rebuild.ps1
 
 # Duplicate screenshot directory
 docs/screenshots/
