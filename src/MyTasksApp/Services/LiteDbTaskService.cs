@@ -15,10 +15,12 @@ public class LiteDbTaskService : ITaskService, IDisposable
     private readonly string _dbPath;
     private readonly LiteDatabase _db;
     private readonly ILiteCollection<TaskItem> _collection;
+    private readonly ILiteCollection<Project> _projectsCollection;
     private readonly Stack<TaskItem> _undoStack = new();
     private readonly object _lock = new();
 
     public event EventHandler? TasksChanged;
+    public event EventHandler? ProjectsChanged;
 
     public bool SimulateLoading { get; set; }
     public bool SimulateEmpty { get; set; }
@@ -28,10 +30,15 @@ public class LiteDbTaskService : ITaskService, IDisposable
         _dbPath = customDbPath ?? GetDefaultDatabasePath();
         _db = new LiteDatabase($"Filename={_dbPath};Connection=shared");
         _collection = _db.GetCollection<TaskItem>("tasks");
+        _projectsCollection = _db.GetCollection<Project>("projects");
 
         // Đảm bảo chỉ mục (Indexes) để truy vấn nhanh
         _collection.EnsureIndex(x => x.DueDate);
         _collection.EnsureIndex(x => x.Status);
+        _projectsCollection.EnsureIndex(x => x.Name);
+
+        // Nạp các dự án mặc định nếu danh sách dự án trong database rỗng
+        InitializeDefaultProjectsIfEmpty();
 
         // Không tự động nạp dữ liệu mẫu khi database rỗng; ứng dụng khởi động với danh sách trống (0 việc).
         // Khi cần kiểm thử dữ liệu mẫu, người dùng/reviewer có thể dùng nút "Đặt lại dữ liệu mẫu" trong màn hình Cài đặt.
@@ -301,17 +308,120 @@ public class LiteDbTaskService : ITaskService, IDisposable
             lock (_lock)
             {
                 _collection.DeleteAll();
+                _projectsCollection.DeleteAll();
                 _undoStack.Clear();
                 SimulateLoading = false;
                 SimulateEmpty = false;
-
-                var seedTasks = TaskDataSeeder.GenerateDefaultTasks();
-                _collection.InsertBulk(seedTasks);
             }
         });
 
+        Preferences.Default.Set("ProjectsSeeded", true);
+
         OnTasksChanged();
+        OnProjectsChanged();
     }
+
+    #region Project CRUD Operations
+
+    public async Task<List<Project>> GetAllProjectsAsync()
+    {
+        return await Task.Run(() =>
+        {
+            lock (_lock)
+            {
+                return _projectsCollection.FindAll().OrderBy(p => p.Name).ToList();
+            }
+        });
+    }
+
+    public async Task<bool> AddProjectAsync(Project project)
+    {
+        if (project == null || string.IsNullOrWhiteSpace(project.Name)) return false;
+
+        await Task.Run(() =>
+        {
+            lock (_lock)
+            {
+                if (string.IsNullOrEmpty(project.Id))
+                {
+                    project.Id = Guid.NewGuid().ToString("N");
+                }
+                _projectsCollection.Insert(project);
+            }
+        });
+
+        OnProjectsChanged();
+        return true;
+    }
+
+    public async Task<bool> UpdateProjectAsync(Project project)
+    {
+        if (project == null || string.IsNullOrWhiteSpace(project.Name)) return false;
+
+        bool updated = await Task.Run(() =>
+        {
+            lock (_lock)
+            {
+                return _projectsCollection.Update(project);
+            }
+        });
+
+        if (updated)
+        {
+            OnProjectsChanged();
+        }
+        return updated;
+    }
+
+    public async Task<bool> DeleteProjectAsync(string projectId)
+    {
+        if (string.IsNullOrWhiteSpace(projectId)) return false;
+
+        bool deleted = await Task.Run(() =>
+        {
+            lock (_lock)
+            {
+                return _projectsCollection.Delete(projectId);
+            }
+        });
+
+        if (deleted)
+        {
+            OnProjectsChanged();
+        }
+        return deleted;
+    }
+
+    private void InitializeDefaultProjectsIfEmpty()
+    {
+        lock (_lock)
+        {
+            if (Preferences.Default.Get("ProjectsSeeded", false))
+            {
+                return;
+            }
+
+            if (_projectsCollection.Count() == 0)
+            {
+                var defaults = new List<Project>
+                {
+                    new Project { Id = "proj_1", Name = "Công việc cá nhân", ColorHex = "#4F46E5" },
+                    new Project { Id = "proj_2", Name = "Dự án Mobile App", ColorHex = "#0284C7" },
+                    new Project { Id = "proj_3", Name = "Dự án Backend", ColorHex = "#16A34A" },
+                    new Project { Id = "proj_4", Name = "MyTasks App", ColorHex = "#D97706" }
+                };
+                _projectsCollection.InsertBulk(defaults);
+                Preferences.Default.Set("ProjectsSeeded", true);
+            }
+        }
+    }
+
+    private void OnProjectsChanged()
+    {
+        ProjectsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    #endregion
 
     private void OnTasksChanged()
     {

@@ -12,10 +12,12 @@ namespace MyTasksApp.Services;
 public class MockTaskService : ITaskService
 {
     private readonly List<TaskItem> _tasks = new();
+    private readonly List<Project> _projects = new();
     private readonly Stack<TaskItem> _undoStack = new();
     private int _nextId = 1;
 
     public event EventHandler? TasksChanged;
+    public event EventHandler? ProjectsChanged;
 
     public bool SimulateLoading { get; set; }
     public bool SimulateEmpty { get; set; }
@@ -23,6 +25,7 @@ public class MockTaskService : ITaskService
     public MockTaskService()
     {
         InitializeDefaultMockData();
+        InitializeDefaultProjects();
     }
 
     public async Task<List<TaskItem>> GetAllTasksAsync()
@@ -219,15 +222,107 @@ public class MockTaskService : ITaskService
         lock (_tasks)
         {
             _tasks.Clear();
+            _projects.Clear();
             _undoStack.Clear();
             SimulateLoading = false;
             SimulateEmpty = false;
-            InitializeDefaultMockData();
         }
 
         OnTasksChanged();
+        OnProjectsChanged();
         return Task.CompletedTask;
     }
+
+    #region Project CRUD Operations
+
+    public Task<List<Project>> GetAllProjectsAsync()
+    {
+        lock (_projects)
+        {
+            return Task.FromResult(_projects.Select(p => new Project { Id = p.Id, Name = p.Name, ColorHex = p.ColorHex }).ToList());
+        }
+    }
+
+    public Task<bool> AddProjectAsync(Project project)
+    {
+        if (project == null || string.IsNullOrWhiteSpace(project.Name)) return Task.FromResult(false);
+
+        lock (_projects)
+        {
+            if (string.IsNullOrEmpty(project.Id))
+            {
+                project.Id = Guid.NewGuid().ToString("N");
+            }
+            _projects.Add(new Project { Id = project.Id, Name = project.Name, ColorHex = project.ColorHex });
+        }
+
+        OnProjectsChanged();
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> UpdateProjectAsync(Project project)
+    {
+        if (project == null || string.IsNullOrWhiteSpace(project.Name)) return Task.FromResult(false);
+
+        bool updated = false;
+        lock (_projects)
+        {
+            var existing = _projects.FirstOrDefault(p => p.Id == project.Id);
+            if (existing != null)
+            {
+                existing.Name = project.Name;
+                existing.ColorHex = project.ColorHex;
+                updated = true;
+            }
+        }
+
+        if (updated)
+        {
+            OnProjectsChanged();
+        }
+        return Task.FromResult(updated);
+    }
+
+    public Task<bool> DeleteProjectAsync(string projectId)
+    {
+        if (string.IsNullOrWhiteSpace(projectId)) return Task.FromResult(false);
+
+        bool deleted = false;
+        lock (_projects)
+        {
+            var existing = _projects.FirstOrDefault(p => p.Id == projectId);
+            if (existing != null)
+            {
+                _projects.Remove(existing);
+                deleted = true;
+            }
+        }
+
+        if (deleted)
+        {
+            OnProjectsChanged();
+        }
+        return Task.FromResult(deleted);
+    }
+
+    private void InitializeDefaultProjects()
+    {
+        _projects.Clear();
+        _projects.AddRange(new List<Project>
+        {
+            new Project { Id = "proj_1", Name = "Công việc cá nhân", ColorHex = "#4F46E5" },
+            new Project { Id = "proj_2", Name = "Dự án Mobile App", ColorHex = "#0284C7" },
+            new Project { Id = "proj_3", Name = "Dự án Backend", ColorHex = "#16A34A" },
+            new Project { Id = "proj_4", Name = "MyTasks App", ColorHex = "#D97706" }
+        });
+    }
+
+    private void OnProjectsChanged()
+    {
+        ProjectsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    #endregion
 
     private void OnTasksChanged()
     {

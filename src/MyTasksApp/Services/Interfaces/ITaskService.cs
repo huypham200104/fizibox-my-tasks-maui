@@ -83,4 +83,29 @@ public interface ITaskService
     /// Đặt lại dữ liệu mẫu in-memory chuẩn 16–22/11/2026 cho Reviewer
     /// </summary>
     Task ResetMockDataAsync();
+
+    /// <summary>
+    /// Sự kiện thông báo thay đổi danh sách dự án
+    /// </summary>
+    event EventHandler? ProjectsChanged;
+
+    /// <summary>
+    /// Lấy danh sách toàn bộ dự án
+    /// </summary>
+    Task<List<Project>> GetAllProjectsAsync();
+
+    /// <summary>
+    /// Thêm dự án mới
+    /// </summary>
+    Task<bool> AddProjectAsync(Project project);
+
+    /// <summary>
+    /// Cập nhật thông tin dự án
+    /// </summary>
+    Task<bool> UpdateProjectAsync(Project project);
+
+    /// <summary>
+    /// Xóa dự án theo Id
+    /// </summary>
+    Task<bool> DeleteProjectAsync(string projectId);
 }

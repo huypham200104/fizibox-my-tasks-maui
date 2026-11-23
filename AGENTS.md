@@ -22,4 +22,8 @@
 7. **Quy định chạy Test**:
    - Tuyệt đối **không** tự ý chạy test (unit test, automated test,...) trong quá trình thực hiện công việc.
    - **Chỉ chạy test khi người dùng có yêu cầu rõ ràng với lệnh `/grill-me`**.
+8. **Quy định về Dữ liệu (Tuyệt đối không Mock Data)**:
+   - Tuyệt đối **không** tự ý tạo hoặc sử dụng mock data, fake data, hardcoded data trong code, ViewModel hay Service.
+   - Mọi dữ liệu phải được kết nối, xử lý và lưu trữ thông qua cơ chế dữ liệu thực tế (Database, Service thực tế, Persistent Storage,...) theo đúng kiến trúc của ứng dụng (trừ khi có yêu cầu cụ thể từ người dùng).
+
 

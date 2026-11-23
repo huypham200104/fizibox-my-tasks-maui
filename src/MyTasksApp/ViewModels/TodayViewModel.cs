@@ -37,8 +37,10 @@ public class TodayViewModel : BaseViewModel
 
     // Quản lý Modal tạo việc nhanh (Bottom Sheet)
     private bool _isCreateModalVisible;
+    private bool _isNavigating;
     private string _newTaskTitle = string.Empty;
     private string _newTaskDescription = string.Empty;
+    private string _newTaskNote = string.Empty;
     private string _newTaskProject = "Công việc cá nhân";
     private DateTime _newTaskDueDate = DateTime.Today;
     private TimeSpan _newTaskDueTime = new(9, 0, 0);
@@ -52,6 +54,7 @@ public class TodayViewModel : BaseViewModel
     public ObservableCollection<TaskItem> OverdueTasks { get; } = new();
     public ObservableCollection<TaskItem> TodayTasks { get; } = new();
     public ObservableCollection<TaskItem> CompletedTasks { get; } = new();
+    public ObservableCollection<Project> AvailableProjects { get; } = new();
 
     public string CurrentDateText
     {
@@ -119,10 +122,32 @@ public class TodayViewModel : BaseViewModel
         set => SetProperty(ref _newTaskDescription, value);
     }
 
+    public string NewTaskNote
+    {
+        get => _newTaskNote;
+        set => SetProperty(ref _newTaskNote, value);
+    }
+
     public string NewTaskProject
     {
         get => _newTaskProject;
         set => SetProperty(ref _newTaskProject, value);
+    }
+
+    private Project? _selectedNewTaskProject;
+    public Project? SelectedNewTaskProject
+    {
+        get => _selectedNewTaskProject;
+        set
+        {
+            if (SetProperty(ref _selectedNewTaskProject, value))
+            {
+                if (value != null)
+                {
+                    NewTaskProject = value.Name;
+                }
+            }
+        }
     }
 
     public DateTime NewTaskDueDate
@@ -183,7 +208,9 @@ public class TodayViewModel : BaseViewModel
     public string FieldTaskProject => _localizationService?["FieldTaskProject"] ?? "Dự án";
     public string FieldTaskProjectPlaceholder => _localizationService?["FieldTaskProjectPlaceholder"] ?? "Tên dự án (Ví dụ: MyTasks App)";
     public string FieldTaskDesc => _localizationService?["FieldTaskDesc"] ?? "Mô tả chi tiết";
-    public string FieldTaskDescPlaceholder => _localizationService?["FieldTaskDescPlaceholder"] ?? "Nhập ghi chú thêm cho công việc...";
+    public string FieldTaskDescPlaceholder => _localizationService?["FieldTaskDescPlaceholder"] ?? "Nhập mô tả cho công việc...";
+    public string FieldTaskNotes => _localizationService?["FieldTaskNotes"] ?? "Ghi chú";
+    public string FieldTaskNotePlaceholder => _localizationService?["FieldTaskNotePlaceholder"] ?? "Thêm ghi chú, lưu ý nhanh...";
     public string BtnCancel => _localizationService?["BtnCancel"] ?? "Hủy";
     public string BtnSaveTask => _localizationService?["BtnSaveTask"] ?? "Lưu công việc";
     public string SwipeCompleteText => _localizationService?["SwipeComplete"] ?? "Hoàn thành";
@@ -213,10 +240,36 @@ public class TodayViewModel : BaseViewModel
 
         // Lắng nghe sự kiện dữ liệu thay đổi để cập nhật realtime
         _taskService.TasksChanged += OnTasksChanged;
+        _taskService.ProjectsChanged += (_, _) => _ = LoadProjectsAsync();
+        _ = LoadProjectsAsync();
 
         if (_localizationService != null)
         {
             _localizationService.LanguageChanged += OnLanguageChanged;
+        }
+    }
+
+    private async Task LoadProjectsAsync()
+    {
+        try
+        {
+            var projects = await _taskService.GetAllProjectsAsync();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                AvailableProjects.Clear();
+                foreach (var p in projects)
+                {
+                    AvailableProjects.Add(p);
+                }
+                if (AvailableProjects.Count > 0 && (string.IsNullOrEmpty(NewTaskProject) || !AvailableProjects.Any(p => p.Name == NewTaskProject)))
+                {
+                    NewTaskProject = AvailableProjects[0].Name;
+                }
+            });
+        }
+        catch
+        {
+            // Ignore
         }
     }
 
@@ -486,15 +539,26 @@ public class TodayViewModel : BaseViewModel
     private async Task ExecuteOpenTaskDetailAsync(object? parameter)
     {
         if (parameter is not TaskItem task) return;
+        if (_isNavigating) return;
+        _isNavigating = true;
 
-        await Shell.Current.GoToAsync($"{nameof(TaskDetailPage)}?id={task.Id}");
+        try
+        {
+            await Shell.Current.GoToAsync($"{nameof(TaskDetailPage)}?id={task.Id}");
+        }
+        finally
+        {
+            _ = Task.Delay(800).ContinueWith(_ => _isNavigating = false);
+        }
     }
 
     private void ExecuteOpenCreateModal()
     {
         NewTaskTitle = string.Empty;
         NewTaskDescription = string.Empty;
-        NewTaskProject = "Công việc cá nhân";
+        NewTaskNote = string.Empty;
+        SelectedNewTaskProject = AvailableProjects.FirstOrDefault();
+        NewTaskProject = SelectedNewTaskProject?.Name ?? string.Empty;
         NewTaskDueDate = _dateTimeProvider.Today;
         NewTaskDueTime = new TimeSpan(_dateTimeProvider.Now.Hour + 1, 0, 0);
         IsCreateModalVisible = true;
@@ -514,11 +578,12 @@ public class TodayViewModel : BaseViewModel
             return;
         }
 
-        string defaultProject = _localizationService?["DefaultProjectPersonal"] ?? "Công việc cá nhân";
+        string defaultProject = AvailableProjects.FirstOrDefault()?.Name ?? string.Empty;
         var newTask = new TaskItem
         {
             Title = NewTaskTitle.Trim(),
             Description = NewTaskDescription?.Trim() ?? string.Empty,
+            Note = NewTaskNote?.Trim() ?? string.Empty,
             ProjectName = string.IsNullOrWhiteSpace(NewTaskProject) ? defaultProject : NewTaskProject.Trim(),
             DueDate = NewTaskDueDate.Date,
             DueTime = NewTaskDueTime,

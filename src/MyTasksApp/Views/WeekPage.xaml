@@ -898,7 +898,8 @@
                                             StrokeShape="RoundRectangle 12"
                                             Padding="14,12">
                                         <Border.GestureRecognizers>
-                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=OpenTaskDetailCommand}"
+                                            <TapGestureRecognizer Tapped="OnTaskCardTapped"
+                                                                  Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=OpenTaskDetailCommand}"
                                                                   CommandParameter="{Binding .}" />
                                         </Border.GestureRecognizers>
 
@@ -989,7 +990,8 @@
                                                 <Border BackgroundColor="{DynamicResource SurfaceVariant}"
                                                         StrokeShape="RoundRectangle 6"
                                                         StrokeThickness="0"
-                                                        Padding="8,4">
+                                                        Padding="8,4"
+                                                        IsVisible="{Binding HasProject}">
                                                     <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
                                                         <fluent:SymbolIcon Symbol="Folder"
                                                                            ForegroundColor="{DynamicResource Primary}"
@@ -1156,17 +1158,15 @@
                                     Stroke="{DynamicResource BorderColor}"
                                     StrokeThickness="1"
                                     StrokeShape="RoundRectangle 10"
-                                    Padding="12,4">
-                                <Entry x:Name="NewTaskProjectEntry"
-                                       Text="{Binding NewTaskProject}"
-                                       Placeholder="{Binding FieldTaskProjectPlaceholder}"
-                                       PlaceholderColor="{DynamicResource TextMuted}"
-                                       TextColor="{DynamicResource TextPrimary}"
-                                       FontSize="{DynamicResource FontSizeBody}"
-                                       FontFamily="InterRegular"
-                                       ReturnType="Next"
-                                       Completed="OnProjectEntryCompleted"
-                                       Focused="OnFieldFocused" />
+                                    Padding="12,0">
+                                <Picker ItemsSource="{Binding AvailableProjects}"
+                                        ItemDisplayBinding="{Binding Name}"
+                                        SelectedItem="{Binding SelectedNewTaskProject}"
+                                        Title="{Binding FieldTaskProjectPlaceholder}"
+                                        TextColor="{DynamicResource TextPrimary}"
+                                        TitleColor="{DynamicResource TextMuted}"
+                                        FontFamily="InterMedium"
+                                        FontSize="{DynamicResource FontSizeBody}" />
                             </Border>
                         </VerticalStackLayout>
 
@@ -1229,6 +1229,30 @@
                                         FontFamily="InterRegular"
                                         Completed="OnDescEditorCompleted"
                                         TextChanged="OnDescEditorTextChanged"
+                                        Focused="OnFieldFocused" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Trường 5: Ghi chú (Tùy chọn) -->
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding FieldTaskNotes}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="{DynamicResource FontSizeCaption}"
+                                   TextColor="{DynamicResource TextPrimary}" />
+                            <Border BackgroundColor="{DynamicResource Surface}"
+                                    Stroke="{DynamicResource BorderColor}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="12,8">
+                                <Editor x:Name="NewTaskNoteEditor"
+                                        Text="{Binding NewTaskNote}"
+                                        Placeholder="{Binding FieldTaskNotePlaceholder}"
+                                        PlaceholderColor="{DynamicResource TextMuted}"
+                                        TextColor="{DynamicResource TextPrimary}"
+                                        AutoSize="TextChanges"
+                                        MaximumHeightRequest="80"
+                                        FontSize="{DynamicResource FontSizeBody}"
+                                        FontFamily="InterRegular"
                                         Focused="OnFieldFocused" />
                             </Border>
                         </VerticalStackLayout>

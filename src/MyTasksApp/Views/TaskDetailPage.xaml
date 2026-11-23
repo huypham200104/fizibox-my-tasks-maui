@@ -20,12 +20,13 @@
         <Grid IsVisible="{Binding IsNotFound, Converter={StaticResource InvertedBoolConverter}}"
               RowDefinitions="Auto, *, Auto">
 
-            <!-- 1.1. TOP APP BAR (Nút quay lại + Tiêu đề + Menu 3 chấm) -->
+            <!-- 1.1. TOP APP BAR (Nút quay lại + Tiêu đề + Menu 3 chấm chuẩn gọn 52dp) -->
             <Border Grid.Row="0"
                     BackgroundColor="{DynamicResource Surface}"
                     Stroke="{DynamicResource BorderColor}"
                     StrokeThickness="0,0,0,1"
-                    Padding="16,10">
+                    HeightRequest="52"
+                    Padding="16,4">
                 <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
                     <!-- Nút Quay lại < -->
                     <Grid WidthRequest="44"
@@ -36,7 +37,7 @@
                             <TapGestureRecognizer Command="{Binding GoBackCommand}" />
                         </Grid.GestureRecognizers>
                         <fluent:SymbolIcon Symbol="ChevronLeft"
-                                           FontSize="22"
+                                           FontSize="19"
                                            ForegroundColor="{DynamicResource TextPrimary}"
                                            HorizontalOptions="Center"
                                            VerticalOptions="Center" />
@@ -45,8 +46,8 @@
                     <!-- Tiêu đề trang -->
                     <Label Grid.Column="1"
                            Text="{Binding Title}"
-                           FontFamily="InterBold"
-                           FontSize="{DynamicResource FontSizeTitle}"
+                           FontFamily="InterSemiBold"
+                           FontSize="{DynamicResource FontSizeSubtitle}"
                            TextColor="{DynamicResource TextPrimary}"
                            VerticalOptions="Center"
                            HorizontalOptions="Center" />
@@ -61,7 +62,7 @@
                             <TapGestureRecognizer Command="{Binding OpenActionMenuCommand}" />
                         </Grid.GestureRecognizers>
                         <fluent:SymbolIcon Symbol="MoreVertical"
-                                           FontSize="22"
+                                           FontSize="19"
                                            ForegroundColor="{DynamicResource TextPrimary}"
                                            HorizontalOptions="Center"
                                            VerticalOptions="Center" />
@@ -116,43 +117,45 @@
                                             <Setter Property="BackgroundColor" Value="{DynamicResource SurfaceVariant}" />
                                             <Setter Property="Stroke" Value="{DynamicResource BorderColor}" />
                                             <Style.Triggers>
-                                                <DataTrigger TargetType="Border" Binding="{Binding CurrentTask.IsCompleted}" Value="True">
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsStatusCompleted}" Value="True">
                                                     <Setter Property="BackgroundColor" Value="{DynamicResource SuccessSurface}" />
                                                     <Setter Property="Stroke" Value="{DynamicResource Success}" />
                                                 </DataTrigger>
-                                                <DataTrigger TargetType="Border" Binding="{Binding CurrentTask.IsInProgress}" Value="True">
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsStatusInProgress}" Value="True">
                                                     <Setter Property="BackgroundColor" Value="{DynamicResource WarningSurface}" />
                                                     <Setter Property="Stroke" Value="{DynamicResource Warning}" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsStatusPending}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryLight}" />
+                                                    <Setter Property="Stroke" Value="{DynamicResource BorderColor}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
 
                                     <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <!-- Icon Trạng thái: Dùng Border tròn cho InProgress để tránh lỗi viền trắng trên Android -->
+                                        <!-- Khi InProgress: Chấm tròn Warning -->
                                         <Border WidthRequest="10"
                                                 HeightRequest="10"
                                                 StrokeShape="RoundRectangle 5"
                                                 BackgroundColor="{DynamicResource Warning}"
                                                 StrokeThickness="0"
                                                 VerticalOptions="Center"
-                                                IsVisible="{Binding CurrentTask.IsInProgress}" />
+                                                IsVisible="{Binding IsStatusInProgress}" />
 
-                                        <fluent:SymbolIcon FontSize="14"
-                                                           IsVisible="{Binding CurrentTask.IsInProgress, Converter={StaticResource InvertedBoolConverter}}">
-                                            <fluent:SymbolIcon.Style>
-                                                <Style TargetType="fluent:SymbolIcon">
-                                                    <Setter Property="Symbol" Value="Circle" />
-                                                    <Setter Property="ForegroundColor" Value="{DynamicResource TextSecondary}" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger TargetType="fluent:SymbolIcon" Binding="{Binding CurrentTask.IsCompleted}" Value="True">
-                                                            <Setter Property="Symbol" Value="CheckmarkCircle" />
-                                                            <Setter Property="ForegroundColor" Value="{DynamicResource Success}" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </fluent:SymbolIcon.Style>
-                                        </fluent:SymbolIcon>
+                                        <!-- Khi Completed: Tích xanh CheckmarkCircle -->
+                                        <fluent:SymbolIcon Symbol="CheckmarkCircle"
+                                                           FontSize="15"
+                                                           ForegroundColor="{DynamicResource Success}"
+                                                           VerticalOptions="Center"
+                                                           IsVisible="{Binding IsStatusCompleted}" />
+
+                                        <!-- Khi Pending: Biểu tượng Đồng hồ Clock thanh lịch -->
+                                        <fluent:SymbolIcon Symbol="Clock"
+                                                           FontSize="14"
+                                                           ForegroundColor="{DynamicResource Primary}"
+                                                           VerticalOptions="Center"
+                                                           IsVisible="{Binding IsStatusPending}" />
 
                                         <!-- Nhãn Trạng thái đồng bộ song ngữ -->
                                         <Label Text="{Binding CurrentStatusText}"
@@ -162,11 +165,14 @@
                                                 <Style TargetType="Label">
                                                     <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
                                                     <Style.Triggers>
-                                                        <DataTrigger TargetType="Label" Binding="{Binding CurrentTask.IsCompleted}" Value="True">
+                                                        <DataTrigger TargetType="Label" Binding="{Binding IsStatusCompleted}" Value="True">
                                                             <Setter Property="TextColor" Value="{DynamicResource Success}" />
                                                         </DataTrigger>
-                                                        <DataTrigger TargetType="Label" Binding="{Binding CurrentTask.IsInProgress}" Value="True">
+                                                        <DataTrigger TargetType="Label" Binding="{Binding IsStatusInProgress}" Value="True">
                                                             <Setter Property="TextColor" Value="{DynamicResource Warning}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Label" Binding="{Binding IsStatusPending}" Value="True">
+                                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -330,7 +336,7 @@
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding OpenStatusSheetCommand}" />
                                         </Grid.GestureRecognizers>
-                                        <fluent:SymbolIcon Symbol="CheckmarkCircle"
+                                        <fluent:SymbolIcon Symbol="{Binding StatusInfoSymbol}"
                                                            FontSize="18"
                                                            ForegroundColor="{DynamicResource TextSecondary}"
                                                            VerticalOptions="Center" />
@@ -372,8 +378,8 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- SECTION 3: GHI CHÚ BỔ SUNG -->
-                        <VerticalStackLayout Spacing="10">
+                        <!-- SECTION 3: GHI CHÚ BỔ SUNG (Chỉ hiển thị khi có ghi chú, triệt tiêu vạch cam rỗng) -->
+                        <VerticalStackLayout Spacing="10" IsVisible="{Binding HasNote}">
                             <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
                                 <fluent:SymbolIcon Symbol="Note"
                                                    FontSize="18"
@@ -1223,60 +1229,92 @@
                                TextColor="{DynamicResource TextSecondary}" />
                     </VerticalStackLayout>
 
-                    <!-- Danh sách Dự án -->
-                    <VerticalStackLayout Spacing="10">
-                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
-                                StrokeThickness="0"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="16,12">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectProjectCommand}" CommandParameter="Công việc cá nhân" />
-                            </Border.GestureRecognizers>
-                            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                                <fluent:SymbolIcon Symbol="Folder" FontSize="18" ForegroundColor="{DynamicResource Primary}" />
-                                <Label Text="Công việc cá nhân" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
-                            </HorizontalStackLayout>
-                        </Border>
+                    <!-- Nút Thêm Dự Án Mới -->
+                    <Border BackgroundColor="{DynamicResource PrimaryLight}"
+                            Stroke="{DynamicResource Primary}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="16,12">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding AddProjectCommand}" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
+                            <fluent:SymbolIcon Symbol="AddCircle" FontSize="18" ForegroundColor="{DynamicResource Primary}" />
+                            <Label Text="{Binding BtnAddProjectText}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="{DynamicResource FontSizeBody}"
+                                   TextColor="{DynamicResource Primary}" />
+                        </HorizontalStackLayout>
+                    </Border>
 
-                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
-                                StrokeThickness="0"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="16,12">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectProjectCommand}" CommandParameter="Dự án Mobile App" />
-                            </Border.GestureRecognizers>
-                            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                                <fluent:SymbolIcon Symbol="Folder" FontSize="18" ForegroundColor="{DynamicResource Primary}" />
-                                <Label Text="Dự án Mobile App" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
-                            </HorizontalStackLayout>
-                        </Border>
+                    <!-- Danh sách Dự án Động từ LiteDB (Hỗ trợ Chọn / Sửa / Xóa) -->
+                    <ScrollView MaximumHeightRequest="280" VerticalScrollBarVisibility="Never">
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding AvailableProjects}" Spacing="10">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:Project">
+                                    <Border BackgroundColor="{DynamicResource SurfaceVariant}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 12"
+                                            Padding="16,8">
+                                        <Grid ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                            <!-- Vùng chọn dự án -->
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TaskDetailViewModel}}, Path=SelectProjectCommand}"
+                                                                      CommandParameter="{Binding .}" />
+                                            </Grid.GestureRecognizers>
 
-                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
-                                StrokeThickness="0"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="16,12">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectProjectCommand}" CommandParameter="Dự án Backend" />
-                            </Border.GestureRecognizers>
-                            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                                <fluent:SymbolIcon Symbol="Folder" FontSize="18" ForegroundColor="{DynamicResource Primary}" />
-                                <Label Text="Dự án Backend" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
-                            </HorizontalStackLayout>
-                        </Border>
+                                            <fluent:SymbolIcon Symbol="Folder"
+                                                               FontSize="18"
+                                                               ForegroundColor="{DynamicResource Primary}"
+                                                               VerticalOptions="Center" />
 
-                        <Border BackgroundColor="{DynamicResource SurfaceVariant}"
-                                StrokeThickness="0"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="16,12">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectProjectCommand}" CommandParameter="MyTasks App" />
-                            </Border.GestureRecognizers>
-                            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                                <fluent:SymbolIcon Symbol="Folder" FontSize="18" ForegroundColor="{DynamicResource Primary}" />
-                                <Label Text="MyTasks App" FontFamily="InterSemiBold" FontSize="{DynamicResource FontSizeBody}" TextColor="{DynamicResource TextPrimary}" />
-                            </HorizontalStackLayout>
-                        </Border>
-                    </VerticalStackLayout>
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Name}"
+                                                   FontFamily="InterSemiBold"
+                                                   FontSize="{DynamicResource FontSizeBody}"
+                                                   TextColor="{DynamicResource TextPrimary}"
+                                                   VerticalOptions="Center"
+                                                   LineBreakMode="TailTruncation" />
+
+                                            <!-- Nút Chỉnh sửa dự án -->
+                                            <Grid Grid.Column="2"
+                                                  WidthRequest="40"
+                                                  HeightRequest="40"
+                                                  VerticalOptions="Center"
+                                                  HorizontalOptions="Center">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TaskDetailViewModel}}, Path=EditProjectCommand}"
+                                                                          CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
+                                                <fluent:SymbolIcon Symbol="Edit"
+                                                                   FontSize="16"
+                                                                   ForegroundColor="{DynamicResource TextSecondary}"
+                                                                   HorizontalOptions="Center"
+                                                                   VerticalOptions="Center" />
+                                            </Grid>
+
+                                            <!-- Nút Xóa dự án -->
+                                            <Grid Grid.Column="3"
+                                                  WidthRequest="40"
+                                                  HeightRequest="40"
+                                                  VerticalOptions="Center"
+                                                  HorizontalOptions="Center">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TaskDetailViewModel}}, Path=DeleteProjectCommand}"
+                                                                          CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
+                                                <fluent:SymbolIcon Symbol="Delete"
+                                                                   FontSize="16"
+                                                                   ForegroundColor="{DynamicResource Danger}"
+                                                                   HorizontalOptions="Center"
+                                                                   VerticalOptions="Center" />
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </ScrollView>
 
                     <!-- Nút Đóng -->
                     <Button Text="Hủy"

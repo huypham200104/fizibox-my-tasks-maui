@@ -135,13 +135,6 @@ public partial class WeekPage : ContentPage
 
     private async void OnTitleEntryCompleted(object? sender, EventArgs e)
     {
-        NewTaskProjectEntry.Focus();
-        await Task.Delay(50);
-        await CreateModalScrollView.ScrollToAsync(NewTaskProjectEntry, ScrollToPosition.Center, animated: true);
-    }
-
-    private async void OnProjectEntryCompleted(object? sender, EventArgs e)
-    {
         NewTaskDescEditor.Focus();
         await Task.Delay(50);
         await CreateModalScrollView.ScrollToAsync(NewTaskDescEditor, ScrollToPosition.Center, animated: true);
@@ -171,6 +164,15 @@ public partial class WeekPage : ContentPage
         {
             await Task.Delay(150);
             await CreateModalScrollView.ScrollToAsync(element, ScrollToPosition.Center, animated: true);
+        }
+    }
+
+    private async void OnTaskCardTapped(object? sender, TappedEventArgs e)
+    {
+        if (sender is VisualElement view)
+        {
+            await view.ScaleToAsync(0.97, 60, Easing.CubicOut);
+            _ = view.ScaleToAsync(1.0, 100, Easing.CubicIn);
         }
     }
 }

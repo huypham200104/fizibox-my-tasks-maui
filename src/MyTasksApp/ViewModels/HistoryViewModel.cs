@@ -364,10 +364,21 @@ public class HistoryViewModel : BaseViewModel
         }
     }
 
+    private bool _isNavigating;
     private async Task ExecuteOpenTaskDetailAsync(TaskItem? task)
     {
         if (task == null || Shell.Current == null) return;
-        await Shell.Current.GoToAsync($"{nameof(TaskDetailPage)}?id={task.Id}");
+        if (_isNavigating) return;
+        _isNavigating = true;
+
+        try
+        {
+            await Shell.Current.GoToAsync($"{nameof(TaskDetailPage)}?id={task.Id}");
+        }
+        finally
+        {
+            _ = Task.Delay(800).ContinueWith(_ => _isNavigating = false);
+        }
     }
 
     private async Task ExecuteReopenTaskAsync(TaskItem? task)

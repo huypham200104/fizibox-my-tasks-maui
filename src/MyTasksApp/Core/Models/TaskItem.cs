@@ -41,7 +41,13 @@ public class TaskItem : ObservableObject
     public string ProjectName
     {
         get => _projectName;
-        set => SetProperty(ref _projectName, value);
+        set
+        {
+            if (SetProperty(ref _projectName, value))
+            {
+                OnPropertyChanged(nameof(HasProject));
+            }
+        }
     }
 
     public DateTime DueDate
@@ -115,6 +121,7 @@ public class TaskItem : ObservableObject
     public bool IsCompleted => Status == TaskStatus.Completed;
     public bool IsInProgress => Status == TaskStatus.InProgress;
     public bool IsPending => Status == TaskStatus.Pending;
+    public bool HasProject => !string.IsNullOrWhiteSpace(ProjectName);
 
     public bool IsOverdue => Status != TaskStatus.Completed && DueDate.Date < DateTime.Today;
     public bool IsDueToday => Status != TaskStatus.Completed && DueDate.Date == DateTime.Today;

@@ -95,4 +95,13 @@ public partial class HistoryPage : ContentPage
             SkeletonContainer.Opacity = 1.0;
         }
     }
+
+    private async void OnTaskCardTapped(object? sender, TappedEventArgs e)
+    {
+        if (sender is VisualElement view)
+        {
+            await view.ScaleToAsync(0.97, 60, Easing.CubicOut);
+            _ = view.ScaleToAsync(1.0, 100, Easing.CubicIn);
+        }
+    }
 }

@@ -503,3 +503,5 @@ screen_*.png
 
 # Duplicate screenshot directory
 docs/screenshots/
+docs/superpowers/
+docs/my-docs

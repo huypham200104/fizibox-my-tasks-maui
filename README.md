@@ -136,7 +136,7 @@ fizibox-my-tasks-maui/
 │       └── SettingsViewModelTests.cs      # Kiểm thử chuyển đổi Theme, Font, Language
 ├── screenshots/                       # Bộ 10 ảnh chụp màn hình kiểm thử thực tế
 ├── docs/
-│   └── handover/                      # Hồ sơ bàn giao & đánh giá tuyển dụng (ASSIGNMENT, Feedback, Prep, Troubleshooting)
+│   └── handover/                      # Hồ sơ bàn giao & đánh giá tuyển dụng (ASSIGNMENT, Feedback, Prep)
 ├── AI-NOTES.md                        # Nhật ký phối hợp và kiểm soát AI
 ├── BUSINESS.md                        # Quy tắc nghiệp vụ & 5 điểm tự quyết
 ├── DESIGN.md                          # Hệ thống Design Tokens & Typography

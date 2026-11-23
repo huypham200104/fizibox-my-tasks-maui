@@ -567,7 +567,8 @@
                                                             StrokeShape="RoundRectangle 12"
                                                             Padding="14,12">
                                                         <Border.GestureRecognizers>
-                                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HistoryViewModel}}, Path=OpenTaskDetailCommand}"
+                                                            <TapGestureRecognizer Tapped="OnTaskCardTapped"
+                                                                                  Command="{Binding Source={RelativeSource AncestorType={x:Type vm:HistoryViewModel}}, Path=OpenTaskDetailCommand}"
                                                                                   CommandParameter="{Binding .}" />
                                                         </Border.GestureRecognizers>
 
@@ -625,6 +626,7 @@
                                                                         StrokeShape="RoundRectangle 6"
                                                                         StrokeThickness="0"
                                                                         Padding="6,2"
+                                                                        IsVisible="{Binding HasProject}"
                                                                         VerticalOptions="Center">
                                                                     <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
                                                                         <fluent:SymbolIcon Symbol="Folder"

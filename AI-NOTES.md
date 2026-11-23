@@ -128,7 +128,7 @@
      ```
 * **Kiểm tra lại kết quả:**
   - Ứng dụng khởi động thành công ngay tức thì trên điện thoại Xiaomi, đạt hiệu năng 60/120fps mượt mà, **0 crash**.
-  - Toàn bộ bài học kinh nghiệm này đã được đúc kết vào tài liệu xử lý sự cố [docs/mistake.md](docs/mistake.md) và hướng dẫn trong [README.md](README.md).
+  - Toàn bộ bài học kinh nghiệm này đã được đúc kết vào tài liệu hướng dẫn trong [README.md](README.md).
 
 ---
 

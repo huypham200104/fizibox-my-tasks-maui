@@ -18,7 +18,6 @@ Thư mục này tập hợp toàn bộ hồ sơ, đề bài, tài liệu chuẩn
 | [INTERVIEW_PREP.md](INTERVIEW_PREP.md) | **Tài liệu chuẩn bị phỏng vấn:** Kịch bản trả lời 4 câu hỏi kiến trúc cốt lõi và hướng dẫn thực hiện 3 bài test live-coding tại chỗ (đổi màu chủ đạo, thêm bộ đếm quá hạn, thêm filter). |
 | [RESPONSIVE_DESIGN.md](RESPONSIVE_DESIGN.md) | **Báo cáo giải trình thiết kế Responsive:** Giải thích chi tiết giải pháp responsive cho từng thành phần giao diện (Task Card 2 tầng, Week Strip 7 cột, FlexLayout, Touch Target 44dp+). |
 | [RUN_AND_BUILD_GUIDE.md](RUN_AND_BUILD_GUIDE.md) | **Hướng dẫn chạy và build lại dự án:** Quy trình build/redeploy chi tiết trên Windows & Android (cả Debug và Release AOT), lệnh one-liner khi thay đổi code. |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | **Nhật ký xử lý sự cố kỹ thuật:** Ghi lại giải pháp xử lý lỗi FastDeploy trên Android Xiaomi (MIUI/HyperOS) và chuẩn hóa XAML StaticResource. |
 
 ---
 

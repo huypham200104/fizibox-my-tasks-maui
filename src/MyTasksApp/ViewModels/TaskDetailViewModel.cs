@@ -95,20 +95,19 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
 
         OpenProjectSheetCommand = new RelayCommand(() => IsProjectSheetVisible = true);
         CloseProjectSheetCommand = new RelayCommand(() => IsProjectSheetVisible = false);
-        SelectProjectCommand = new AsyncRelayCommand<string>(OnSelectProjectAsync);
+        SelectProjectCommand = new AsyncRelayCommand<object>(OnSelectProjectAsync);
+        AddProjectCommand = new AsyncRelayCommand(OnAddProjectAsync);
+        EditProjectCommand = new AsyncRelayCommand<Project>(OnEditProjectAsync);
+        DeleteProjectCommand = new AsyncRelayCommand<Project>(OnDeleteProjectAsync);
 
         RequestDeleteCommand = new RelayCommand(OnRequestDelete);
         ConfirmDeleteCommand = new AsyncRelayCommand(OnConfirmDeleteAsync);
         CancelDeleteCommand = new RelayCommand(() => IsDeleteConfirmVisible = false);
 
-        // Khởi tạo danh sách dự án
-        AvailableProjects = new ObservableCollection<string>
-        {
-            "Công việc cá nhân",
-            "Dự án Mobile App",
-            "Dự án Backend",
-            "MyTasks App"
-        };
+        // Khởi tạo danh sách dự án từ Database
+        AvailableProjects = new ObservableCollection<Project>();
+        _ = LoadProjectsAsync();
+        _taskService.ProjectsChanged += (_, _) => _ = LoadProjectsAsync();
 
         // Khởi tạo danh sách giờ và phút cho bộ chọn trực quan
         AvailableHours = new ObservableCollection<int>();
@@ -197,12 +196,32 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
                 OnPropertyChanged(nameof(IsTempStatusPending));
                 OnPropertyChanged(nameof(IsTempStatusInProgress));
                 OnPropertyChanged(nameof(IsTempStatusCompleted));
+                OnPropertyChanged(nameof(HasNote));
+                OnPropertyChanged(nameof(StatusInfoSymbol));
+                OnPropertyChanged(nameof(IsStatusPending));
+                OnPropertyChanged(nameof(IsStatusInProgress));
+                OnPropertyChanged(nameof(IsStatusCompleted));
             }
         }
     }
 
     public bool HasTask => _currentTask != null;
     public bool IsCompletedState => _currentTask?.IsCompleted == true;
+    public bool HasNote => !string.IsNullOrWhiteSpace(_currentTask?.Note);
+    public bool IsStatusPending => _currentTask?.Status == TaskStatus.Pending;
+    public bool IsStatusInProgress => _currentTask?.Status == TaskStatus.InProgress;
+    public bool IsStatusCompleted => _currentTask?.Status == TaskStatus.Completed;
+
+    public string StatusInfoSymbol => CurrentTask?.Status switch
+    {
+        TaskStatus.Completed => "CheckmarkCircle",
+        TaskStatus.InProgress => "ArrowSyncCircle",
+        _ => "Clock"
+    };
+
+    public string BtnAddProjectText => _localizationService["BtnAddProject"];
+    public string BtnAddNoteText => _localizationService["BtnAddNote"];
+    public string FieldTaskNotePlaceholder => _localizationService["FieldTaskNotePlaceholder"];
 
     public bool IsNotFound
     {
@@ -500,7 +519,7 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
     public bool IsTempStatusInProgress => SelectedTempStatus == TaskStatus.InProgress;
     public bool IsTempStatusCompleted => SelectedTempStatus == TaskStatus.Completed;
 
-    public ObservableCollection<string> AvailableProjects { get; }
+    public ObservableCollection<Project> AvailableProjects { get; }
 
     #endregion
 
@@ -539,7 +558,10 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
 
     public RelayCommand OpenProjectSheetCommand { get; }
     public RelayCommand CloseProjectSheetCommand { get; }
-    public AsyncRelayCommand<string> SelectProjectCommand { get; }
+    public AsyncRelayCommand<object> SelectProjectCommand { get; }
+    public AsyncRelayCommand AddProjectCommand { get; }
+    public AsyncRelayCommand<Project> EditProjectCommand { get; }
+    public AsyncRelayCommand<Project> DeleteProjectCommand { get; }
 
     public RelayCommand RequestDeleteCommand { get; }
     public AsyncRelayCommand ConfirmDeleteCommand { get; }
@@ -683,6 +705,7 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
         CurrentTask.ProjectName = EditProjectName;
 
         await _taskService.UpdateTaskAsync(CurrentTask);
+        OnPropertyChanged(nameof(HasNote));
         IsEditModalVisible = false;
         _snackbarService.ShowSuccess(_localizationService["SnackbarTaskUpdated"]);
     }
@@ -724,6 +747,10 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
             OnPropertyChanged(nameof(CurrentStatusText));
             OnPropertyChanged(nameof(FormattedCompletedAtText));
             OnPropertyChanged(nameof(MainCtaButtonText));
+            OnPropertyChanged(nameof(StatusInfoSymbol));
+            OnPropertyChanged(nameof(IsStatusPending));
+            OnPropertyChanged(nameof(IsStatusInProgress));
+            OnPropertyChanged(nameof(IsStatusCompleted));
         }
 
         IsStatusSheetVisible = false;
@@ -872,8 +899,35 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
 
     #region Project Sheet Handlers
 
-    private async Task OnSelectProjectAsync(string? projectName)
+    private async Task LoadProjectsAsync()
     {
+        try
+        {
+            var projects = await _taskService.GetAllProjectsAsync();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                AvailableProjects.Clear();
+                foreach (var p in projects)
+                {
+                    AvailableProjects.Add(p);
+                }
+            });
+        }
+        catch
+        {
+            // Ignore errors during background project loading
+        }
+    }
+
+    private async Task OnSelectProjectAsync(object? parameter)
+    {
+        string? projectName = parameter switch
+        {
+            Project p => p.Name,
+            string s => s,
+            _ => null
+        };
+
         if (string.IsNullOrWhiteSpace(projectName)) return;
 
         if (CurrentTask != null)
@@ -884,6 +938,74 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
 
         EditProjectName = projectName;
         IsProjectSheetVisible = false;
+    }
+
+    private async Task OnAddProjectAsync()
+    {
+        var title = _localizationService["PromptAddProjectTitle"];
+        var msg = _localizationService["PromptAddProjectMessage"];
+        var ok = _localizationService["BtnSave"];
+        var cancel = _localizationService["BtnCancel"];
+
+        if (Shell.Current != null)
+        {
+            string? name = await Shell.Current.DisplayPromptAsync(title, msg, ok, cancel, placeholder: "Tên dự án");
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var newProj = new Project { Name = name.Trim(), ColorHex = "#4F46E5" };
+                await _taskService.AddProjectAsync(newProj);
+                _snackbarService.ShowSuccess($"Đã tạo dự án: {newProj.Name}");
+            }
+        }
+    }
+
+    private async Task OnEditProjectAsync(Project? project)
+    {
+        if (project == null) return;
+
+        var title = _localizationService["PromptEditProjectTitle"];
+        var msg = _localizationService["PromptEditProjectMessage"];
+        var ok = _localizationService["BtnSave"];
+        var cancel = _localizationService["BtnCancel"];
+
+        if (Shell.Current != null)
+        {
+            string? newName = await Shell.Current.DisplayPromptAsync(title, msg, ok, cancel, initialValue: project.Name);
+            if (!string.IsNullOrWhiteSpace(newName) && newName.Trim() != project.Name)
+            {
+                string oldName = project.Name;
+                project.Name = newName.Trim();
+                await _taskService.UpdateProjectAsync(project);
+
+                if (CurrentTask != null && CurrentTask.ProjectName == oldName)
+                {
+                    CurrentTask.ProjectName = project.Name;
+                    await _taskService.UpdateTaskAsync(CurrentTask);
+                }
+
+                _snackbarService.ShowSuccess($"Đã đổi tên dự án thành: {project.Name}");
+            }
+        }
+    }
+
+    private async Task OnDeleteProjectAsync(Project? project)
+    {
+        if (project == null) return;
+
+        var title = _localizationService["ConfirmDeleteProjectTitle"];
+        var msg = _localizationService["ConfirmDeleteProjectMessage"];
+        var ok = _localizationService["BtnDelete"];
+        var cancel = _localizationService["BtnCancel"];
+
+        if (Shell.Current != null)
+        {
+            bool confirm = await Shell.Current.DisplayAlertAsync(title, $"{msg}\n\"{project.Name}\"", ok, cancel);
+            if (confirm)
+            {
+                await _taskService.DeleteProjectAsync(project.Id);
+                _snackbarService.ShowSuccess($"Đã xóa dự án: {project.Name}");
+            }
+        }
     }
 
     #endregion
