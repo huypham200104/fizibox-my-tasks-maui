@@ -881,11 +881,11 @@
                                 <SwipeView>
                                     <SwipeView.RightItems>
                                         <SwipeItems Mode="Reveal">
-                                            <SwipeItem Text="Hoàn thành"
+                                            <SwipeItem Text="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SwipeCompleteText}"
                                                        BackgroundColor="{DynamicResource Success}"
                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=ToggleTaskStatusCommand}"
                                                        CommandParameter="{Binding .}" />
-                                            <SwipeItem Text="Xóa"
+                                            <SwipeItem Text="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=SwipeDeleteText}"
                                                        BackgroundColor="{DynamicResource Danger}"
                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:WeekViewModel}}, Path=DeleteTaskCommand}"
                                                        CommandParameter="{Binding .}" />

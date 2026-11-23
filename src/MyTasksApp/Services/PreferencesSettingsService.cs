@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls;
+using MyTasksApp.Core.DesignTokens;
 using MyTasksApp.Core.Enums;
 using MyTasksApp.Services.Interfaces;
 
@@ -154,55 +155,55 @@ public class PreferencesSettingsService : ISettingsService
             var newDict = new ResourceDictionary();
             if (theme == AppThemeMode.Dark)
             {
-                // Cập nhật DynamicResource sang Dark Palette
-                newDict["Background"] = Color.FromArgb("#0F172A");
-                newDict["Surface"] = Color.FromArgb("#1E293B");
-                newDict["SurfaceVariant"] = Color.FromArgb("#334155");
-                newDict["BorderColor"] = Color.FromArgb("#334155");
-                newDict["TextPrimary"] = Color.FromArgb("#F8FAFC");
-                newDict["TextSecondary"] = Color.FromArgb("#94A3B8");
-                newDict["TextMuted"] = Color.FromArgb("#64748B");
-                newDict["Primary"] = Color.FromArgb("#6366F1");
-                newDict["PrimaryVariant"] = Color.FromArgb("#818CF8");
-                newDict["PrimaryLight"] = Color.FromArgb("#1E1B4B");
-                newDict["PrimaryLightDark"] = Color.FromArgb("#1E1B4B");
-                newDict["ProgressTrack"] = Color.FromArgb("#312E81");
-                newDict["ProgressFill"] = Color.FromArgb("#6366F1");
-                newDict["Danger"] = Color.FromArgb("#EF4444");
-                newDict["DangerSurface"] = Color.FromArgb("#450A0A");
-                newDict["Warning"] = Color.FromArgb("#F59E0B");
-                newDict["WarningSurface"] = Color.FromArgb("#451A03");
-                newDict["Success"] = Color.FromArgb("#22C55E");
-                newDict["SuccessSurface"] = Color.FromArgb("#052E16");
-                newDict["SnackbarBg"] = Color.FromArgb("#020617");
-                newDict["SnackbarUndoBg"] = Color.FromArgb("#1E1B4B");
-                newDict["SnackbarUndoText"] = Color.FromArgb("#818CF8");
+                // Cập nhật DynamicResource sang Dark Palette từ nguồn AppColors (Single Source of Truth)
+                newDict["Background"] = AppColors.BackgroundDark;
+                newDict["Surface"] = AppColors.SurfaceDark;
+                newDict["SurfaceVariant"] = AppColors.SurfaceVariantDark;
+                newDict["BorderColor"] = AppColors.BorderColorDark;
+                newDict["TextPrimary"] = AppColors.TextPrimaryDark;
+                newDict["TextSecondary"] = AppColors.TextSecondaryDark;
+                newDict["TextMuted"] = AppColors.TextMutedDark;
+                newDict["Primary"] = AppColors.PrimaryDark;
+                newDict["PrimaryVariant"] = AppColors.PrimaryVariantDark;
+                newDict["PrimaryLight"] = AppColors.PrimaryLightDark;
+                newDict["PrimaryLightDark"] = AppColors.PrimaryLightDark;
+                newDict["ProgressTrack"] = AppColors.ProgressTrackDark;
+                newDict["ProgressFill"] = AppColors.ProgressFillDark;
+                newDict["Danger"] = AppColors.DangerDark;
+                newDict["DangerSurface"] = AppColors.DangerSurfaceDark;
+                newDict["Warning"] = AppColors.WarningDark;
+                newDict["WarningSurface"] = AppColors.WarningSurfaceDark;
+                newDict["Success"] = AppColors.SuccessDark;
+                newDict["SuccessSurface"] = AppColors.SuccessSurfaceDark;
+                newDict["SnackbarBg"] = AppColors.SnackbarBgDark;
+                newDict["SnackbarUndoBg"] = AppColors.SnackbarUndoBgDark;
+                newDict["SnackbarUndoText"] = AppColors.SnackbarUndoTextDark;
             }
             else
             {
-                // Cập nhật DynamicResource sang Light Palette
-                newDict["Background"] = Color.FromArgb("#F8FAFC");
-                newDict["Surface"] = Color.FromArgb("#FFFFFF");
-                newDict["SurfaceVariant"] = Color.FromArgb("#F1F5F9");
-                newDict["BorderColor"] = Color.FromArgb("#E2E8F0");
-                newDict["TextPrimary"] = Color.FromArgb("#0F172A");
-                newDict["TextSecondary"] = Color.FromArgb("#475569");
-                newDict["TextMuted"] = Color.FromArgb("#94A3B8");
-                newDict["Primary"] = Color.FromArgb("#4F46E5");
-                newDict["PrimaryVariant"] = Color.FromArgb("#4338CA");
-                newDict["PrimaryLight"] = Color.FromArgb("#EEF2FF");
-                newDict["PrimaryLightDark"] = Color.FromArgb("#EEF2FF");
-                newDict["ProgressTrack"] = Color.FromArgb("#E0E7FF");
-                newDict["ProgressFill"] = Color.FromArgb("#4F46E5");
-                newDict["Danger"] = Color.FromArgb("#DC2626");
-                newDict["DangerSurface"] = Color.FromArgb("#FEF2F2");
-                newDict["Warning"] = Color.FromArgb("#D97706");
-                newDict["WarningSurface"] = Color.FromArgb("#FFFBEB");
-                newDict["Success"] = Color.FromArgb("#16A34A");
-                newDict["SuccessSurface"] = Color.FromArgb("#F0FDF4");
-                newDict["SnackbarBg"] = Color.FromArgb("#FFFFFF");
-                newDict["SnackbarUndoBg"] = Color.FromArgb("#EEF2FF");
-                newDict["SnackbarUndoText"] = Color.FromArgb("#4F46E5");
+                // Cập nhật DynamicResource sang Light Palette từ nguồn AppColors (Single Source of Truth)
+                newDict["Background"] = AppColors.Background;
+                newDict["Surface"] = AppColors.Surface;
+                newDict["SurfaceVariant"] = AppColors.SurfaceVariant;
+                newDict["BorderColor"] = AppColors.BorderColor;
+                newDict["TextPrimary"] = AppColors.TextPrimary;
+                newDict["TextSecondary"] = AppColors.TextSecondary;
+                newDict["TextMuted"] = AppColors.TextMuted;
+                newDict["Primary"] = AppColors.Primary;
+                newDict["PrimaryVariant"] = AppColors.PrimaryVariant;
+                newDict["PrimaryLight"] = AppColors.PrimaryLight;
+                newDict["PrimaryLightDark"] = AppColors.PrimaryLight;
+                newDict["ProgressTrack"] = AppColors.ProgressTrack;
+                newDict["ProgressFill"] = AppColors.ProgressFill;
+                newDict["Danger"] = AppColors.Danger;
+                newDict["DangerSurface"] = AppColors.DangerSurface;
+                newDict["Warning"] = AppColors.Warning;
+                newDict["WarningSurface"] = AppColors.WarningSurface;
+                newDict["Success"] = AppColors.Success;
+                newDict["SuccessSurface"] = AppColors.SuccessSurface;
+                newDict["SnackbarBg"] = AppColors.SnackbarBg;
+                newDict["SnackbarUndoBg"] = AppColors.SnackbarUndoBg;
+                newDict["SnackbarUndoText"] = AppColors.SnackbarUndoText;
             }
 
             // Gộp tất cả token vào ResourceDictionary riêng biệt và hoán đổi trong MergedDictionaries 

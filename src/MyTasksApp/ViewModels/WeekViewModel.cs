@@ -19,6 +19,7 @@ public class WeekViewModel : BaseViewModel
     private readonly ITaskService _taskService;
     private readonly ILocalizationService? _localizationService;
     private readonly ISnackbarService _snackbarService;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly CultureInfo _viCulture = new("vi-VN");
 
     private DateTime _currentWeekStart;
@@ -35,7 +36,7 @@ public class WeekViewModel : BaseViewModel
     private bool _isInternalUpdate;
     private bool _isDataLoaded;
     private bool _isDataDirty;
-    public bool IsPageVisible { get; set; }
+    public bool IsPageVisible { get; set; } = true;
 
     // Modal tạo việc nhanh
     private bool _isCreateModalVisible;
@@ -53,9 +54,9 @@ public class WeekViewModel : BaseViewModel
     private CancellationTokenSource? _loadCts;
 
     /// <summary>
-    /// Thời gian trễ tối thiểu để hiển thị Skeleton chuyển cảnh mượt mà (mặc định 250ms).
+    /// Thời gian trễ tối thiểu để hiển thị Skeleton chuyển cảnh (mặc định 0ms để phản hồi tức thì, chỉ tăng khi mô phỏng loading).
     /// </summary>
-    public int TransitionDelayMs { get; set; } = 250;
+    public int TransitionDelayMs { get; set; } = 0;
 
     public ObservableCollection<WeekDayItem> WeekDays { get; } = new();
     public ObservableCollection<TaskItem> DayTasks { get; } = new();
@@ -215,16 +216,20 @@ public class WeekViewModel : BaseViewModel
     public string BtnSaveTask => _localizationService?["BtnSaveTask"] ?? "Lưu công việc";
     public string DueDateLabel => _localizationService?["DetailDueDate"] ?? "Hạn ngày";
     public string DueTimeLabel => _localizationService?["DetailDueTime"] ?? "Hạn giờ";
+    public string SwipeCompleteText => _localizationService?["SwipeComplete"] ?? "Hoàn thành";
+    public string SwipeDeleteText => _localizationService?["SwipeDelete"] ?? "Xóa";
+    public string SwipeReopenText => _localizationService?["SwipeReopen"] ?? "Mở lại";
 
-    public WeekViewModel(ITaskService taskService, ILocalizationService? localizationService = null, ISnackbarService? snackbarService = null)
+    public WeekViewModel(ITaskService taskService, ILocalizationService? localizationService = null, ISnackbarService? snackbarService = null, IDateTimeProvider? dateTimeProvider = null)
     {
         _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
         _localizationService = localizationService;
         _snackbarService = snackbarService ?? new SnackbarService();
+        _dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
         Title = "Tuần này";
 
         // Khởi tạo tuần chứa ngày hôm nay
-        DateTime today = DateTime.Today;
+        DateTime today = _dateTimeProvider.Today;
         _currentWeekStart = GetMondayOfWeek(today);
         _selectedDate = today;
 
@@ -304,6 +309,9 @@ public class WeekViewModel : BaseViewModel
             OnPropertyChanged(nameof(BtnSaveTask));
             OnPropertyChanged(nameof(DueDateLabel));
             OnPropertyChanged(nameof(DueTimeLabel));
+            OnPropertyChanged(nameof(SwipeCompleteText));
+            OnPropertyChanged(nameof(SwipeDeleteText));
+            OnPropertyChanged(nameof(SwipeReopenText));
         });
     }
 
@@ -421,7 +429,7 @@ public class WeekViewModel : BaseViewModel
         UpdateWeekRangeText();
         UpdateSelectedDayTitle();
 
-        DateTime today = DateTime.Today;
+        DateTime today = _dateTimeProvider.Today;
         string[] dayNames = GetDayNames();
 
         bool needInit = WeekDays.Count != 7;
@@ -670,11 +678,13 @@ public class WeekViewModel : BaseViewModel
 
         // Optimistic UI: Đổi trạng thái tại chỗ
         task.Status = willBeCompleted ? TaskStatus.Completed : TaskStatus.Pending;
-        task.CompletedAt = willBeCompleted ? DateTime.Now : null;
+        task.CompletedAt = willBeCompleted ? _dateTimeProvider.Now : null;
 
         UpdateDayProgressMetrics();
 
-        ShowSnackbar(willBeCompleted ? "Đã hoàn thành công việc" : "Đã mở lại công việc", canUndo: false);
+        ShowSnackbar(willBeCompleted 
+            ? (_localizationService?["SnackbarTaskCompleted"] ?? "Đã hoàn thành công việc") 
+            : (_localizationService?["SnackbarTaskReopened"] ?? "Đã mở lại công việc"), canUndo: false);
 
         _isInternalUpdate = true;
         try
@@ -701,7 +711,7 @@ public class WeekViewModel : BaseViewModel
             currentDay.TaskCount--;
         }
 
-        ShowSnackbar("Đã xóa công việc", canUndo: true);
+        ShowSnackbar(_localizationService?["SnackbarTaskDeleted"] ?? "Đã xóa công việc", canUndo: true);
 
         _isInternalUpdate = true;
         try
@@ -719,7 +729,7 @@ public class WeekViewModel : BaseViewModel
         var restored = await _taskService.UndoDeleteAsync();
         if (restored != null)
         {
-            ShowSnackbar($"Đã hoàn tác: {restored.Title}", canUndo: false);
+            ShowSnackbar($"{_localizationService?["SnackbarTaskRestored"] ?? "Đã khôi phục: "}{restored.Title}", canUndo: false);
             await RefreshWeekDaysAndTasksAsync();
         }
     }
@@ -737,7 +747,7 @@ public class WeekViewModel : BaseViewModel
         NewTaskProject = "Công việc cá nhân";
         // Mặc định ngày tạo việc là ngày đang xem
         NewTaskDueDate = SelectedDate;
-        NewTaskDueTime = new TimeSpan(DateTime.Now.Hour + 1, 0, 0);
+        NewTaskDueTime = new TimeSpan(_dateTimeProvider.Now.Hour + 1, 0, 0);
         IsCreateModalVisible = true;
     }
 

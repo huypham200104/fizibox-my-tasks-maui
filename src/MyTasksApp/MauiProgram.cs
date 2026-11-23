@@ -26,6 +26,7 @@ public static class MauiProgram
 			});
 
 		// Đăng ký Services (Sử dụng NoSQL LiteDB lưu trữ dữ liệu vĩnh viễn và đồng bộ realtime)
+		builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 		builder.Services.AddSingleton<ITaskService, LiteDbTaskService>();
 		builder.Services.AddSingleton<ISettingsService, PreferencesSettingsService>();
 		builder.Services.AddSingleton<ILocalizationService, LocalizationService>();

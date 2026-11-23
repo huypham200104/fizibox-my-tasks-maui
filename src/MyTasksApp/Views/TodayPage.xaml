@@ -298,11 +298,11 @@
                                         <SwipeView>
                                             <SwipeView.RightItems>
                                                 <SwipeItems Mode="Reveal">
-                                                    <SwipeItem Text="Hoàn thành"
+                                                    <SwipeItem Text="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=SwipeCompleteText}"
                                                                BackgroundColor="{DynamicResource Success}"
                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=ToggleTaskStatusCommand}"
                                                                CommandParameter="{Binding .}" />
-                                                    <SwipeItem Text="Xóa"
+                                                    <SwipeItem Text="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=SwipeDeleteText}"
                                                                BackgroundColor="{DynamicResource Danger}"
                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=DeleteTaskCommand}"
                                                                CommandParameter="{Binding .}" />
@@ -460,11 +460,11 @@
                                         <SwipeView>
                                             <SwipeView.RightItems>
                                                 <SwipeItems Mode="Reveal">
-                                                    <SwipeItem Text="Hoàn thành"
+                                                    <SwipeItem Text="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=SwipeCompleteText}"
                                                                BackgroundColor="{DynamicResource Success}"
                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=ToggleTaskStatusCommand}"
                                                                CommandParameter="{Binding .}" />
-                                                    <SwipeItem Text="Xóa"
+                                                    <SwipeItem Text="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=SwipeDeleteText}"
                                                                BackgroundColor="{DynamicResource Danger}"
                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=DeleteTaskCommand}"
                                                                CommandParameter="{Binding .}" />
@@ -622,11 +622,11 @@
                                         <SwipeView>
                                             <SwipeView.RightItems>
                                                 <SwipeItems Mode="Reveal">
-                                                    <SwipeItem Text="Mở lại"
+                                                    <SwipeItem Text="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=SwipeReopenText}"
                                                                BackgroundColor="{DynamicResource Warning}"
                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=ToggleTaskStatusCommand}"
                                                                CommandParameter="{Binding .}" />
-                                                    <SwipeItem Text="Xóa"
+                                                    <SwipeItem Text="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=SwipeDeleteText}"
                                                                BackgroundColor="{DynamicResource Danger}"
                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:TodayViewModel}}, Path=DeleteTaskCommand}"
                                                                CommandParameter="{Binding .}" />

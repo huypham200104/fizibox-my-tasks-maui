@@ -2,6 +2,7 @@ using FluentAssertions;
 using MyTasksApp.Core.Enums;
 using MyTasksApp.Core.Models;
 using MyTasksApp.Services;
+using MyTasksApp.Tests.Mocks;
 using MyTasksApp.ViewModels;
 using TaskStatus = MyTasksApp.Core.Enums.TaskStatus;
 using Xunit;
@@ -126,8 +127,16 @@ public class TodayViewModelTests
     {
         // Arrange
         var service = new MockTaskService();
-        var viewModel = new TodayViewModel(service);
+        var dateTimeProvider = new MockDateTimeProvider(new DateTime(2026, 11, 21));
+        var viewModel = new TodayViewModel(service, dateTimeProvider: dateTimeProvider);
         await viewModel.LoadTasksCommand.ExecuteAsync();
+
+        // Đảm bảo có ít nhất 1 task hoàn thành để kiểm thử hành vi mở lại
+        if (viewModel.CompletedTasks.Count == 0)
+        {
+            var task = viewModel.TodayTasks.First();
+            await viewModel.ToggleTaskStatusCommand.ExecuteAsync(task);
+        }
 
         var completedTask = viewModel.CompletedTasks.FirstOrDefault();
         completedTask.Should().NotBeNull();

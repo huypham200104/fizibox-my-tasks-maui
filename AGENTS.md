@@ -19,3 +19,7 @@
    - **Chống tràn nội dung (Anti-overflow)**: Tuyệt đối không nhồi nhét chuỗi văn bản dài cùng số liệu động trong một `HorizontalStackLayout` chật hẹp; ưu tiên bố cục tách tầng, `Grid` linh hoạt (kết hợp `*` và `Auto`), hoặc `FlexLayout`.
    - **Vùng chạm tương tác (Touch Target)**: Mọi phần tử có thể chạm (Checkbox, Button, Floating Button, Action Icon) phải có vùng chạm tối thiểu `44x44dp` (hoặc tối thiểu `36x36dp` với padding/margin hỗ trợ) để tránh bấm trượt.
    - **Cắt góc ảnh chuẩn xác (Image Clipping)**: Với các hình ảnh hoặc logo có nền màu riêng, luôn sử dụng `Clip` hình học (`RoundRectangleGeometry`) tương ứng với góc bo của container để triệt tiêu các góc vuông nhọn tràn ra ngoài.
+7. **Quy định chạy Test**:
+   - Tuyệt đối **không** tự ý chạy test (unit test, automated test,...) trong quá trình thực hiện công việc.
+   - **Chỉ chạy test khi người dùng có yêu cầu rõ ràng với lệnh `/grill-me`**.
+

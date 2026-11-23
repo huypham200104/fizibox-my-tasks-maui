@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using MyTasksApp.Core.Enums;
 using MyTasksApp.Core.Models;
+using MyTasksApp.Services;
 using MyTasksApp.Services.Interfaces;
 using MyTasksApp.ViewModels.Base;
 using MyTasksApp.Views;
@@ -17,6 +18,7 @@ public class HistoryViewModel : BaseViewModel
 {
     private readonly ITaskService _taskService;
     private readonly ILocalizationService? _localizationService;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly CultureInfo _viCulture = new("vi-VN");
 
     private string _searchText = string.Empty;
@@ -28,7 +30,8 @@ public class HistoryViewModel : BaseViewModel
     private bool _isDataLoaded;
     private bool _isDataDirty;
     private bool _isInternalUpdate;
-    public bool IsPageVisible { get; set; }
+    public bool IsPageVisible { get; set; } = true;
+    public int TransitionDelayMs { get; set; } = 0;
     private CancellationTokenSource? _filterCts;
 
     private readonly List<TaskItem> _rawCompletedTasks = new();
@@ -128,6 +131,8 @@ public class HistoryViewModel : BaseViewModel
     public string FilterTodayText => _localizationService?["HistoryFilterToday"] ?? "Hôm nay";
     public string FilterWeekText => _localizationService?["HistoryFilterWeek"] ?? "Tuần này";
     public string FilterMonthText => _localizationService?["HistoryFilterMonth"] ?? "Tháng này";
+    public string SwipeReopenText => _localizationService?["SwipeReopen"] ?? "Mở lại";
+    public string SwipeDeleteText => _localizationService?["SwipeDelete"] ?? "Xóa";
 
     // =================================================================
     // COMMANDS
@@ -147,10 +152,11 @@ public class HistoryViewModel : BaseViewModel
     // CONSTRUCTOR
     // =================================================================
 
-    public HistoryViewModel(ITaskService taskService, ILocalizationService? localizationService = null)
+    public HistoryViewModel(ITaskService taskService, ILocalizationService? localizationService = null, IDateTimeProvider? dateTimeProvider = null)
     {
         _taskService = taskService;
         _localizationService = localizationService;
+        _dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
         Title = PageTitle;
 
         LoadHistoryCommand = new AsyncRelayCommand(ExecuteLoadHistoryAsync);
@@ -197,7 +203,10 @@ public class HistoryViewModel : BaseViewModel
             IsBusy = true;
             NotifyStateProperties();
 
-            var delayTask = Task.Delay(SkeletonMinTransitionDelayMs);
+            if (_taskService.SimulateLoading)
+            {
+                await Task.Delay(SkeletonMinTransitionDelayMs);
+            }
             var tasks = await _taskService.GetCompletedTasksAsync();
 
             _rawCompletedTasks.Clear();
@@ -206,8 +215,6 @@ public class HistoryViewModel : BaseViewModel
             UpdateFilterPeriodText();
             ApplyFilterAndGrouping();
             _isDataLoaded = true;
-
-            await delayTask;
         }
         finally
         {
@@ -267,13 +274,14 @@ public class HistoryViewModel : BaseViewModel
             IsBusy = true;
             NotifyStateProperties();
 
-            var delayTask = Task.Delay(130, token);
+            if (TransitionDelayMs > 0)
+            {
+                await Task.Delay(TransitionDelayMs, token);
+            }
 
             var (newCount, newGroups) = await Task.Run(
                 () => ComputeFilteredGroups(targetFilter, _isSortDescending, _searchText, _rawCompletedTasks),
                 token);
-
-            await delayTask;
 
             if (token.IsCancellationRequested) return;
 
@@ -312,13 +320,14 @@ public class HistoryViewModel : BaseViewModel
             IsBusy = true;
             NotifyStateProperties();
 
-            var delayTask = Task.Delay(120, token);
+            if (TransitionDelayMs > 0)
+            {
+                await Task.Delay(TransitionDelayMs, token);
+            }
 
             var (newCount, newGroups) = await Task.Run(
                 () => ComputeFilteredGroups(_selectedFilter, _isSortDescending, _searchText, _rawCompletedTasks),
                 token);
-
-            await delayTask;
 
             if (token.IsCancellationRequested) return;
 
@@ -451,6 +460,8 @@ public class HistoryViewModel : BaseViewModel
             OnPropertyChanged(nameof(FilterTodayText));
             OnPropertyChanged(nameof(FilterWeekText));
             OnPropertyChanged(nameof(FilterMonthText));
+            OnPropertyChanged(nameof(SwipeReopenText));
+            OnPropertyChanged(nameof(SwipeDeleteText));
 
             UpdateFilterPeriodText();
             ApplyFilterAndGrouping();
@@ -492,7 +503,7 @@ public class HistoryViewModel : BaseViewModel
         string searchText,
         List<TaskItem> sourceTasks)
     {
-        DateTime today = DateTime.Today;
+        DateTime today = _dateTimeProvider.Today;
         DateTime mondayOfWeek = WeekViewModel.GetMondayOfWeek(today);
         DateTime sundayOfWeek = mondayOfWeek.AddDays(6);
 
@@ -593,7 +604,7 @@ public class HistoryViewModel : BaseViewModel
     private void UpdateFilterPeriodText()
     {
         bool isEn = _localizationService?.CurrentLanguage == AppLanguage.English;
-        DateTime today = DateTime.Today;
+        DateTime today = _dateTimeProvider.Today;
 
         FilterPeriodText = _selectedFilter switch
         {

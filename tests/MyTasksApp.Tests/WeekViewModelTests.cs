@@ -39,7 +39,7 @@ public class WeekViewModelTests
     {
         // Arrange
         var service = new MockTaskService();
-        var vm = new WeekViewModel(service);
+        var vm = new WeekViewModel(service) { IsPageVisible = true };
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
         var initialWeekStart = vm.CurrentWeekStart;
@@ -67,7 +67,7 @@ public class WeekViewModelTests
     {
         // Arrange
         var service = new MockTaskService();
-        var vm = new WeekViewModel(service);
+        var vm = new WeekViewModel(service) { IsPageVisible = true };
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
         // Chọn ngày Thứ Tư trong tuần (index 2)
@@ -93,7 +93,7 @@ public class WeekViewModelTests
     {
         // Arrange
         var service = new MockTaskService();
-        var vm = new WeekViewModel(service);
+        var vm = new WeekViewModel(service) { IsPageVisible = true };
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
         // Assert
@@ -116,7 +116,7 @@ public class WeekViewModelTests
     {
         // Arrange
         var service = new MockTaskService();
-        var vm = new WeekViewModel(service);
+        var vm = new WeekViewModel(service) { IsPageVisible = true };
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
         // Chọn ngày có sẵn công việc trong mock data
@@ -141,7 +141,7 @@ public class WeekViewModelTests
     {
         // Arrange
         var service = new MockTaskService();
-        var vm = new WeekViewModel(service);
+        var vm = new WeekViewModel(service) { IsPageVisible = true };
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
         var targetDay = vm.WeekDays.First(d => d.TaskCount > 0);
@@ -165,15 +165,15 @@ public class WeekViewModelTests
     {
         // Arrange
         var service = new MockTaskService();
-        var vm = new WeekViewModel(service);
+        var vm = new WeekViewModel(service) { IsPageVisible = true };
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
-        // Đang xem ngày Thứ Hai 16/11
-        var monday = vm.WeekDays.First(d => d.Date.Day == 16);
+        // Đang xem ngày Thứ Hai
+        var monday = vm.WeekDays[0];
         await vm.SelectDayCommand.ExecuteAsync(monday);
 
         var initialMondayCount = vm.DayTasks.Count;
-        var tuesday = vm.WeekDays.First(d => d.Date.Day == 17);
+        var tuesday = vm.WeekDays[1];
         var initialTuesdayBadgeCount = tuesday.TaskCount;
 
         // Act: Tạo việc cho ngày Thứ Ba 17/11
@@ -193,7 +193,7 @@ public class WeekViewModelTests
     {
         // Arrange
         var service = new MockTaskService();
-        var vm = new WeekViewModel(service);
+        var vm = new WeekViewModel(service) { IsPageVisible = true };
         await vm.LoadWeekDataCommand.ExecuteAsync();
 
         var selected = vm.SelectedDate;

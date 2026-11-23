@@ -150,6 +150,31 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
             OnPropertyChanged(nameof(NotFoundTitle));
             OnPropertyChanged(nameof(NotFoundDesc));
             OnPropertyChanged(nameof(NotFoundGoBackText));
+            OnPropertyChanged(nameof(DayMonText));
+            OnPropertyChanged(nameof(DayTueText));
+            OnPropertyChanged(nameof(DayWedText));
+            OnPropertyChanged(nameof(DayThuText));
+            OnPropertyChanged(nameof(DayFriText));
+            OnPropertyChanged(nameof(DaySatText));
+            OnPropertyChanged(nameof(DaySunText));
+            OnPropertyChanged(nameof(ShortcutTodayText));
+            OnPropertyChanged(nameof(SelectProjectTitle));
+            OnPropertyChanged(nameof(BtnCancelText));
+            OnPropertyChanged(nameof(BtnConfirmText));
+            OnPropertyChanged(nameof(ModalEditTitle));
+            OnPropertyChanged(nameof(ModalEditSubtitle));
+            OnPropertyChanged(nameof(FieldTaskTitle));
+            OnPropertyChanged(nameof(FieldTaskDesc));
+            OnPropertyChanged(nameof(FieldTaskNotes));
+            OnPropertyChanged(nameof(BtnSaveText));
+            OnPropertyChanged(nameof(SheetProjectSubtitle));
+            OnPropertyChanged(nameof(DialogDeleteMsg));
+            OnPropertyChanged(nameof(DialogCancelText));
+            OnPropertyChanged(nameof(DialogConfirmText));
+            OnPropertyChanged(nameof(DialogDeleteConfirmText));
+            OnPropertyChanged(nameof(NotFoundTitle));
+            OnPropertyChanged(nameof(NotFoundDesc));
+            OnPropertyChanged(nameof(NotFoundGoBackText));
             OnPropertyChanged(nameof(PickerMonthText));
             OnPropertyChanged(nameof(PickerSelectedDateFormatted));
         };
@@ -246,6 +271,26 @@ public class TaskDetailViewModel : BaseViewModel, IQueryAttributable
     public string NotFoundTitle => _localizationService["NotFoundDetailTitle"];
     public string NotFoundDesc => _localizationService["NotFoundDetailDesc"];
     public string NotFoundGoBackText => _localizationService["BtnBackToList"];
+
+    // Date & Time Picker / Days of Week
+    public string DayMonText => _localizationService["DayMon"];
+    public string DayTueText => _localizationService["DayTue"];
+    public string DayWedText => _localizationService["DayWed"];
+    public string DayThuText => _localizationService["DayThu"];
+    public string DayFriText => _localizationService["DayFri"];
+    public string DaySatText => _localizationService["DaySat"];
+    public string DaySunText => _localizationService["DaySun"];
+    public string ShortcutTodayText => _localizationService["ShortcutToday"];
+    public string SelectProjectTitle => _localizationService["SheetProjectTitle"];
+    public string SheetProjectSubtitle => _localizationService["SheetProjectSubtitle"];
+    public string BtnCancelText => _localizationService["BtnCancel"];
+    public string BtnConfirmText => _localizationService["BtnConfirm"];
+    public string ModalEditTitle => _localizationService["ModalEditTitle"];
+    public string ModalEditSubtitle => _localizationService["ModalEditSubtitle"];
+    public string FieldTaskTitle => _localizationService["FieldTaskTitle"];
+    public string FieldTaskDesc => _localizationService["FieldTaskDesc"];
+    public string FieldTaskNotes => _localizationService["FieldTaskNotes"];
+    public string BtnSaveText => _localizationService["BtnSave"];
 
     #endregion
 

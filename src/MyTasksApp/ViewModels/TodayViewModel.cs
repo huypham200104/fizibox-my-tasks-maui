@@ -20,6 +20,7 @@ public class TodayViewModel : BaseViewModel
     private readonly ITaskService _taskService;
     private readonly ILocalizationService? _localizationService;
     private readonly ISnackbarService _snackbarService;
+    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly CultureInfo _viCulture = new("vi-VN");
 
     private string _currentDateText = string.Empty;
@@ -185,12 +186,16 @@ public class TodayViewModel : BaseViewModel
     public string FieldTaskDescPlaceholder => _localizationService?["FieldTaskDescPlaceholder"] ?? "Nhập ghi chú thêm cho công việc...";
     public string BtnCancel => _localizationService?["BtnCancel"] ?? "Hủy";
     public string BtnSaveTask => _localizationService?["BtnSaveTask"] ?? "Lưu công việc";
+    public string SwipeCompleteText => _localizationService?["SwipeComplete"] ?? "Hoàn thành";
+    public string SwipeDeleteText => _localizationService?["SwipeDelete"] ?? "Xóa";
+    public string SwipeReopenText => _localizationService?["SwipeReopen"] ?? "Mở lại";
 
-    public TodayViewModel(ITaskService taskService, ILocalizationService? localizationService = null, ISnackbarService? snackbarService = null)
+    public TodayViewModel(ITaskService taskService, ILocalizationService? localizationService = null, ISnackbarService? snackbarService = null, IDateTimeProvider? dateTimeProvider = null)
     {
         _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
         _localizationService = localizationService;
         _snackbarService = snackbarService ?? new SnackbarService();
+        _dateTimeProvider = dateTimeProvider ?? new SystemDateTimeProvider();
         Title = "Hôm nay";
 
         UpdateDateText();
@@ -217,7 +222,7 @@ public class TodayViewModel : BaseViewModel
 
     private void UpdateDateText()
     {
-        DateTime now = DateTime.Now;
+        DateTime now = _dateTimeProvider.Now;
         if (_localizationService?.CurrentLanguage == AppLanguage.English)
         {
             CurrentDateText = now.ToString("dddd, MMM d", CultureInfo.InvariantCulture);
@@ -259,6 +264,9 @@ public class TodayViewModel : BaseViewModel
             OnPropertyChanged(nameof(FieldTaskDescPlaceholder));
             OnPropertyChanged(nameof(BtnCancel));
             OnPropertyChanged(nameof(BtnSaveTask));
+            OnPropertyChanged(nameof(SwipeCompleteText));
+            OnPropertyChanged(nameof(SwipeDeleteText));
+            OnPropertyChanged(nameof(SwipeReopenText));
         });
     }
 
@@ -288,12 +296,14 @@ public class TodayViewModel : BaseViewModel
             IsBusy = true;
             OnPropertyChanged(nameof(IsEmpty));
 
-            var delayTask = Task.Delay(SkeletonMinTransitionDelayMs);
+            if (_taskService.SimulateLoading)
+            {
+                await Task.Delay(SkeletonMinTransitionDelayMs);
+            }
             UpdateDateText();
             var tasks = await _taskService.GetTodayTasksAsync();
             OrganizeTasks(tasks);
             _isDataLoaded = true;
-            await delayTask;
         }
         finally
         {
@@ -320,7 +330,7 @@ public class TodayViewModel : BaseViewModel
 
     private void OrganizeTasks(List<TaskItem> tasks)
     {
-        DateTime today = DateTime.Today;
+        DateTime today = _dateTimeProvider.Today;
 
         OverdueTasks.Clear();
         TodayTasks.Clear();
@@ -381,7 +391,7 @@ public class TodayViewModel : BaseViewModel
         {
             // Bước 1: Tick đổi màu xanh + gạch ngang chữ ngay tại chỗ
             task.Status = TaskStatus.Completed;
-            task.CompletedAt = DateTime.Now;
+            task.CompletedAt = _dateTimeProvider.Now;
             UpdateProgressMetrics();
 
             // Bước 2: Giữ 400ms để người dùng thấy hoàn thành
@@ -396,7 +406,7 @@ public class TodayViewModel : BaseViewModel
             }
             UpdateProgressMetrics();
 
-            ShowSnackbar("Đã hoàn thành công việc", canUndo: false);
+            ShowSnackbar(_localizationService?["SnackbarTaskCompleted"] ?? "Đã hoàn thành công việc", canUndo: false);
         }
         else
         {
@@ -412,7 +422,7 @@ public class TodayViewModel : BaseViewModel
             // Bước 3: Di chuyển công việc về danh sách Hôm nay hoặc Quá hạn
             CompletedTasks.Remove(task);
 
-            DateTime today = DateTime.Today;
+            DateTime today = _dateTimeProvider.Today;
             if (task.DueDate.Date < today)
             {
                 if (!OverdueTasks.Contains(task))
@@ -425,7 +435,7 @@ public class TodayViewModel : BaseViewModel
             }
             UpdateProgressMetrics();
 
-            ShowSnackbar("Đã mở lại công việc", canUndo: false);
+            ShowSnackbar(_localizationService?["SnackbarTaskReopened"] ?? "Đã mở lại công việc", canUndo: false);
         }
 
         // Đồng bộ ngầm xuống Service
@@ -449,7 +459,7 @@ public class TodayViewModel : BaseViewModel
         CompletedTasks.Remove(task);
         UpdateProgressMetrics();
 
-        ShowSnackbar("Đã xóa công việc", canUndo: true);
+        ShowSnackbar(_localizationService?["SnackbarTaskDeleted"] ?? "Đã xóa công việc", canUndo: true);
 
         _isInternalUpdate = true;
         try
@@ -485,8 +495,8 @@ public class TodayViewModel : BaseViewModel
         NewTaskTitle = string.Empty;
         NewTaskDescription = string.Empty;
         NewTaskProject = "Công việc cá nhân";
-        NewTaskDueDate = DateTime.Today;
-        NewTaskDueTime = new TimeSpan(DateTime.Now.Hour + 1, 0, 0);
+        NewTaskDueDate = _dateTimeProvider.Today;
+        NewTaskDueTime = new TimeSpan(_dateTimeProvider.Now.Hour + 1, 0, 0);
         IsCreateModalVisible = true;
     }
 
@@ -522,7 +532,7 @@ public class TodayViewModel : BaseViewModel
         _isInternalUpdate = true;
         try
         {
-            DateTime today = DateTime.Today;
+            DateTime today = _dateTimeProvider.Today;
             if (newTask.DueDate.Date < today)
             {
                 OverdueTasks.Add(newTask);

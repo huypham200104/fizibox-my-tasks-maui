@@ -2,6 +2,7 @@ using FluentAssertions;
 using MyTasksApp.Core.Enums;
 using MyTasksApp.Core.Models;
 using MyTasksApp.Services;
+using MyTasksApp.Tests.Mocks;
 using MyTasksApp.ViewModels;
 using TaskStatus = MyTasksApp.Core.Enums.TaskStatus;
 using Xunit;
@@ -46,24 +47,25 @@ public class HistoryViewModelTests
         // Arrange
         var service = new MockTaskService();
         var localization = new LocalizationService();
-        var viewModel = new HistoryViewModel(service, localization);
+        var dateTimeProvider = new MockDateTimeProvider(new DateTime(2026, 11, 21)); // Thứ Bảy (có 2 completed tasks trong seed)
+        var viewModel = new HistoryViewModel(service, localization, dateTimeProvider);
         await viewModel.LoadHistoryCommand.ExecuteAsync();
 
         var initialAllCount = viewModel.CompletedTasksCount;
 
         // Act & Assert: Lọc Hôm nay
-        viewModel.SelectFilterCommand.Execute("Today");
+        await viewModel.SelectFilterCommand.ExecuteAsync("Today");
         viewModel.IsFilterToday.Should().BeTrue();
         viewModel.FilterPeriodText.Should().Contain("hôm nay");
         foreach (var group in viewModel.GroupedTasks)
         {
-            group.Date.Date.Should().Be(DateTime.Today);
+            group.Date.Date.Should().Be(dateTimeProvider.Today);
         }
 
         // Act & Assert: Lọc Tuần này
-        viewModel.SelectFilterCommand.Execute("ThisWeek");
+        await viewModel.SelectFilterCommand.ExecuteAsync("ThisWeek");
         viewModel.IsFilterWeek.Should().BeTrue();
-        DateTime monday = WeekViewModel.GetMondayOfWeek(DateTime.Today);
+        DateTime monday = WeekViewModel.GetMondayOfWeek(dateTimeProvider.Today);
         DateTime sunday = monday.AddDays(6);
         foreach (var group in viewModel.GroupedTasks)
         {
@@ -71,16 +73,16 @@ public class HistoryViewModelTests
         }
 
         // Act & Assert: Lọc Tháng này
-        viewModel.SelectFilterCommand.Execute("ThisMonth");
+        await viewModel.SelectFilterCommand.ExecuteAsync("ThisMonth");
         viewModel.IsFilterMonth.Should().BeTrue();
         foreach (var group in viewModel.GroupedTasks)
         {
-            group.Date.Year.Should().Be(DateTime.Today.Year);
-            group.Date.Month.Should().Be(DateTime.Today.Month);
+            group.Date.Year.Should().Be(dateTimeProvider.Today.Year);
+            group.Date.Month.Should().Be(dateTimeProvider.Today.Month);
         }
 
         // Act & Assert: Lọc Tất cả
-        viewModel.SelectFilterCommand.Execute("All");
+        await viewModel.SelectFilterCommand.ExecuteAsync("All");
         viewModel.IsFilterAll.Should().BeTrue();
         viewModel.CompletedTasksCount.Should().Be(initialAllCount);
     }
@@ -127,7 +129,8 @@ public class HistoryViewModelTests
         // Arrange
         var service = new MockTaskService();
         var localization = new LocalizationService();
-        var viewModel = new HistoryViewModel(service, localization);
+        var dateTimeProvider = new MockDateTimeProvider(new DateTime(2026, 11, 21));
+        var viewModel = new HistoryViewModel(service, localization, dateTimeProvider);
         await viewModel.LoadHistoryCommand.ExecuteAsync();
 
         // Ban đầu sắp xếp mới nhất lên đầu
@@ -138,7 +141,7 @@ public class HistoryViewModelTests
         }
 
         // Act: Đổi chiều sắp xếp (cũ nhất lên đầu)
-        viewModel.ToggleSortOrderCommand.Execute(null);
+        await viewModel.ToggleSortOrderCommand.ExecuteAsync(null);
 
         // Assert
         viewModel.IsSortDescending.Should().BeFalse();

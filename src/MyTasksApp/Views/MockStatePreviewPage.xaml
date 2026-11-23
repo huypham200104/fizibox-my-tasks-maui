@@ -44,7 +44,8 @@
                            FontFamily="InterBold"
                            FontSize="{DynamicResource FontSizeTitle}"
                            TextColor="{DynamicResource TextPrimary}" />
-                    <Label Text="Mô phỏng phản hồi trạng thái cho Reviewer"
+                    <Label x:Name="PageSubtitleLabel"
+                           Text="Mô phỏng phản hồi trạng thái cho Reviewer"
                            FontFamily="InterRegular"
                            FontSize="{DynamicResource FontSizeCaption}"
                            TextColor="{DynamicResource TextSecondary}" />
@@ -295,14 +296,16 @@
                                            VerticalOptions="Center" />
                     </Border>
 
-                    <Label Text="Không tìm thấy công việc"
+                    <Label x:Name="NotFoundTitleLabel"
+                           Text="Không tìm thấy công việc"
                            FontFamily="InterBold"
                            FontSize="{DynamicResource FontSizeTitle}"
                            TextColor="{DynamicResource TextPrimary}"
                            HorizontalOptions="Center"
                            HorizontalTextAlignment="Center" />
 
-                    <Label Text="Công việc này không tồn tại trong bộ dữ liệu hoặc đã bị xóa khỏi hệ thống."
+                    <Label x:Name="NotFoundDescLabel"
+                           Text="Công việc này không tồn tại trong bộ dữ liệu hoặc đã bị xóa khỏi hệ thống."
                            FontFamily="InterRegular"
                            FontSize="{DynamicResource FontSizeBody}"
                            TextColor="{DynamicResource TextSecondary}"
@@ -310,7 +313,8 @@
                            HorizontalTextAlignment="Center"
                            MaximumWidthRequest="320" />
 
-                    <Button Text="Quay lại màn hình Cài đặt"
+                    <Button x:Name="BackToSettingsButton"
+                            Text="Quay lại màn hình Cài đặt"
                             Clicked="OnBackButtonClicked"
                             HeightRequest="46"
                             Padding="24,0"

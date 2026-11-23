@@ -8,7 +8,7 @@ public partial class AppShell : Shell
 {
     private readonly ILocalizationService _localizationService;
 
-    public AppShell(IServiceProvider serviceProvider, ILocalizationService localizationService)
+    public AppShell(ILocalizationService localizationService)
     {
         InitializeComponent();
         _localizationService = localizationService;
@@ -20,12 +20,6 @@ public partial class AppShell : Shell
         // Cập nhật tiêu đề tab theo ngôn ngữ hiện tại
         UpdateTabTitles();
         _localizationService.LanguageChanged += OnLanguageChanged;
-
-        // Eager Loading: Gán trực tiếp các Singleton Page vào ShellContent để chuyển tab tức thì 0ms
-        TabTodayContent.Content = serviceProvider.GetRequiredService<TodayPage>();
-        TabWeekContent.Content = serviceProvider.GetRequiredService<WeekPage>();
-        TabHistoryContent.Content = serviceProvider.GetRequiredService<HistoryPage>();
-        TabSettingsContent.Content = serviceProvider.GetRequiredService<SettingsPage>();
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)

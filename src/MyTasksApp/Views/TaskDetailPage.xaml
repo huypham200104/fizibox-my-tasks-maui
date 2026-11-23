@@ -631,11 +631,11 @@
                     <!-- Header Modal -->
                     <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="Chỉnh sửa công việc"
+                            <Label Text="{Binding ModalEditTitle}"
                                    FontFamily="InterBold"
                                    FontSize="{DynamicResource FontSizeTitle}"
                                    TextColor="{DynamicResource TextPrimary}" />
-                            <Label Text="Cập nhật thông tin công việc của bạn"
+                            <Label Text="{Binding ModalEditSubtitle}"
                                    FontFamily="InterRegular"
                                    FontSize="{DynamicResource FontSizeCaption}"
                                    TextColor="{DynamicResource TextSecondary}" />
@@ -663,7 +663,7 @@
                     <VerticalStackLayout Spacing="6">
                         <HorizontalStackLayout Spacing="6">
                             <fluent:SymbolIcon Symbol="DocumentText" FontSize="14" ForegroundColor="{DynamicResource TextSecondary}" />
-                            <Label Text="Tên công việc"
+                            <Label Text="{Binding FieldTaskTitle}"
                                    FontFamily="InterSemiBold"
                                    FontSize="{DynamicResource FontSizeCaption}"
                                    TextColor="{DynamicResource TextPrimary}" />
@@ -693,7 +693,7 @@
                     <VerticalStackLayout Spacing="6">
                         <HorizontalStackLayout Spacing="6">
                             <fluent:SymbolIcon Symbol="TextAlignLeft" FontSize="14" ForegroundColor="{DynamicResource TextSecondary}" />
-                            <Label Text="Mô tả"
+                            <Label Text="{Binding FieldTaskDesc}"
                                    FontFamily="InterSemiBold"
                                    FontSize="{DynamicResource FontSizeCaption}"
                                    TextColor="{DynamicResource TextPrimary}" />
@@ -723,7 +723,7 @@
                     <VerticalStackLayout Spacing="6">
                         <HorizontalStackLayout Spacing="6">
                             <fluent:SymbolIcon Symbol="Note" FontSize="14" ForegroundColor="{DynamicResource TextSecondary}" />
-                            <Label Text="Ghi chú"
+                            <Label Text="{Binding FieldTaskNotes}"
                                    FontFamily="InterSemiBold"
                                    FontSize="{DynamicResource FontSizeCaption}"
                                    TextColor="{DynamicResource TextPrimary}" />
@@ -751,7 +751,7 @@
 
                     <!-- 2 Nút Chân trang: Hủy & Lưu thay đổi -->
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,8,0,0">
-                        <Button Text="Hủy"
+                        <Button Text="{Binding BtnCancelText}"
                                 Command="{Binding CloseEditModalCommand}"
                                 HeightRequest="48"
                                 CornerRadius="12"
@@ -760,7 +760,7 @@
                                 FontFamily="InterSemiBold"
                                 FontSize="{DynamicResource FontSizeBody}" />
                         <Button Grid.Column="1"
-                                Text="Lưu thay đổi"
+                                Text="{Binding BtnSaveText}"
                                 Command="{Binding SaveEditCommand}"
                                 HeightRequest="48"
                                 CornerRadius="12"
@@ -972,15 +972,15 @@
                         </Border>
                     </Grid>
 
-                    <!-- Tiêu đề 7 cột thứ (T2 -> CN) -->
+                    <!-- Tiêu đề 7 cột thứ (T2 -> CN / Mon -> Sun) -->
                     <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="4">
-                        <Label Text="T2" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
-                        <Label Grid.Column="1" Text="T3" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
-                        <Label Grid.Column="2" Text="T4" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
-                        <Label Grid.Column="3" Text="T5" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
-                        <Label Grid.Column="4" Text="T6" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
-                        <Label Grid.Column="5" Text="T7" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
-                        <Label Grid.Column="6" Text="CN" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                        <Label Text="{Binding DayMonText}" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                        <Label Grid.Column="1" Text="{Binding DayTueText}" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                        <Label Grid.Column="2" Text="{Binding DayWedText}" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                        <Label Grid.Column="3" Text="{Binding DayThuText}" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                        <Label Grid.Column="4" Text="{Binding DayFriText}" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                        <Label Grid.Column="5" Text="{Binding DaySatText}" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
+                        <Label Grid.Column="6" Text="{Binding DaySunText}" HorizontalTextAlignment="Center" FontFamily="InterMedium" FontSize="{DynamicResource FontSizeCaption}" TextColor="{DynamicResource TextSecondary}" />
                     </Grid>
 
                     <!-- Lưới 42 ô ngày (Lịch tháng) -->
@@ -1048,7 +1048,7 @@
                         </Border.GestureRecognizers>
                         <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
                             <fluent:SymbolIcon Symbol="Calendar" FontSize="16" ForegroundColor="{DynamicResource Primary}" />
-                            <Label Text="Hôm nay"
+                            <Label Text="{Binding ShortcutTodayText}"
                                    FontFamily="InterSemiBold"
                                    FontSize="{DynamicResource FontSizeBody}"
                                    TextColor="{DynamicResource Primary}" />
@@ -1057,7 +1057,7 @@
 
                     <!-- 2 Nút Chân trang: Hủy & Xác nhận -->
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,8,0,0">
-                        <Button Text="Hủy"
+                        <Button Text="{Binding BtnCancelText}"
                                 Command="{Binding CloseDatePickerSheetCommand}"
                                 HeightRequest="48"
                                 CornerRadius="12"
@@ -1066,7 +1066,7 @@
                                 FontFamily="InterSemiBold"
                                 FontSize="{DynamicResource FontSizeBody}" />
                         <Button Grid.Column="1"
-                                Text="Xác nhận"
+                                Text="{Binding BtnConfirmText}"
                                 Command="{Binding ApplyDatePickerCommand}"
                                 HeightRequest="48"
                                 CornerRadius="12"
@@ -1169,7 +1169,7 @@
 
                     <!-- 2 Nút Chân trang: Hủy & Xác nhận -->
                     <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,8,0,0">
-                        <Button Text="Hủy"
+                        <Button Text="{Binding BtnCancelText}"
                                 Command="{Binding CloseTimePickerSheetCommand}"
                                 HeightRequest="48"
                                 CornerRadius="12"
@@ -1178,7 +1178,7 @@
                                 FontFamily="InterSemiBold"
                                 FontSize="{DynamicResource FontSizeBody}" />
                         <Button Grid.Column="1"
-                                Text="Xác nhận"
+                                Text="{Binding BtnConfirmText}"
                                 Command="{Binding ApplyTimePickerCommand}"
                                 HeightRequest="48"
                                 CornerRadius="12"
@@ -1213,11 +1213,11 @@
 
                     <!-- Header -->
                     <VerticalStackLayout Spacing="2">
-                        <Label Text="Chọn dự án"
+                        <Label Text="{Binding SelectProjectTitle}"
                                FontFamily="InterBold"
                                FontSize="{DynamicResource FontSizeTitle}"
                                TextColor="{DynamicResource TextPrimary}" />
-                        <Label Text="Gán công việc cho dự án tương ứng"
+                        <Label Text="{Binding SheetProjectSubtitle}"
                                FontFamily="InterRegular"
                                FontSize="{DynamicResource FontSizeCaption}"
                                TextColor="{DynamicResource TextSecondary}" />

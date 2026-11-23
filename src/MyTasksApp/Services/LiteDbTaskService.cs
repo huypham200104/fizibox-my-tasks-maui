@@ -33,15 +33,8 @@ public class LiteDbTaskService : ITaskService, IDisposable
         _collection.EnsureIndex(x => x.DueDate);
         _collection.EnsureIndex(x => x.Status);
 
-        // Tự động seed dữ liệu mẫu 19/11 - 28/11 nếu database đang rỗng
-        lock (_lock)
-        {
-            if (_collection.Count() == 0)
-            {
-                var seedTasks = TaskDataSeeder.GenerateDefaultTasks();
-                _collection.InsertBulk(seedTasks);
-            }
-        }
+        // Không tự động nạp dữ liệu mẫu khi database rỗng; ứng dụng khởi động với danh sách trống (0 việc).
+        // Khi cần kiểm thử dữ liệu mẫu, người dùng/reviewer có thể dùng nút "Đặt lại dữ liệu mẫu" trong màn hình Cài đặt.
     }
 
     private static string GetDefaultDatabasePath()
@@ -105,13 +98,14 @@ public class LiteDbTaskService : ITaskService, IDisposable
         await DelaySimulateAsync();
         if (SimulateEmpty) return new List<TaskItem>();
 
+        DateTime start = date.Date;
+        DateTime end = start.AddDays(1);
         return await Task.Run(() =>
         {
             lock (_lock)
             {
-                var all = _collection.FindAll().ToList();
-                return all
-                    .Where(t => t.DueDate.Date == date.Date)
+                return _collection
+                    .Find(t => t.DueDate >= start && t.DueDate < end)
                     .OrderBy(t => t.Status == TaskStatus.Completed)
                     .ThenBy(t => t.DueTime)
                     .Select(CloneTask)
@@ -129,9 +123,8 @@ public class LiteDbTaskService : ITaskService, IDisposable
         {
             lock (_lock)
             {
-                var all = _collection.FindAll().ToList();
-                return all
-                    .Where(t => t.Status == TaskStatus.Completed)
+                return _collection
+                    .Find(t => t.Status == TaskStatus.Completed)
                     .OrderByDescending(t => t.CompletedAt ?? t.DueDate)
                     .Select(CloneTask)
                     .ToList();

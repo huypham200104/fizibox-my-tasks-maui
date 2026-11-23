@@ -2,7 +2,7 @@
 
 > **Dự án thực hành Fresher Mobile (.NET MAUI / C#) — "Việc của tôi" (MyTasksApp)**  
 > **Đơn vị đánh giá:** Fizibox (`https://fizibox.com`)  
-> **Tài liệu tham chiếu:** [ASSIGNMENT.md](ASSIGNMENT.md) (Mục 4.3), [ROADMAP.md](ROADMAP.md) (Mục 8.2)
+> **Tài liệu tham chiếu:** [ASSIGNMENT.md](docs/handover/ASSIGNMENT.md) (Mục 4.3), [ROADMAP.md](ROADMAP.md) (Mục 8.2)
 
 ---
 
@@ -56,7 +56,7 @@
 * **Quyết định của người lập trình & Lý do:**
   - **Quyết định: THAY ĐỔI KIẾN TRÚC ĐIỀU HƯỚNG (Modify Architecture).**
   - **Lý do & Cách giải quyết:**
-    1. Việc truyền nguyên đối tượng phức tạp giữa các trang trong MAUI dễ gây lỗi serialization, không hỗ trợ deeplink, và quan trọng nhất là **không kiểm thử được trạng thái Not Found** theo yêu cầu của đề bài [ASSIGNMENT.md](ASSIGNMENT.md).
+    1. Việc truyền nguyên đối tượng phức tạp giữa các trang trong MAUI dễ gây lỗi serialization, không hỗ trợ deeplink, và quan trọng nhất là **không kiểm thử được trạng thái Not Found** theo yêu cầu của đề bài [ASSIGNMENT.md](docs/handover/ASSIGNMENT.md).
     2. Người lập trình yêu cầu AI chỉ truyền duy nhất tham số nguyên thủy `id`:
        ```csharp
        await Shell.Current.GoToAsync($"{nameof(TaskDetailPage)}?id={selectedTask.Id}");

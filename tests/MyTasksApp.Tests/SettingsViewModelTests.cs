@@ -1,6 +1,7 @@
 using FluentAssertions;
 using MyTasksApp.Core.Enums;
 using MyTasksApp.Services;
+using MyTasksApp.Tests.Mocks;
 using MyTasksApp.ViewModels;
 using MyTasksApp.ViewModels.Base;
 using Xunit;
@@ -10,14 +11,14 @@ namespace MyTasksApp.Tests;
 public class SettingsViewModelTests
 {
     private readonly MockTaskService _taskService;
-    private readonly PreferencesSettingsService _settingsService;
+    private readonly MockSettingsService _settingsService;
     private readonly LocalizationService _localizationService;
     private readonly SettingsViewModel _viewModel;
 
     public SettingsViewModelTests()
     {
         _taskService = new MockTaskService();
-        _settingsService = new PreferencesSettingsService();
+        _settingsService = new MockSettingsService();
         _localizationService = new LocalizationService();
 
         // Đảm bảo trạng thái ban đầu sạch

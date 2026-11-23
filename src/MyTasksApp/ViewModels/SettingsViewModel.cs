@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
+using MyTasksApp.Core.DesignTokens;
 using MyTasksApp.Core.Enums;
 using MyTasksApp.Services;
 using MyTasksApp.Services.Interfaces;
@@ -109,100 +110,100 @@ public class SettingsViewModel : BaseViewModel
 
     // --- Theme Card: Sáng (Light) ---
     public Color ThemeLightCardBackground => IsLightMode
-        ? (IsDark ? Color.FromArgb("#1E1B4B") : Color.FromArgb("#EEF2FF"))
-        : (IsDark ? Color.FromArgb("#1E293B") : Color.FromArgb("#FFFFFF"));
+        ? (IsDark ? AppColors.PrimaryLightDark : AppColors.PrimaryLight)
+        : (IsDark ? AppColors.SurfaceDark : AppColors.Surface);
 
     public Color ThemeLightCardBorder => IsLightMode
-        ? (IsDark ? Color.FromArgb("#6366F1") : Color.FromArgb("#4F46E5"))
-        : (IsDark ? Color.FromArgb("#334155") : Color.FromArgb("#E2E8F0"));
+        ? (IsDark ? AppColors.PrimaryDark : AppColors.Primary)
+        : (IsDark ? AppColors.BorderColorDark : AppColors.BorderColor);
 
     public double ThemeLightCardBorderThickness => IsLightMode ? 1.5 : 1.0;
 
-    public Color ThemeLightTextColor => IsDark ? Color.FromArgb("#F8FAFC") : Color.FromArgb("#0F172A");
+    public Color ThemeLightTextColor => IsDark ? AppColors.TextPrimaryDark : AppColors.TextPrimary;
 
     // --- Theme Card: Tối (Dark) ---
     public Color ThemeDarkCardBackground => IsDarkMode
-        ? (IsDark ? Color.FromArgb("#1E1B4B") : Color.FromArgb("#EEF2FF"))
-        : (IsDark ? Color.FromArgb("#1E293B") : Color.FromArgb("#FFFFFF"));
+        ? (IsDark ? AppColors.PrimaryLightDark : AppColors.PrimaryLight)
+        : (IsDark ? AppColors.SurfaceDark : AppColors.Surface);
 
     public Color ThemeDarkCardBorder => IsDarkMode
-        ? (IsDark ? Color.FromArgb("#6366F1") : Color.FromArgb("#4F46E5"))
-        : (IsDark ? Color.FromArgb("#334155") : Color.FromArgb("#E2E8F0"));
+        ? (IsDark ? AppColors.PrimaryDark : AppColors.Primary)
+        : (IsDark ? AppColors.BorderColorDark : AppColors.BorderColor);
 
     public double ThemeDarkCardBorderThickness => IsDarkMode ? 1.5 : 1.0;
 
-    public Color ThemeDarkTextColor => IsDark ? Color.FromArgb("#F8FAFC") : Color.FromArgb("#0F172A");
+    public Color ThemeDarkTextColor => IsDark ? AppColors.TextPrimaryDark : AppColors.TextPrimary;
 
     // --- Cỡ chữ: Nhỏ (Small) ---
     public Color FontSizeSmallBackground => IsSmallFont
-        ? (IsDark ? Color.FromArgb("#6366F1") : Color.FromArgb("#4F46E5"))
-        : (IsDark ? Color.FromArgb("#1E293B") : Color.FromArgb("#FFFFFF"));
+        ? (IsDark ? AppColors.PrimaryDark : AppColors.Primary)
+        : (IsDark ? AppColors.SurfaceDark : AppColors.Surface);
 
     public Color FontSizeSmallTextColor => IsSmallFont
-        ? Color.FromArgb("#FFFFFF")
-        : (IsDark ? Color.FromArgb("#F8FAFC") : Color.FromArgb("#0F172A"));
+        ? Colors.White
+        : (IsDark ? AppColors.TextPrimaryDark : AppColors.TextPrimary);
 
     public Color FontSizeSmallBorder => IsSmallFont
         ? Colors.Transparent
-        : (IsDark ? Color.FromArgb("#334155") : Color.FromArgb("#E2E8F0"));
+        : (IsDark ? AppColors.BorderColorDark : AppColors.BorderColor);
 
     public double FontSizeSmallBorderThickness => IsSmallFont ? 0.0 : 1.0;
 
     // --- Cỡ chữ: Thường (Normal) ---
     public Color FontSizeNormalBackground => IsNormalFont
-        ? (IsDark ? Color.FromArgb("#6366F1") : Color.FromArgb("#4F46E5"))
-        : (IsDark ? Color.FromArgb("#1E293B") : Color.FromArgb("#FFFFFF"));
+        ? (IsDark ? AppColors.PrimaryDark : AppColors.Primary)
+        : (IsDark ? AppColors.SurfaceDark : AppColors.Surface);
 
     public Color FontSizeNormalTextColor => IsNormalFont
-        ? Color.FromArgb("#FFFFFF")
-        : (IsDark ? Color.FromArgb("#F8FAFC") : Color.FromArgb("#0F172A"));
+        ? Colors.White
+        : (IsDark ? AppColors.TextPrimaryDark : AppColors.TextPrimary);
 
     public Color FontSizeNormalBorder => IsNormalFont
         ? Colors.Transparent
-        : (IsDark ? Color.FromArgb("#334155") : Color.FromArgb("#E2E8F0"));
+        : (IsDark ? AppColors.BorderColorDark : AppColors.BorderColor);
 
     public double FontSizeNormalBorderThickness => IsNormalFont ? 0.0 : 1.0;
 
     // --- Cỡ chữ: Lớn (Large) ---
     public Color FontSizeLargeBackground => IsLargeFont
-        ? (IsDark ? Color.FromArgb("#6366F1") : Color.FromArgb("#4F46E5"))
-        : (IsDark ? Color.FromArgb("#1E293B") : Color.FromArgb("#FFFFFF"));
+        ? (IsDark ? AppColors.PrimaryDark : AppColors.Primary)
+        : (IsDark ? AppColors.SurfaceDark : AppColors.Surface);
 
     public Color FontSizeLargeTextColor => IsLargeFont
-        ? Color.FromArgb("#FFFFFF")
-        : (IsDark ? Color.FromArgb("#F8FAFC") : Color.FromArgb("#0F172A"));
+        ? Colors.White
+        : (IsDark ? AppColors.TextPrimaryDark : AppColors.TextPrimary);
 
     public Color FontSizeLargeBorder => IsLargeFont
         ? Colors.Transparent
-        : (IsDark ? Color.FromArgb("#334155") : Color.FromArgb("#E2E8F0"));
+        : (IsDark ? AppColors.BorderColorDark : AppColors.BorderColor);
 
     public double FontSizeLargeBorderThickness => IsLargeFont ? 0.0 : 1.0;
 
     // --- Ngôn ngữ: Tiếng Việt ---
     public Color LangVietnameseBackground => IsVietnamese
-        ? (IsDark ? Color.FromArgb("#1E1B4B") : Color.FromArgb("#EEF2FF"))
-        : (IsDark ? Color.FromArgb("#1E293B") : Color.FromArgb("#FFFFFF"));
+        ? (IsDark ? AppColors.PrimaryLightDark : AppColors.PrimaryLight)
+        : (IsDark ? AppColors.SurfaceDark : AppColors.Surface);
 
     public Color LangVietnameseBorder => IsVietnamese
-        ? (IsDark ? Color.FromArgb("#6366F1") : Color.FromArgb("#4F46E5"))
-        : (IsDark ? Color.FromArgb("#334155") : Color.FromArgb("#E2E8F0"));
+        ? (IsDark ? AppColors.PrimaryDark : AppColors.Primary)
+        : (IsDark ? AppColors.BorderColorDark : AppColors.BorderColor);
 
     public double LangVietnameseBorderThickness => IsVietnamese ? 1.5 : 1.0;
 
-    public Color LangVietnameseTextColor => IsDark ? Color.FromArgb("#F8FAFC") : Color.FromArgb("#0F172A");
+    public Color LangVietnameseTextColor => IsDark ? AppColors.TextPrimaryDark : AppColors.TextPrimary;
 
     // --- Ngôn ngữ: English ---
     public Color LangEnglishBackground => IsEnglish
-        ? (IsDark ? Color.FromArgb("#1E1B4B") : Color.FromArgb("#EEF2FF"))
-        : (IsDark ? Color.FromArgb("#1E293B") : Color.FromArgb("#FFFFFF"));
+        ? (IsDark ? AppColors.PrimaryLightDark : AppColors.PrimaryLight)
+        : (IsDark ? AppColors.SurfaceDark : AppColors.Surface);
 
     public Color LangEnglishBorder => IsEnglish
-        ? (IsDark ? Color.FromArgb("#6366F1") : Color.FromArgb("#4F46E5"))
-        : (IsDark ? Color.FromArgb("#334155") : Color.FromArgb("#E2E8F0"));
+        ? (IsDark ? AppColors.PrimaryDark : AppColors.Primary)
+        : (IsDark ? AppColors.BorderColorDark : AppColors.BorderColor);
 
     public double LangEnglishBorderThickness => IsEnglish ? 1.5 : 1.0;
 
-    public Color LangEnglishTextColor => IsDark ? Color.FromArgb("#F8FAFC") : Color.FromArgb("#0F172A");
+    public Color LangEnglishTextColor => IsDark ? AppColors.TextPrimaryDark : AppColors.TextPrimary;
 
     #endregion
 
@@ -312,13 +313,10 @@ public class SettingsViewModel : BaseViewModel
         });
     }
 
-    private async void OnSelectTheme(string? theme)
+    private void OnSelectTheme(string? theme)
     {
         var targetTheme = theme == "Dark" ? AppThemeMode.Dark : AppThemeMode.Light;
         if (_settingsService.CurrentTheme == targetTheme) return;
-
-        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà trước khi áp dụng tài nguyên
-        await Task.Delay(60);
 
         _settingsService.SetTheme(targetTheme);
         ShowSnackbar(targetTheme == AppThemeMode.Dark 
@@ -326,7 +324,7 @@ public class SettingsViewModel : BaseViewModel
             : _localizationService["FeedbackThemeLight"]);
     }
 
-    private async void OnSelectFontSize(string? size)
+    private void OnSelectFontSize(string? size)
     {
         var (targetSize, msgKey) = size switch
         {
@@ -337,20 +335,14 @@ public class SettingsViewModel : BaseViewModel
 
         if (_settingsService.CurrentFontSize == targetSize) return;
 
-        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà
-        await Task.Delay(60);
-
         _settingsService.SetFontSize(targetSize);
         ShowSnackbar(_localizationService[msgKey]);
     }
 
-    private async void OnSelectLanguage(string? lang)
+    private void OnSelectLanguage(string? lang)
     {
         var targetLang = lang == "English" ? AppLanguage.English : AppLanguage.Vietnamese;
         if (_settingsService.CurrentLanguage == targetLang) return;
-
-        // Hoãn 60ms để hiệu ứng chạm nảy OnCardTapped hoàn tất mượt mà
-        await Task.Delay(60);
 
         _settingsService.SetLanguage(targetLang);
         _localizationService.SetLanguage(targetLang);

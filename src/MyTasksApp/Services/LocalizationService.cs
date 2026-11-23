@@ -52,7 +52,7 @@ public class LocalizationService : ILocalizationService
         { "AppDescription", "Ứng dụng quản lý công việc cá nhân" },
         { "AppVersion", "Phiên bản 1.0.0" },
         { "ConfirmResetTitle", "Xác nhận đặt lại" },
-        { "ConfirmResetMessage", "Bạn có chắc muốn đặt lại toàn bộ dữ liệu mẫu in-memory về trạng thái ban đầu?" },
+        { "ConfirmResetMessage", "Bạn có chắc muốn đặt lại toàn bộ dữ liệu mẫu mặc định về trạng thái ban đầu?" },
         { "ConfirmOk", "Đặt lại" },
         { "ConfirmCancel", "Hủy" },
         { "ResetSuccess", "Đã khôi phục dữ liệu mẫu thành công!" },
@@ -186,7 +186,29 @@ public class LocalizationService : ILocalizationService
         { "ShortcutToday", "Hôm nay" },
         { "NotFoundDetailTitle", "Không tìm thấy công việc" },
         { "NotFoundDetailDesc", "Công việc này không tồn tại trong bộ dữ liệu hoặc đã bị xóa khỏi hệ thống." },
-        { "BtnBackToList", "Quay lại danh sách" }
+        { "BtnBackToList", "Quay lại danh sách" },
+
+        // Swipe Actions
+        { "SwipeComplete", "Hoàn thành" },
+        { "SwipeDelete", "Xóa" },
+        { "SwipeReopen", "Mở lại" },
+
+        // Days of Week
+        { "DayMon", "T2" },
+        { "DayTue", "T3" },
+        { "DayWed", "T4" },
+        { "DayThu", "T5" },
+        { "DayFri", "T6" },
+        { "DaySat", "T7" },
+        { "DaySun", "CN" },
+
+        // Mock State Preview Page
+        { "MockTestingTitle", "Kiểm thử giao diện" },
+        { "MockTestingSubtitle", "Mô phỏng phản hồi trạng thái cho Reviewer" },
+        { "MockStateLoadingTitle", "Kiểm thử: Đang tải" },
+        { "MockStateEmptyTitle", "Kiểm thử: Danh sách trống" },
+        { "MockStateNotFoundTitle", "Kiểm thử: Không tìm thấy việc" },
+        { "BtnBackToSettings", "Quay lại màn hình Cài đặt" }
     };
 
     private static readonly Dictionary<string, string> EnStrings = new()
@@ -361,7 +383,29 @@ public class LocalizationService : ILocalizationService
         { "ShortcutToday", "Today" },
         { "NotFoundDetailTitle", "Task Not Found" },
         { "NotFoundDetailDesc", "This task does not exist in the dataset or has been deleted." },
-        { "BtnBackToList", "Back to List" }
+        { "BtnBackToList", "Back to List" },
+
+        // Swipe Actions
+        { "SwipeComplete", "Complete" },
+        { "SwipeDelete", "Delete" },
+        { "SwipeReopen", "Reopen" },
+
+        // Days of Week
+        { "DayMon", "Mon" },
+        { "DayTue", "Tue" },
+        { "DayWed", "Wed" },
+        { "DayThu", "Thu" },
+        { "DayFri", "Fri" },
+        { "DaySat", "Sat" },
+        { "DaySun", "Sun" },
+
+        // Mock State Preview Page
+        { "MockTestingTitle", "UI Testing" },
+        { "MockTestingSubtitle", "State simulation for Reviewer" },
+        { "MockStateLoadingTitle", "Testing: Loading State" },
+        { "MockStateEmptyTitle", "Testing: Empty State" },
+        { "MockStateNotFoundTitle", "Testing: Not Found State" },
+        { "BtnBackToSettings", "Back to Settings" }
     };
 
     public string GetString(string key)
